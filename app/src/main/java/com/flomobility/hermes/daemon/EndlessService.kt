@@ -8,6 +8,7 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.LifecycleService
+import com.flomobility.hermes.comms.SocketManager
 import com.flomobility.hermes.other.Constants.ACTION_START_OR_RESUME_SERVICE
 import com.flomobility.hermes.other.Constants.ACTION_STOP_SERVICE
 import com.flomobility.hermes.other.Constants.NOTIFICATION_CHANNEL_ID
@@ -22,6 +23,9 @@ class EndlessService: LifecycleService() {
 
     @Inject
     lateinit var baseNotificationBuilder: NotificationCompat.Builder
+
+    @Inject
+    lateinit var socketManager: SocketManager
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         intent?.let {
@@ -47,6 +51,9 @@ class EndlessService: LifecycleService() {
             createNotificationChannel(notificationManager)
         }
         startForeground(NOTIFICATION_ID, baseNotificationBuilder.build())
+
+        // init
+        socketManager.init()
     }
 
     private fun killService() {

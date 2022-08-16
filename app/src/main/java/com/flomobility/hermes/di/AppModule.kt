@@ -4,6 +4,8 @@ import android.content.Context
 import androidx.core.app.NotificationCompat
 import com.flomobility.hermes.R
 import com.flomobility.hermes.other.Constants.NOTIFICATION_CHANNEL_ID
+import com.google.gson.Gson
+import com.google.gson.GsonBuilder
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -25,5 +27,11 @@ object AppModule {
         .setSmallIcon(R.drawable.ic_launcher_foreground)
         .setContentTitle("Hermes service")
         .setContentText("")
+
+    @Singleton
+    @Provides
+    fun providesGson() = GsonBuilder()
+        .setPrettyPrinting()
+        .create()
 
 }
