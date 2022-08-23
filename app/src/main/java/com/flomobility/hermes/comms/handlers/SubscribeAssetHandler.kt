@@ -2,6 +2,7 @@ package com.flomobility.hermes.comms.handlers
 
 import com.flomobility.hermes.api.StandardResponse
 import com.flomobility.hermes.api.SubscribeRequest
+import com.flomobility.hermes.assets.AssetManager
 import com.flomobility.hermes.comms.SessionManager
 import com.flomobility.hermes.comms.SocketManager
 import com.flomobility.hermes.other.handleExceptions
@@ -16,7 +17,8 @@ import javax.inject.Singleton
 @Singleton
 class SubscribeAssetHandler @Inject constructor(
     private val sessionManager: SessionManager,
-    private val gson: Gson
+    private val gson: Gson,
+    private val assetManager: AssetManager
 ) : Runnable {
 
     lateinit var socket: ZMQ.Socket
@@ -65,6 +67,7 @@ class SubscribeAssetHandler @Inject constructor(
                 else -> {}
             }
             socket.send(gson.toJson(resp).toByteArray(ZMQ.CHARSET), 0)
+            assetManager.publishAssetState()
         }
     }
 }
