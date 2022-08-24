@@ -31,7 +31,7 @@ class SubscribeAssetHandler @Inject constructor(
                 try {
                     socket.recv(0)?.let { bytes ->
                         val msgStr = String(bytes, ZMQ.CHARSET)
-
+                        Timber.d("[Subscribe] -- Request : $msgStr")
                         val subscribeReq =
                             gson.fromJson<SubscribeRequest>(
                                 msgStr,
@@ -55,19 +55,22 @@ class SubscribeAssetHandler @Inject constructor(
                         success = false
                         message = "active session currently running."
                     }
+                    socket.send(gson.toJson(resp).toByteArray(ZMQ.CHARSET), 0)
                 }
                 request.subscribe && !sessionManager.connected -> {
                     sessionManager.connected = true
                     resp.success = true
+                    socket.send(gson.toJson(resp).toByteArray(ZMQ.CHARSET), 0)
+                    assetManager.publishAssetState()
                 }
                 !request.subscribe && sessionManager.connected -> {
                     sessionManager.connected = false
                     resp.success = true
+                    socket.send(gson.toJson(resp).toByteArray(ZMQ.CHARSET), 0)
+                    assetManager.publishAssetState()
                 }
                 else -> {}
             }
-            socket.send(gson.toJson(resp).toByteArray(ZMQ.CHARSET), 0)
-            assetManager.publishAssetState()
         }
     }
 }

@@ -8,4 +8,6 @@ object Constants {
     const val NOTIFICATION_CHANNEL_ID = "hermes_service_channel"
     const val NOTIFICATION_CHANNEL_NAME = "Hermes Comms"
     const val NOTIFICATION_ID = 1
+
+    const val UNKNOWN_ERROR_MSG = "An unknown error occurred"
 }

@@ -11,8 +11,14 @@ interface BaseAsset {
 
     val config: BaseAssetConfig
 
+    val state: AssetState
+
     fun updateConfig(config: BaseAssetConfig): Result
 
     fun getDesc(): String
+
+    fun startPublishing(): Result
+
+    fun stopPublishing(): Result
 
 }

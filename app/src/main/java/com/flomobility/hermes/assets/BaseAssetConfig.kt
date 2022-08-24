@@ -1,5 +1,10 @@
 package com.flomobility.hermes.assets
 
-interface BaseAssetConfig {
-    fun getFields(): Map<String, Any>
+abstract class BaseAssetConfig {
+
+    open var portPub = 10100
+
+    open var portSub = 10101
+
+    abstract fun getFields(): Map<String, Any>
 }

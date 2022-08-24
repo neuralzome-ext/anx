@@ -1,12 +1,10 @@
 package com.flomobility.hermes.assets
 
 import com.flomobility.hermes.assets.types.PhoneImu
+import com.flomobility.hermes.common.Result
 import javax.inject.Inject
 import javax.inject.Singleton
 import com.google.gson.Gson
-import com.google.gson.JsonArray
-import com.google.gson.JsonElement
-import com.google.gson.JsonObject
 import org.json.JSONObject
 import org.zeromq.SocketType
 import org.zeromq.ZContext
@@ -35,6 +33,18 @@ class AssetManager @Inject constructor(
 
     fun publishAssetState() {
         Thread(AssetsStatePublisher(getAssets()), "assets-state-publisher").start()
+    }
+
+    fun updateAssetConfig(id: String, assetType: AssetType, config: BaseAssetConfig): Result {
+        val asset = assets.find { it.id == id && it.type == assetType }
+            ?: throw IllegalStateException("Couldn't find asset")
+        return asset.updateConfig(config)
+    }
+
+    fun startAsset(id: String, assetType: AssetType): Result {
+        val asset = assets.find { it.id == id && it.type == assetType }
+            ?: throw IllegalStateException("Couldn't find asset")
+        return asset.startPublishing()
     }
 
     class AssetsStatePublisher(private val assetState: String) : Runnable {
