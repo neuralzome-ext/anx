@@ -5,7 +5,6 @@ import com.flomobility.hermes.common.Result
 import javax.inject.Inject
 import javax.inject.Singleton
 import com.google.gson.Gson
-import org.json.JSONObject
 import org.zeromq.SocketType
 import org.zeromq.ZContext
 import org.zeromq.ZMQ
@@ -21,14 +20,14 @@ class AssetManager @Inject constructor(
     )
 
     private fun getAssets(): String {
-        val root = JSONObject()
+        val assetsMap = hashMapOf<String, List<Map<String, Any>>>()
         AssetType.values().forEach { type ->
             val assets = this.assets.filter { it.type == type }.map { it.getDesc() }
             if (assets.isNotEmpty()) {
-                root.put(type.alias, assets)
+                assetsMap[type.alias] = assets
             }
         }
-        return root.toString().replace("\\", "")
+        return gson.toJson(assetsMap)
     }
 
     fun publishAssetState() {
@@ -59,6 +58,7 @@ class AssetManager @Inject constructor(
                 // sleep so that publisher is bound
                 Thread.sleep(500)
                 publisher.send(assetState, 0)
+                publisher.unbind(ASSETS_STATE_PUBLISHER_ADDR)
                 publisher.close()
             }
         }

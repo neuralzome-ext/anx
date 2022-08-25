@@ -15,7 +15,7 @@ interface BaseAsset {
 
     fun updateConfig(config: BaseAssetConfig): Result
 
-    fun getDesc(): String
+    fun getDesc(): Map<String, Any>
 
     fun startPublishing(): Result
 

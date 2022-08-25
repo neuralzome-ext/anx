@@ -11,7 +11,6 @@ import com.flomobility.hermes.assets.BaseAssetConfig
 import com.flomobility.hermes.common.Result
 import com.flomobility.hermes.other.Constants
 import com.flomobility.hermes.other.handleExceptions
-import org.json.JSONObject
 import org.zeromq.SocketType
 import org.zeromq.ZContext
 import org.zeromq.ZMQ
@@ -48,13 +47,12 @@ class PhoneImu : BaseAsset {
         return Result(success = true)
     }
 
-    override fun getDesc(): String {
-        return JSONObject().apply {
-            put("id", id)
-            config.getFields().forEach { (key, field) ->
-                put(key, field)
-            }
-        }.toString().replace("\\", "")
+    override fun getDesc(): Map<String, Any> {
+        val map = hashMapOf<String, Any>("id" to id)
+        config.getFields().forEach { (key, field) ->
+            map[key] = field
+        }
+        return map
     }
 
     override fun startPublishing(): Result {
@@ -100,10 +98,10 @@ class PhoneImu : BaseAsset {
                 socket.bind("tcp://*:${config.portPub}")
                 // wait to bind
                 Thread.sleep(500)
-//                Timber.d("[Publishing] imu")
+                Timber.d("[Publishing] imu on ${config.portPub}")
                 while (!Thread.currentThread().isInterrupted) {
                     val jsonStr = this@PhoneImu.getImuData().toJson()
-//                    Timber.d("[Publishing] -- imu : $jsonStr")
+                    Timber.d("[Publishing] -- imu : $jsonStr")
                     socket.send(jsonStr.toByteArray(ZMQ.CHARSET), 0)
                     Thread.sleep((1 / config.fps) * 1000L)
                 }

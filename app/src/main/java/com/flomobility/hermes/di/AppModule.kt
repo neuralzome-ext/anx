@@ -32,6 +32,7 @@ object AppModule {
     @Provides
     fun providesGson() = GsonBuilder()
         .setPrettyPrinting()
+        .enableComplexMapKeySerialization()
         .create()
 
 }
