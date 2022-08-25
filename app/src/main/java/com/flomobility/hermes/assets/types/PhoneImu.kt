@@ -1,5 +1,10 @@
 package com.flomobility.hermes.assets.types
 
+import android.content.Context
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
 import com.flomobility.hermes.api.model.AngularVelocity
 import com.flomobility.hermes.api.model.Imu
 import com.flomobility.hermes.api.model.LinearAcceleration
@@ -8,15 +13,71 @@ import com.flomobility.hermes.assets.AssetState
 import com.flomobility.hermes.assets.AssetType
 import com.flomobility.hermes.assets.BaseAsset
 import com.flomobility.hermes.assets.BaseAssetConfig
+import com.flomobility.hermes.common.Rate
 import com.flomobility.hermes.common.Result
 import com.flomobility.hermes.other.Constants
 import com.flomobility.hermes.other.handleExceptions
+import dagger.hilt.android.qualifiers.ApplicationContext
 import org.zeromq.SocketType
 import org.zeromq.ZContext
 import org.zeromq.ZMQ
 import timber.log.Timber
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class PhoneImu : BaseAsset {
+@Singleton
+class PhoneImu @Inject constructor(
+    @ApplicationContext private val context: Context
+) : BaseAsset {
+
+    private val sensorManager by lazy {
+        context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
+    }
+
+    private val sensorEventListeners = object : SensorEventListener {
+        override fun onSensorChanged(event: SensorEvent?) {
+            if (event == null) {
+                Timber.e("No sensor event happened")
+                return
+            } else {
+                when (event.sensor.type) {
+                    Sensor.TYPE_GYROSCOPE -> {
+                        angularVelocity = AngularVelocity(
+                            event.values[0].toDouble(),
+                            event.values[1].toDouble(),
+                            event.values[2].toDouble()
+                        )
+                    }
+                    Sensor.TYPE_ROTATION_VECTOR -> {
+                        quaternion = Quaternion(
+                            event.values[0].toDouble(),
+                            event.values[1].toDouble(),
+                            event.values[2].toDouble(),
+                            event.values[3].toDouble()
+                        )
+                    }
+                    Sensor.TYPE_LINEAR_ACCELERATION -> {
+                        linearAcceleration =
+                            LinearAcceleration(
+                                event.values[0].toDouble(),
+                                event.values[1].toDouble(),
+                                event.values[2].toDouble()
+                            )
+                    }
+                }
+            }
+        }
+
+        override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
+            Timber.d("Accuracy of ${sensor?.name} : $accuracy %")
+        }
+    }
+
+    private var angularVelocity: AngularVelocity? = null
+
+    private var linearAcceleration: LinearAcceleration? = null
+
+    private var quaternion: Quaternion? = null
 
     private val _config = Config()
 
@@ -62,6 +123,7 @@ class PhoneImu : BaseAsset {
             return Result(success = false, message = e.message ?: Constants.UNKNOWN_ERROR_MSG)
         }) {
             _state = AssetState.STREAMING
+            registerImu(Rate(hz = _config.fps.value as Int))
             publisherThread = Thread(Publisher(_config), "$type-$id-publisher-thread")
             publisherThread?.start()
             return Result(success = true)
@@ -76,18 +138,51 @@ class PhoneImu : BaseAsset {
             _state = AssetState.IDLE
             publisherThread?.interrupt()
             publisherThread = null
+            unregisterImu()
             return Result(success = true)
         }
         return Result(success = false, Constants.UNKNOWN_ERROR_MSG)
     }
 
-    fun getImuData(): Imu {
-        // TODO integrate with sensor manager
-        return Imu(
-            LinearAcceleration(0.0, 0.0, 0.0),
-            AngularVelocity(0.0, 0.0, 0.0),
-            Quaternion(0.0, 0.0, 0.0, 1.0)
+    private fun getImuData(): Imu {
+        return Imu.new(
+            linearAcceleration,
+            angularVelocity,
+            quaternion
         )
+    }
+
+    private fun registerImu(rate: Rate) {
+        with(sensorManager) {
+            getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)?.also { magnetometer ->
+                registerListener(
+                    sensorEventListeners,
+                    magnetometer,
+                    SensorManager.SENSOR_DELAY_FASTEST
+//                    rate.toMicros().toInt()
+                )
+            }
+            getDefaultSensor(Sensor.TYPE_GYROSCOPE)?.also { gyroscope ->
+                registerListener(
+                    sensorEventListeners,
+                    gyroscope,
+                    SensorManager.SENSOR_DELAY_FASTEST
+//                    rate.toMicros().toInt()
+                )
+            }
+            getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION)?.also { linearAcc ->
+                registerListener(
+                    sensorEventListeners,
+                    linearAcc,
+                    SensorManager.SENSOR_DELAY_FASTEST
+//                    rate.toMicros().toInt()
+                )
+            }
+        }
+    }
+
+    private fun unregisterImu() {
+        sensorManager.unregisterListener(sensorEventListeners)
     }
 
     inner class Publisher(val config: PhoneImu.Config) : Runnable {
@@ -96,20 +191,26 @@ class PhoneImu : BaseAsset {
 
         override fun run() {
             ZContext().use { ctx ->
+                val address = "tcp://*:${config.portPub}"
                 socket = ctx.createSocket(SocketType.PUB)
-                socket.bind("tcp://*:${config.portPub}")
+                socket.bind(address)
                 // wait to bind
                 Thread.sleep(500)
                 Timber.d("[Publishing] imu on ${config.portPub} at delay of ${1000L / (config.fps.value as Int)}")
                 while (!Thread.currentThread().isInterrupted) {
                     try {
                         val jsonStr = this@PhoneImu.getImuData().toJson()
-                        Timber.d("[Publishing] -- imu : $jsonStr")
+//                        Timber.d("[Publishing] -- imu : $jsonStr")
                         socket.send(jsonStr.toByteArray(ZMQ.CHARSET), 0)
                         Thread.sleep(1000L / (config.fps.value as Int))
-                    } catch (e: Exception) {
+                    } catch (e: InterruptedException) {
+                        Timber.i("Publisher closed")
+                        socket.unbind(address)
+                        socket.close()
+                    }
+                    catch (e: Exception) {
                         Timber.e(e)
-                        break
+                        return
                     }
                 }
             }
@@ -121,23 +222,10 @@ class PhoneImu : BaseAsset {
         val fps = Field<Int>()
         private val fpsRange = listOf(1, 2, 5, 10, 15, 25, 30, 60, 75, 100, 125, 150, 200)
 
-        val stream = Field<Stream>()
-
         init {
             fps.range = fpsRange
             fps.name = "fps"
             fps.value = DEFAULT_FPS
-
-            stream.range = listOf(
-                Stream(
-                    fps = 30,
-                    width = 1920,
-                    height = 1080,
-                    pixelFormat = Stream.PixelFormat.MJPEG
-                )
-            )
-            stream.name = "stream"
-            stream.value = Stream.DEFAULT
         }
 
         companion object {
@@ -146,26 +234,6 @@ class PhoneImu : BaseAsset {
 
         override fun getFields(): List<Field<*>> {
             return listOf(fps)
-        }
-
-        data class Stream(
-            val fps: Int,
-            val width: Int,
-            val height: Int,
-            val pixelFormat: PixelFormat
-        ) {
-            enum class PixelFormat(val alias: String) {
-                MJPEG("mjpeg"), YUYV("yuyv")
-            }
-
-            companion object {
-                val DEFAULT = Stream(
-                    fps = 30,
-                    width = 1920,
-                    height = 1080,
-                    pixelFormat = Stream.PixelFormat.MJPEG
-                )
-            }
         }
     }
 

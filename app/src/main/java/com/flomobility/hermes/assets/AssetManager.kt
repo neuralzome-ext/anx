@@ -14,11 +14,12 @@ import timber.log.Timber
 
 @Singleton
 class AssetManager @Inject constructor(
-    private val gson: Gson
+    private val gson: Gson,
+    private val phoneImu: PhoneImu
 ) {
 
     val assets = listOf<BaseAsset>(
-        PhoneImu()
+        phoneImu
     )
 
     private fun getAssets(): String {

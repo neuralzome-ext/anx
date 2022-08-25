@@ -8,6 +8,18 @@ data class Imu(
     val quaternion: Quaternion
 ): BaseData {
 
+    companion object {
+        fun new(linearAcceleration: LinearAcceleration?,
+                angularVelocity: AngularVelocity?,
+                quaternion: Quaternion?): Imu {
+            return Imu(
+                linearAcceleration ?: LinearAcceleration(0.0, 0.0, 0.0),
+                angularVelocity ?: AngularVelocity(0.0, 0.0, 0.0),
+                quaternion ?: Quaternion(0.0, 0.0, 0.0, 1.0)
+            )
+        }
+    }
+
     override fun toJson(): String {
         return JSONObject().apply {
             put("a", listOf(linearAcceleration.x, linearAcceleration.y, linearAcceleration.z))
