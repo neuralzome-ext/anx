@@ -8,12 +8,30 @@ plugins {
 android {
     compileSdk 32
 
+    signingConfigs {
+
+        Properties properties = new Properties()
+        properties.load(project.rootProject.file('local.properties').newDataInputStream())
+
+        def KEYSTORE_FILE_PATH = "KEYSTORE_FILE_PATH"
+        def KEYSTORE_PASSWORD = "KEYSTORE_PASSWORD"
+        def KEY_ALIAS = "KEY_ALIAS"
+        def KEY_PASSWORD = "KEY_PASSWORD"
+
+        flo {
+            storeFile file(properties.getProperty(KEYSTORE_FILE_PATH))
+            storePassword properties.getProperty(KEYSTORE_PASSWORD)
+            keyAlias properties.getProperty(KEY_ALIAS)
+            keyPassword properties.getProperty(KEY_PASSWORD)
+        }
+    }
+
     defaultConfig {
         applicationId "com.flomobility.hermes"
         minSdk 21
         targetSdk 32
         versionCode 1
-        versionName "1.0"
+        versionName "0.1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         externalNativeBuild {
@@ -24,6 +42,13 @@ android {
     }
 
     buildTypes {
+        dev {
+            debuggable true
+            minifyEnabled false
+            signingConfig signingConfigs.flo
+            versionNameSuffix "-dev"
+            resValue "string", "app_name", "(D)Hermes"
+        }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
