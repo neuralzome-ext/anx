@@ -42,20 +42,22 @@ class PhoneImu : BaseAsset {
         }
 
         this._config.apply {
-            this.fps = config.fps
+            fps.value = config.fps.value
+            portPub = config.portPub
+            portSub = config.portSub
         }
         return Result(success = true)
     }
 
     override fun getDesc(): Map<String, Any> {
         val map = hashMapOf<String, Any>("id" to id)
-        config.getFields().forEach { (key, field) ->
-            map[key] = field
+        config.getFields().forEach { field ->
+            map[field.name] = field.range
         }
         return map
     }
 
-    override fun startPublishing(): Result {
+    override fun start(): Result {
         handleExceptions(catchBlock = { e ->
             return Result(success = false, message = e.message ?: Constants.UNKNOWN_ERROR_MSG)
         }) {
@@ -67,7 +69,7 @@ class PhoneImu : BaseAsset {
         return Result(success = false, Constants.UNKNOWN_ERROR_MSG)
     }
 
-    override fun stopPublishing(): Result {
+    override fun stop(): Result {
         handleExceptions(catchBlock = { e ->
             return Result(success = false, message = e.message ?: Constants.UNKNOWN_ERROR_MSG)
         }) {
@@ -98,12 +100,17 @@ class PhoneImu : BaseAsset {
                 socket.bind("tcp://*:${config.portPub}")
                 // wait to bind
                 Thread.sleep(500)
-                Timber.d("[Publishing] imu on ${config.portPub}")
+                Timber.d("[Publishing] imu on ${config.portPub} at delay of ${1000L / (config.fps.value as Int)}")
                 while (!Thread.currentThread().isInterrupted) {
-                    val jsonStr = this@PhoneImu.getImuData().toJson()
-                    Timber.d("[Publishing] -- imu : $jsonStr")
-                    socket.send(jsonStr.toByteArray(ZMQ.CHARSET), 0)
-                    Thread.sleep((1 / config.fps) * 1000L)
+                    try {
+                        val jsonStr = this@PhoneImu.getImuData().toJson()
+                        Timber.d("[Publishing] -- imu : $jsonStr")
+                        socket.send(jsonStr.toByteArray(ZMQ.CHARSET), 0)
+                        Thread.sleep(1000L / (config.fps.value as Int))
+                    } catch (e: Exception) {
+                        Timber.e(e)
+                        break
+                    }
                 }
             }
         }
@@ -111,18 +118,54 @@ class PhoneImu : BaseAsset {
 
     class Config : BaseAssetConfig() {
 
-        var fps: Int = DEFAULT_FPS
-
+        val fps = Field<Int>()
         private val fpsRange = listOf(1, 2, 5, 10, 15, 25, 30, 60, 75, 100, 125, 150, 200)
+
+        val stream = Field<Stream>()
+
+        init {
+            fps.range = fpsRange
+            fps.name = "fps"
+            fps.value = DEFAULT_FPS
+
+            stream.range = listOf(
+                Stream(
+                    fps = 30,
+                    width = 1920,
+                    height = 1080,
+                    pixelFormat = Stream.PixelFormat.MJPEG
+                )
+            )
+            stream.name = "stream"
+            stream.value = Stream.DEFAULT
+        }
 
         companion object {
             private const val DEFAULT_FPS = 15
         }
 
-        override fun getFields(): Map<String, Any> {
-            return mapOf(
-                "fps" to fpsRange
-            )
+        override fun getFields(): List<Field<*>> {
+            return listOf(fps)
+        }
+
+        data class Stream(
+            val fps: Int,
+            val width: Int,
+            val height: Int,
+            val pixelFormat: PixelFormat
+        ) {
+            enum class PixelFormat(val alias: String) {
+                MJPEG("mjpeg"), YUYV("yuyv")
+            }
+
+            companion object {
+                val DEFAULT = Stream(
+                    fps = 30,
+                    width = 1920,
+                    height = 1080,
+                    pixelFormat = Stream.PixelFormat.MJPEG
+                )
+            }
         }
     }
 

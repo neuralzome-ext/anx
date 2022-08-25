@@ -17,8 +17,8 @@ interface BaseAsset {
 
     fun getDesc(): Map<String, Any>
 
-    fun startPublishing(): Result
+    fun start(): Result
 
-    fun stopPublishing(): Result
+    fun stop(): Result
 
 }

@@ -67,7 +67,7 @@ class SubscribeAssetHandler @Inject constructor(
                     sessionManager.connected = false
                     resp.success = true
                     socket.send(gson.toJson(resp).toByteArray(ZMQ.CHARSET), 0)
-                    assetManager.publishAssetState()
+                    assetManager.stopAllAssets()
                 }
                 else -> {}
             }

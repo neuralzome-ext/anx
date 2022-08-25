@@ -2,6 +2,8 @@ package com.flomobility.hermes.assets
 
 import com.flomobility.hermes.assets.types.PhoneImu
 import com.flomobility.hermes.common.Result
+import com.flomobility.hermes.other.Constants
+import com.flomobility.hermes.other.handleExceptions
 import javax.inject.Inject
 import javax.inject.Singleton
 import com.google.gson.Gson
@@ -43,7 +45,25 @@ class AssetManager @Inject constructor(
     fun startAsset(id: String, assetType: AssetType): Result {
         val asset = assets.find { it.id == id && it.type == assetType }
             ?: throw IllegalStateException("Couldn't find asset")
-        return asset.startPublishing()
+        return asset.start()
+    }
+
+    fun stopAsset(id: String, assetType: AssetType): Result {
+        val asset = assets.find { it.id == id && it.type == assetType }
+            ?: throw IllegalStateException("Couldn't find asset")
+        return asset.stop()
+    }
+
+    fun stopAllAssets(): Result {
+        handleExceptions(catchBlock = { e->
+            Result(success = false, message = e.message ?: Constants.UNKNOWN_ERROR_MSG)
+        }) {
+            assets.forEach {
+                it.stop()
+            }
+            return Result(success = true)
+        }
+        return Result(success = false, message = Constants.UNKNOWN_ERROR_MSG)
     }
 
     class AssetsStatePublisher(private val assetState: String) : Runnable {

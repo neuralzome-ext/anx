@@ -57,10 +57,40 @@ class StartAssetHandler @Inject constructor(
         val config = when (assetType) {
             AssetType.IMU -> {
                 val config = PhoneImu.Config()
-                meta.keys().forEach { key ->
-                    // TODO add reflection property
-                    if (key == "fps")
-                        config.fps = meta.getInt(key)
+
+                kotlin.run lit@{
+                    meta.keys().forEach { key ->
+                        if(key == "id") {
+                            return@lit
+                        }
+                        val field = config.findField(key)
+                        if (field == null) {
+                            socket.send(
+                                gson.toJson(
+                                    StandardResponse(
+                                        success = false,
+                                        message = "$key field doesn't exist for asset-type -- $type"
+                                    )
+                                ).toByteArray(ZMQ.CHARSET), 0
+                            )
+                            return
+                        }
+                        val fieldValue = meta.get(key)
+                        // TODO update field in config with value
+                        val inRange = field.inRange(fieldValue/*, field::value::class*/)
+                        if (!inRange.success) {
+                            socket.send(
+                                gson.toJson(
+                                    StandardResponse(
+                                        success = false,
+                                        message = "Value $fieldValue passed for $key is invalid"
+                                    )
+                                ).toByteArray(ZMQ.CHARSET), 0
+                            )
+                            return
+                        }
+                        field.value = fieldValue
+                    }
                 }
                 config.apply {
                     this.portPub = portPub
@@ -69,12 +99,14 @@ class StartAssetHandler @Inject constructor(
                 config
             }
             AssetType.UNK -> throw IllegalArgumentException("Unknown asset type")
+            else -> throw IllegalArgumentException("Unknown asset type")
         }
-        assetManager.updateAssetConfig(id, assetType, config)
-        val res = assetManager.startAsset(id, assetType)
+        val updateAssetConfig = assetManager.updateAssetConfig(id, assetType, config)
+
+        val startAsset = assetManager.startAsset(id, assetType)
         val resp = StandardResponse().apply {
-            success = res.success
-            message = res.message
+            success = startAsset.success
+            message = startAsset.message
         }
         socket.send(gson.toJson(resp).toByteArray(ZMQ.CHARSET), 0)
     }

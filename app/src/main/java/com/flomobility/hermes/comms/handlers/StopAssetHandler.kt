@@ -1,6 +1,11 @@
 package com.flomobility.hermes.comms.handlers
 
+import com.flomobility.hermes.api.StandardResponse
+import com.flomobility.hermes.assets.AssetManager
+import com.flomobility.hermes.assets.getAssetTypeFromAlias
 import com.flomobility.hermes.comms.SocketManager
+import com.google.gson.Gson
+import org.json.JSONObject
 import org.zeromq.SocketType
 import org.zeromq.ZContext
 import org.zeromq.ZMQ
@@ -9,7 +14,10 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class StopAssetHandler @Inject constructor(): Runnable {
+class StopAssetHandler @Inject constructor(
+    private val assetManager: AssetManager,
+    private val gson: Gson
+): Runnable {
     lateinit var socket: ZMQ.Socket
 
     override fun run() {
@@ -32,6 +40,19 @@ class StopAssetHandler @Inject constructor(): Runnable {
     }
 
     private fun handleStopAssetReq(reqStr: String) {
+        val stopAssetReq = JSONObject(reqStr)
+        val asset = stopAssetReq.getJSONObject("asset")
+        val type = asset.getString("type")
+        val id = asset.getString("id")
 
+        val stopAsset = assetManager.stopAsset(id, getAssetTypeFromAlias(type))
+        socket.send(
+            gson.toJson(
+                StandardResponse(
+                    success = stopAsset.success,
+                    message = stopAsset.message
+                )
+            ).toByteArray(ZMQ.CHARSET), 0
+        )
     }
 }
