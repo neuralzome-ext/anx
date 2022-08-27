@@ -18,14 +18,23 @@ class AssetManager @Inject constructor(
     private val phoneImu: PhoneImu
 ) {
 
-    val assets = listOf<BaseAsset>(
+    private val _assets = mutableListOf<BaseAsset>(
         phoneImu
     )
+    val assets: List<BaseAsset> = _assets
+
+    fun addAsset(asset: BaseAsset): Result {
+        if(assets.find { it.id == asset.id } != null) {
+            return Result(success = false, message = "${asset.type} Asset with ${asset.id} already exists")
+        }
+        _assets.add(asset)
+        return Result(success = true)
+    }
 
     private fun getAssets(): String {
         val assetsMap = hashMapOf<String, List<Map<String, Any>>>()
         AssetType.values().forEach { type ->
-            val assets = this.assets.filter { it.type == type }.map { it.getDesc() }
+            val assets = this._assets.filter { it.type == type }.map { it.getDesc() }
             if (assets.isNotEmpty()) {
                 assetsMap[type.alias] = assets
             }
@@ -38,28 +47,37 @@ class AssetManager @Inject constructor(
     }
 
     fun updateAssetConfig(id: String, assetType: AssetType, config: BaseAssetConfig): Result {
-        val asset = assets.find { it.id == id && it.type == assetType }
+        val asset = _assets.find { it.id == id && it.type == assetType }
             ?: throw IllegalStateException("Couldn't find asset")
         return asset.updateConfig(config)
     }
 
     fun startAsset(id: String, assetType: AssetType): Result {
-        val asset = assets.find { it.id == id && it.type == assetType }
+        val asset = _assets.find { it.id == id && it.type == assetType }
             ?: throw IllegalStateException("Couldn't find asset")
         return asset.start()
     }
 
     fun stopAsset(id: String, assetType: AssetType): Result {
-        val asset = assets.find { it.id == id && it.type == assetType }
+        val asset = _assets.find { it.id == id && it.type == assetType }
             ?: throw IllegalStateException("Couldn't find asset")
         return asset.stop()
+    }
+
+    fun removeAsset(id: String, assetType: AssetType): Result {
+        val asset = _assets.find { it.id == id && it.type == assetType }
+            ?: throw IllegalStateException("Couldn't find asset")
+        asset.stop()
+        _assets.remove(asset)
+        publishAssetState()
+        return Result(success = true)
     }
 
     fun stopAllAssets(): Result {
         handleExceptions(catchBlock = { e->
             Result(success = false, message = e.message ?: Constants.UNKNOWN_ERROR_MSG)
         }) {
-            assets.forEach {
+            _assets.forEach {
                 it.stop()
             }
             return Result(success = true)

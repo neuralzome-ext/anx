@@ -14,6 +14,7 @@ import com.flomobility.hermes.other.Constants.ACTION_STOP_SERVICE
 import com.flomobility.hermes.other.Constants.NOTIFICATION_CHANNEL_ID
 import com.flomobility.hermes.other.Constants.NOTIFICATION_CHANNEL_NAME
 import com.flomobility.hermes.other.Constants.NOTIFICATION_ID
+import com.flomobility.hermes.usb_serial.UsbSerialPortManager
 import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
 import javax.inject.Inject
@@ -26,6 +27,9 @@ class EndlessService: LifecycleService() {
 
     @Inject
     lateinit var socketManager: SocketManager
+
+    @Inject
+    lateinit var usbSerialPortManager: UsbSerialPortManager
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         intent?.let {
@@ -54,6 +58,7 @@ class EndlessService: LifecycleService() {
 
         // init
         socketManager.init()
+        usbSerialPortManager.init()
     }
 
     private fun killService() {
