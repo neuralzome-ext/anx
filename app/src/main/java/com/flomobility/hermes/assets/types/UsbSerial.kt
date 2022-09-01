@@ -1,17 +1,25 @@
 package com.flomobility.hermes.assets.types
 
+import android.hardware.usb.UsbDevice
+import android.hardware.usb.UsbDeviceConnection
+import android.hardware.usb.UsbManager
 import com.felhr.usbserial.UsbSerialDevice
+import com.felhr.usbserial.UsbSerialInterface
+import com.flomobility.hermes.api.model.Raw
 import com.flomobility.hermes.assets.AssetState
 import com.flomobility.hermes.assets.AssetType
 import com.flomobility.hermes.assets.BaseAsset
 import com.flomobility.hermes.assets.BaseAssetConfig
 import com.flomobility.hermes.common.Result
 import com.flomobility.hermes.other.Constants
+import com.flomobility.hermes.other.GsonUtils
 import com.flomobility.hermes.other.handleExceptions
 import org.zeromq.SocketType
 import org.zeromq.ZContext
 import org.zeromq.ZMQ
 import timber.log.Timber
+import zmq.ZError
+import java.util.concurrent.atomic.AtomicBoolean
 
 class UsbSerial : BaseAsset {
 
@@ -23,18 +31,32 @@ class UsbSerial : BaseAsset {
 
     private var usbSerialDevice: UsbSerialDevice? = null
 
-    private var readerThread: Thread? = null
+    private var usbManager: UsbManager? = null
 
-    private var writerThread: Thread? = null
+    private var usbDevice: UsbDevice? = null
 
-    private val delimeter: Byte
-        get() = (_config.delimeter.value as String).toCharArray()[0].code.toByte()
+    private var usbDeviceConnection: UsbDeviceConnection? = null
+
+    private var readerThread: ReaderThread? = null
+
+    private var writerThread: WriterThread? = null
+
+    private val delimiter: Byte
+        get() = (_config.delimiter.value as String).toCharArray()[0].code.toByte()
 
     companion object {
         fun create(usbSerialDevice: UsbSerialDevice): UsbSerial {
             return UsbSerial().apply {
                 this._id = "${usbSerialDevice.deviceId}"
                 this.usbSerialDevice = usbSerialDevice
+            }
+        }
+
+        fun create(usbDevice: UsbDevice, usbManager: UsbManager): UsbSerial {
+            return UsbSerial().apply {
+                this.usbDevice = usbDevice
+                this._id = "${this.usbDevice!!.deviceId}"
+                this.usbManager = usbManager
             }
         }
 
@@ -59,7 +81,7 @@ class UsbSerial : BaseAsset {
         }
         this._config.apply {
             baudRate.value = config.baudRate.value
-            delimeter.value = config.delimeter.value
+            delimiter.value = config.delimiter.value
             portPub = config.portPub
             portSub = config.portSub
         }
@@ -76,19 +98,35 @@ class UsbSerial : BaseAsset {
 
     override fun start(): Result {
         // close usb serial and open it with new baud rate
-        handleExceptions(catchBlock = { e->
+        handleExceptions(catchBlock = { e ->
             return Result(success = false, message = e.message ?: Constants.UNKNOWN_ERROR_MSG)
         }) {
-            if (usbSerialDevice?.isOpen!!)
-                usbSerialDevice?.syncClose()
+//            if (usbSerialDevice?.isOpen!!)
+//                usbSerialDevice?.syncClose()
 
-            usbSerialDevice?.setBaudRate(_config.baudRate.value as Int)
-            usbSerialDevice?.syncOpen()
+//            usbSerialDevice?.setBaudRate(_config.baudRate.value as Int)
+//            usbSerialDevice?.syncOpen()
 
-            readerThread = Thread(Reader(), "${type.alias}-$id-reader-thread")
+            usbDeviceConnection = usbManager?.openDevice(usbDevice)
+            if (usbDeviceConnection == null) {
+                return Result(success = true, message = "Couldn't open usb device $id")
+            }
+            usbSerialDevice = UsbSerialDevice.createUsbSerialDevice(usbDevice, usbDeviceConnection)
+            usbSerialDevice!!.apply {
+                if (syncOpen()) {
+                    setBaudRate(_config.baudRate.value as Int)
+                    setDataBits(UsbSerialInterface.DATA_BITS_8)
+                    setParity(UsbSerialInterface.PARITY_NONE)
+                    setStopBits(UsbSerialInterface.STOP_BITS_1)
+                    setFlowControl(UsbSerialInterface.FLOW_CONTROL_OFF)
+//                    read(serialReader)
+                }
+            }
+
+            readerThread = ReaderThread()
             readerThread?.start()
 
-            writerThread = Thread(Writer(), "${type.alias}-$id-writer-thread")
+            writerThread = WriterThread()
             writerThread?.start()
 
             return Result(success = true)
@@ -97,12 +135,12 @@ class UsbSerial : BaseAsset {
     }
 
     override fun stop(): Result {
-        handleExceptions(catchBlock = { e->
+        handleExceptions(catchBlock = { e ->
             return Result(success = false, message = e.message ?: Constants.UNKNOWN_ERROR_MSG)
         }) {
             usbSerialDevice?.syncClose()
-            readerThread?.interrupt()
-            writerThread?.interrupt()
+            readerThread?.interrupt?.set(true)
+            writerThread?.interrupt?.set(true)
             readerThread = null
             writerThread = null
 
@@ -111,82 +149,110 @@ class UsbSerial : BaseAsset {
         return Result(success = false, message = Constants.UNKNOWN_ERROR_MSG)
     }
 
-    inner class Reader : Runnable {
+    inner class ReaderThread : Thread() {
 
         lateinit var socket: ZMQ.Socket
+
+        val interrupt = AtomicBoolean(false)
+
+        init {
+            name = "${type.alias}-$id-reader-thread"
+        }
 
         override fun run() {
             val address = "tcp://*:${config.portPub}"
             val inputStream = usbSerialDevice?.inputStream
+            val context = ZContext()
             try {
-                ZContext().use { ctx ->
+                context.use { ctx ->
                     socket = ctx.createSocket(SocketType.PUB)
                     socket.bind(address)
-                    while(!Thread.currentThread().isInterrupted) {
-                        val bytes = ByteArray(size = BUFFER_SIZE_IN_BYTES)
-                        val ret = inputStream?.read(bytes)
-                        if(ret == -1) {
-                            Timber.d("Error reading from ${type.alias}-$id")
-                            continue
-                        }
-                        val idxDelimeter = mutableListOf<Int>()
-                        bytes.forEachIndexed { index, byte ->
-                            if(byte == delimeter) {
-                                idxDelimeter.add(index)
+                    while (!interrupt.get()) {
+                        try {
+                            val bytes = ByteArray(size = BUFFER_SIZE_IN_BYTES)
+                            val ret = inputStream?.read(bytes)
+                            if (ret == -1) {
+                                Timber.d("Error reading from ${type.alias}-$id")
+                                continue
                             }
-                        }
-                        if (idxDelimeter.isEmpty()) {
-                            socket.send(bytes, 0)
-                            continue
-                        }
-                        var offset = 0
-                        idxDelimeter.forEach { idx ->
-                            val filteredBytes = bytes.copyOfRange(offset, idx)
-                            socket.send(filteredBytes, 0)
-                            offset += 1
-                        }
+                            val msgStr = String(bytes)
+                            var msg = ""
+                            msgStr.forEach { ch ->
+                                if (ch.code.toByte() == delimiter) {
+                                    socket.sendRaw(msg.toByteArray(ZMQ.CHARSET), 0)
+                                }
+                                msg += ch
+                            }
 
-                        if(offset < bytes.size) {
-                            val filteredBytes = bytes.copyOfRange(offset, bytes.size)
-                            socket.send(filteredBytes, 0)
+                        } catch (e: InterruptedException) {
+                            Timber.i("${type.alias}-$id publisher on port:${_config.portPub} closed")
+                        } catch (e: Exception) {
+                            Timber.e(e)
                         }
                     }
                 }
-            } catch (e: InterruptedException) {
                 Timber.i("${type.alias}-$id publisher on port:${_config.portPub} closed")
-                socket.unbind(address)
-                socket.close()
+            } catch (e: ZError.IOException) {
+                Timber.e("Error in closing ZMQ context for ${type.alias}-$id publisher on port:${_config.portPub}")
+                return
             } catch (e: Exception) {
                 Timber.e(e)
+                return
             }
         }
+
+        private fun ZMQ.Socket.sendRaw(bytes: ByteArray, flags: Int = 0) {
+            val rawData = Raw(data = String(bytes, ZMQ.CHARSET))
+            Timber.d("USB-Serial Sending raw data : $rawData")
+            send(GsonUtils.getGson().toJson(rawData), flags)
+        }
+
     }
 
-    inner class Writer : Runnable {
+    inner class WriterThread : Thread() {
 
         lateinit var socket: ZMQ.Socket
 
+        val interrupt = AtomicBoolean(false)
+
+        init {
+            name = "${type.alias}-$id-writer-thread"
+        }
+
         override fun run() {
-            val address = "tcp://*:${config.portSub}"
+            // TODO get ip from subscribe request
+            val address = "tcp://192.168.43.223:${config.portSub}"
+            Timber.d("[Sub Port] : $address")
             val outputStream = usbSerialDevice?.outputStream
+            val context = ZContext()
             try {
-                ZContext().use { ctx ->
+                context.use { ctx ->
                     socket = ctx.createSocket(SocketType.SUB)
-                    socket.bind(address)
-                    while (!Thread.currentThread().isInterrupted) {
-                        val recvBytes = socket.recv(0) ?: continue
-                        var bytes = ByteArray(recvBytes.size + 1)
-                        bytes += recvBytes
-                        bytes += delimeter
-                        outputStream?.write(bytes)
+                    socket.connect(address)
+                    socket.subscribe("")
+                    while (!interrupt.get()) {
+                        try {
+                            val recvBytes = socket.recv(ZMQ.DONTWAIT) ?: continue
+                            val rawData = GsonUtils.getGson().fromJson<Raw>(
+                                String(recvBytes, ZMQ.CHARSET),
+                                Raw.type
+                            )
+                            Timber.d("[USB-Serial] : Data sending to usb_serial asset-> $rawData")
+                            val bytes = "${rawData.data}\n".toByteArray(ZMQ.CHARSET)
+                            outputStream?.write(bytes)
+                        } catch (e: Exception) {
+                            Timber.e(e)
+                            return
+                        }
                     }
                 }
-            } catch (e: InterruptedException) {
                 Timber.i("${type.alias}-$id subscriber on port:${_config.portSub} closed")
-                socket.unbind(address)
-                socket.close()
+            } catch (e: ZError.IOException) {
+                Timber.e("Error in closing ZMQ context for ${type.alias}-$id subscriber on port:${_config.portSub}")
+                return
             } catch (e: Exception) {
                 Timber.e(e)
+                return
             }
         }
     }
@@ -195,7 +261,7 @@ class UsbSerial : BaseAsset {
 
         val baudRate = Field<Int>()
 
-        val delimeter = Field<String>()
+        val delimiter = Field<String>()
 
         init {
             baudRate.range = listOf(
@@ -216,18 +282,18 @@ class UsbSerial : BaseAsset {
             baudRate.name = "baud"
             baudRate.value = DEFAULT_BAUD_RATE
 
-            delimeter.range = listOf("\n", ",", ";")
-            delimeter.name = "delimeter"
-            delimeter.value = DEFAULT_DELIMETER
+            delimiter.range = listOf("\n", ",", ";", "\r", "\n", "\t")
+            delimiter.name = "delimiter"
+            delimiter.value = DEFAULT_DELIMITER
         }
 
         companion object {
             private const val DEFAULT_BAUD_RATE = 115200
-            private const val DEFAULT_DELIMETER = "\n"
+            private const val DEFAULT_DELIMITER = "\n"
         }
 
         override fun getFields(): List<Field<*>> {
-            return listOf(baudRate, delimeter)
+            return listOf(baudRate, delimiter)
         }
     }
 

@@ -28,6 +28,7 @@ class AssetManager @Inject constructor(
             return Result(success = false, message = "${asset.type} Asset with ${asset.id} already exists")
         }
         _assets.add(asset)
+        publishAssetState()
         return Result(success = true)
     }
 
