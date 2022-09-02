@@ -90,6 +90,7 @@ class UsbSerial : BaseAsset {
             delimiter.value = config.delimiter.value
             portPub = config.portPub
             portSub = config.portSub
+            connectedDeviceIp = config.connectedDeviceIp
         }
         return Result(success = true)
     }
@@ -232,8 +233,7 @@ class UsbSerial : BaseAsset {
         }
 
         override fun run() {
-            // TODO get ip from subscribe request
-            val address = "tcp://192.168.43.192:${config.portSub}"
+            val address = "tcp://${config.connectedDeviceIp}:${config.portSub}"
             Timber.d("[Sub Port] : $address")
             deviceOpenMutex.lock()
             val outputStream = usbSerialDevice?.outputStream

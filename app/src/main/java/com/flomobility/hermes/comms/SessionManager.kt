@@ -8,4 +8,6 @@ class SessionManager @Inject constructor() {
 
     var connected = false
 
+    var connectedDeviceIp = ""
+
 }

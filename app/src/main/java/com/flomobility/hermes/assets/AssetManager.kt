@@ -69,7 +69,9 @@ class AssetManager @Inject constructor(
     fun updateAssetConfig(id: String, assetType: AssetType, config: BaseAssetConfig): Result {
         val asset = _assets.find { it.id == id && it.type == assetType }
             ?: throw IllegalStateException("Couldn't find asset")
-        return asset.updateConfig(config)
+        return asset.updateConfig(config.apply {
+            this.connectedDeviceIp = sessionManager.connectedDeviceIp
+        })
     }
 
     fun startAsset(id: String, assetType: AssetType): Result {

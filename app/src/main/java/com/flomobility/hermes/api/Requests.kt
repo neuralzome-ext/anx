@@ -6,7 +6,9 @@ import com.google.gson.reflect.TypeToken
 
 data class SubscribeRequest(
     @SerializedName("subscribe")
-    val subscribe: Boolean
+    val subscribe: Boolean,
+    @SerializedName("subscribers_ip")
+    val ip: String
 ) {
 
     companion object {

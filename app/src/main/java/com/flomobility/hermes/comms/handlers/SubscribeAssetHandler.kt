@@ -59,12 +59,14 @@ class SubscribeAssetHandler @Inject constructor(
                 }
                 request.subscribe && !sessionManager.connected -> {
                     sessionManager.connected = true
+                    sessionManager.connectedDeviceIp = request.ip
                     resp.success = true
                     socket.send(gson.toJson(resp).toByteArray(ZMQ.CHARSET), 0)
                     assetManager.publishAssetState()
                 }
                 !request.subscribe && sessionManager.connected -> {
                     sessionManager.connected = false
+                    sessionManager.connectedDeviceIp = ""
                     resp.success = true
                     socket.send(gson.toJson(resp).toByteArray(ZMQ.CHARSET), 0)
                     assetManager.stopAllAssets()
