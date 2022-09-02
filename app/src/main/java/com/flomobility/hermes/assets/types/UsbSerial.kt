@@ -194,6 +194,7 @@ class UsbSerial : BaseAsset {
                             msgStr.forEach { ch ->
                                 if (ch.code.toByte() == delimiter) {
                                     socket.sendRaw(msg.toByteArray(ZMQ.CHARSET), 0)
+                                    msg = ""
                                 }
                                 msg += ch
                             }
