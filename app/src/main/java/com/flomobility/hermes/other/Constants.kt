@@ -10,4 +10,6 @@ object Constants {
     const val NOTIFICATION_ID = 1
 
     const val UNKNOWN_ERROR_MSG = "An unknown error occurred"
+
+    const val SIG_KILL_THREAD = 1011
 }

@@ -1,7 +1,11 @@
 package com.flomobility.hermes.assets
 
+import android.os.Handler
+import android.os.Looper
+import android.os.Message
 import com.flomobility.hermes.assets.types.PhoneImu
 import com.flomobility.hermes.common.Result
+import com.flomobility.hermes.comms.SessionManager
 import com.flomobility.hermes.other.Constants
 import com.flomobility.hermes.other.handleExceptions
 import javax.inject.Inject
@@ -15,6 +19,7 @@ import timber.log.Timber
 @Singleton
 class AssetManager @Inject constructor(
     private val gson: Gson,
+    private val sessionManager: SessionManager,
     private val phoneImu: PhoneImu
 ) {
 
@@ -23,11 +28,24 @@ class AssetManager @Inject constructor(
     )
     val assets: List<BaseAsset> = _assets
 
+    private val assetsStatePublisherContext = ZContext()
+
+    private var assetsStatePublisherThread: AssetsStatePublisher? = null
+
+    fun init() {
+        assetsStatePublisherThread = AssetsStatePublisher()
+        assetsStatePublisherThread?.start()
+    }
+
     fun addAsset(asset: BaseAsset): Result {
-        if(assets.find { it.id == asset.id } != null) {
-            return Result(success = false, message = "${asset.type} Asset with ${asset.id} already exists")
+        if (assets.find { it.id == asset.id } != null) {
+            return Result(
+                success = false,
+                message = "${asset.type} Asset with ${asset.id} already exists"
+            )
         }
         _assets.add(asset)
+        Timber.i("Registered asset ${asset.id} of type ${asset.type.alias}")
         publishAssetState()
         return Result(success = true)
     }
@@ -44,7 +62,8 @@ class AssetManager @Inject constructor(
     }
 
     fun publishAssetState() {
-        Thread(AssetsStatePublisher(getAssets()), "assets-state-publisher").start()
+        if (!sessionManager.connected) return
+        assetsStatePublisherThread?.publishAssetState(getAssets())
     }
 
     fun updateAssetConfig(id: String, assetType: AssetType, config: BaseAssetConfig): Result {
@@ -69,13 +88,15 @@ class AssetManager @Inject constructor(
         val asset = _assets.find { it.id == id && it.type == assetType }
             ?: throw IllegalStateException("Couldn't find asset")
         asset.stop()
+        asset.destroy()
         _assets.remove(asset)
+        Timber.i("UnRegistered asset ${asset.id} of type ${asset.type.alias}")
         publishAssetState()
         return Result(success = true)
     }
 
     fun stopAllAssets(): Result {
-        handleExceptions(catchBlock = { e->
+        handleExceptions(catchBlock = { e ->
             Result(success = false, message = e.message ?: Constants.UNKNOWN_ERROR_MSG)
         }) {
             _assets.forEach {
@@ -86,26 +107,58 @@ class AssetManager @Inject constructor(
         return Result(success = false, message = Constants.UNKNOWN_ERROR_MSG)
     }
 
-    class AssetsStatePublisher(private val assetState: String) : Runnable {
+    inner class AssetsStatePublisher : Thread() {
 
-        lateinit var publisher: ZMQ.Socket
+        private var handler: PublisherHandler? = null
+
+        private lateinit var publisher: ZMQ.Socket
+
+        init {
+            name = "assets-state-publisher-thread"
+        }
 
         override fun run() {
-            Timber.d("Publishing asset state $assetState")
-            ZContext().use { ctx ->
-                publisher = ctx.createSocket(SocketType.PUB)
+            try {
+                publisher = assetsStatePublisherContext.createSocket(SocketType.PUB)
                 publisher.bind(ASSETS_STATE_PUBLISHER_ADDR)
-                // sleep so that publisher is bound
-                Thread.sleep(500)
-                publisher.send(assetState, 0)
+                // wait for socket to bind
+                sleep(500)
+                Looper.prepare()
+                handler = PublisherHandler(Looper.myLooper() ?: return)
+                Looper.loop()
+            } catch (e: Exception) {
+                Timber.e("Exception in $name caught : $e")
+            } finally {
                 publisher.unbind(ASSETS_STATE_PUBLISHER_ADDR)
+                sleep(500)
                 publisher.close()
             }
         }
 
-        companion object {
-            const val ASSETS_STATE_PUBLISHER_ADDR = "tcp://*:10003"
+        fun publishAssetState(assetsState: String) {
+            handler?.publishAssetState(assetsState)
         }
+
+        inner class PublisherHandler(looper: Looper) : Handler(looper) {
+            override fun handleMessage(msg: Message) {
+                when (msg.what) {
+                    MSG_PUBLISH_ASSET_STATE -> {
+                        val assetState = msg.obj as String
+                        Timber.d("Publishing asset state $assetState")
+                        publisher.send(assetState.toByteArray(ZMQ.CHARSET), 0)
+                    }
+                }
+            }
+
+            fun publishAssetState(assetsState: String) {
+                sendMessage(obtainMessage(MSG_PUBLISH_ASSET_STATE, assetsState))
+            }
+        }
+    }
+
+    companion object {
+        const val ASSETS_STATE_PUBLISHER_ADDR = "tcp://*:10003"
+        const val MSG_PUBLISH_ASSET_STATE = 1
     }
 
 }

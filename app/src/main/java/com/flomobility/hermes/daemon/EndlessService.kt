@@ -8,13 +8,14 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.LifecycleService
+import com.flomobility.hermes.assets.AssetManager
 import com.flomobility.hermes.comms.SocketManager
 import com.flomobility.hermes.other.Constants.ACTION_START_OR_RESUME_SERVICE
 import com.flomobility.hermes.other.Constants.ACTION_STOP_SERVICE
 import com.flomobility.hermes.other.Constants.NOTIFICATION_CHANNEL_ID
 import com.flomobility.hermes.other.Constants.NOTIFICATION_CHANNEL_NAME
 import com.flomobility.hermes.other.Constants.NOTIFICATION_ID
-import com.flomobility.hermes.usb_serial.UsbSerialPortManager
+import com.flomobility.hermes.usb.UsbPortManager
 import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
 import javax.inject.Inject
@@ -29,7 +30,10 @@ class EndlessService: LifecycleService() {
     lateinit var socketManager: SocketManager
 
     @Inject
-    lateinit var usbSerialPortManager: UsbSerialPortManager
+    lateinit var usbPortManager: UsbPortManager
+
+    @Inject
+    lateinit var assetManager: AssetManager
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         intent?.let {
@@ -58,7 +62,8 @@ class EndlessService: LifecycleService() {
 
         // init
         socketManager.init()
-        usbSerialPortManager.init()
+        usbPortManager.init()
+        assetManager.init()
     }
 
     private fun killService() {

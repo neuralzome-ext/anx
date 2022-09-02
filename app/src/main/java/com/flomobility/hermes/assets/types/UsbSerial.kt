@@ -3,6 +3,9 @@ package com.flomobility.hermes.assets.types
 import android.hardware.usb.UsbDevice
 import android.hardware.usb.UsbDeviceConnection
 import android.hardware.usb.UsbManager
+import android.os.Handler
+import android.os.Looper
+import android.os.Message
 import com.felhr.usbserial.UsbSerialDevice
 import com.felhr.usbserial.UsbSerialInterface
 import com.flomobility.hermes.api.model.Raw
@@ -20,6 +23,7 @@ import org.zeromq.ZMQ
 import timber.log.Timber
 import zmq.ZError
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.locks.ReentrantLock
 
 class UsbSerial : BaseAsset {
 
@@ -37,6 +41,8 @@ class UsbSerial : BaseAsset {
 
     private var usbDeviceConnection: UsbDeviceConnection? = null
 
+    private var usbHandlerThread: UsbHandlerThread? = null
+
     private var readerThread: ReaderThread? = null
 
     private var writerThread: WriterThread? = null
@@ -44,23 +50,23 @@ class UsbSerial : BaseAsset {
     private val delimiter: Byte
         get() = (_config.delimiter.value as String).toCharArray()[0].code.toByte()
 
-    companion object {
-        fun create(usbSerialDevice: UsbSerialDevice): UsbSerial {
-            return UsbSerial().apply {
-                this._id = "${usbSerialDevice.deviceId}"
-                this.usbSerialDevice = usbSerialDevice
-            }
-        }
+    private val deviceOpenMutex = ReentrantLock(true)
 
-        fun create(usbDevice: UsbDevice, usbManager: UsbManager): UsbSerial {
+    companion object {
+        fun create(id: String, usbDevice: UsbDevice, usbManager: UsbManager): UsbSerial {
+            Timber.d("Creating usb asset on ${Thread.currentThread().name}")
             return UsbSerial().apply {
                 this.usbDevice = usbDevice
-                this._id = "${this.usbDevice!!.deviceId}"
+                this._id = id
                 this.usbManager = usbManager
+                this.usbHandlerThread = UsbHandlerThread()
+                this.usbHandlerThread?.start()
             }
         }
 
         private const val BUFFER_SIZE_IN_BYTES = 2048
+        private const val MSG_SYNC_OPEN_USB_SERIAL = 1
+        private const val MSG_SYNC_CLOSE_USB_SERIAL = 2
     }
 
     override val id: String
@@ -97,37 +103,19 @@ class UsbSerial : BaseAsset {
     }
 
     override fun start(): Result {
+        Timber.d("Starting usb asset on ${Thread.currentThread().name}")
         // close usb serial and open it with new baud rate
         handleExceptions(catchBlock = { e ->
             return Result(success = false, message = e.message ?: Constants.UNKNOWN_ERROR_MSG)
         }) {
-//            if (usbSerialDevice?.isOpen!!)
-//                usbSerialDevice?.syncClose()
-
-//            usbSerialDevice?.setBaudRate(_config.baudRate.value as Int)
-//            usbSerialDevice?.syncOpen()
 
             usbDeviceConnection = usbManager?.openDevice(usbDevice)
             if (usbDeviceConnection == null) {
                 return Result(success = true, message = "Couldn't open usb device $id")
             }
             usbSerialDevice = UsbSerialDevice.createUsbSerialDevice(usbDevice, usbDeviceConnection)
-            usbSerialDevice!!.apply {
-                if (syncOpen()) {
-                    setBaudRate(_config.baudRate.value as Int)
-                    setDataBits(UsbSerialInterface.DATA_BITS_8)
-                    setParity(UsbSerialInterface.PARITY_NONE)
-                    setStopBits(UsbSerialInterface.STOP_BITS_1)
-                    setFlowControl(UsbSerialInterface.FLOW_CONTROL_OFF)
-//                    read(serialReader)
-                }
-            }
 
-            readerThread = ReaderThread()
-            readerThread?.start()
-
-            writerThread = WriterThread()
-            writerThread?.start()
+            usbHandlerThread?.syncOpen()
 
             return Result(success = true)
         }
@@ -135,18 +123,38 @@ class UsbSerial : BaseAsset {
     }
 
     override fun stop(): Result {
+        Timber.d("Stopping usb asset on ${Thread.currentThread().name}")
         handleExceptions(catchBlock = { e ->
             return Result(success = false, message = e.message ?: Constants.UNKNOWN_ERROR_MSG)
         }) {
-            usbSerialDevice?.syncClose()
             readerThread?.interrupt?.set(true)
             writerThread?.interrupt?.set(true)
+
+            usbHandlerThread?.syncClose()
+
+            readerThread?.join()
+            writerThread?.join()
+
             readerThread = null
             writerThread = null
 
             return Result(success = true)
         }
         return Result(success = false, message = Constants.UNKNOWN_ERROR_MSG)
+    }
+
+    override fun destroy() {
+        Timber.d("Destroying usb asset on ${Thread.currentThread().name}")
+        usbDevice = null
+        usbManager = null
+        usbSerialDevice = null
+        usbDeviceConnection = null
+        readerThread = null
+        writerThread = null
+
+        usbHandlerThread?.kill()
+        usbHandlerThread?.join()
+        usbHandlerThread = null
     }
 
     inner class ReaderThread : Thread() {
@@ -156,12 +164,17 @@ class UsbSerial : BaseAsset {
         val interrupt = AtomicBoolean(false)
 
         init {
-            name = "${type.alias}-$id-reader-thread"
+            name = "${type.alias}-${this@UsbSerial.id}-reader-thread"
         }
 
         override fun run() {
             val address = "tcp://*:${config.portPub}"
+            deviceOpenMutex.lock()
+            Timber.d("${type.alias}-${this@UsbSerial.id} $usbSerialDevice")
             val inputStream = usbSerialDevice?.inputStream
+            inputStream?.setTimeout(10)
+            deviceOpenMutex.unlock()
+
             val context = ZContext()
             try {
                 context.use { ctx ->
@@ -172,7 +185,7 @@ class UsbSerial : BaseAsset {
                             val bytes = ByteArray(size = BUFFER_SIZE_IN_BYTES)
                             val ret = inputStream?.read(bytes)
                             if (ret == -1) {
-                                Timber.d("Error reading from ${type.alias}-$id")
+//                                Timber.d("Error reading from ${type.alias}-$id")
                                 continue
                             }
                             val msgStr = String(bytes)
@@ -183,17 +196,16 @@ class UsbSerial : BaseAsset {
                                 }
                                 msg += ch
                             }
-
                         } catch (e: InterruptedException) {
-                            Timber.i("${type.alias}-$id publisher on port:${_config.portPub} closed")
+                            Timber.i("${type.alias}-${this@UsbSerial.id} publisher on port:${_config.portPub} closed")
                         } catch (e: Exception) {
                             Timber.e(e)
                         }
                     }
                 }
-                Timber.i("${type.alias}-$id publisher on port:${_config.portPub} closed")
+                Timber.i("${type.alias}-${this@UsbSerial.id} publisher on port:${_config.portPub} closed")
             } catch (e: ZError.IOException) {
-                Timber.e("Error in closing ZMQ context for ${type.alias}-$id publisher on port:${_config.portPub}")
+                Timber.e("Error in closing ZMQ context for ${type.alias}-${this@UsbSerial.id} publisher on port:${_config.portPub}")
                 return
             } catch (e: Exception) {
                 Timber.e(e)
@@ -203,7 +215,7 @@ class UsbSerial : BaseAsset {
 
         private fun ZMQ.Socket.sendRaw(bytes: ByteArray, flags: Int = 0) {
             val rawData = Raw(data = String(bytes, ZMQ.CHARSET))
-            Timber.d("USB-Serial Sending raw data : $rawData")
+            Timber.d("${this@UsbSerial.type.alias}-${this@UsbSerial.id} Sending raw data : $rawData")
             send(GsonUtils.getGson().toJson(rawData), flags)
         }
 
@@ -221,9 +233,13 @@ class UsbSerial : BaseAsset {
 
         override fun run() {
             // TODO get ip from subscribe request
-            val address = "tcp://192.168.43.223:${config.portSub}"
+            val address = "tcp://192.168.43.192:${config.portSub}"
             Timber.d("[Sub Port] : $address")
+            deviceOpenMutex.lock()
             val outputStream = usbSerialDevice?.outputStream
+            outputStream?.setTimeout(50)
+            deviceOpenMutex.unlock()
+
             val context = ZContext()
             try {
                 context.use { ctx ->
@@ -246,14 +262,87 @@ class UsbSerial : BaseAsset {
                         }
                     }
                 }
-                Timber.i("${type.alias}-$id subscriber on port:${_config.portSub} closed")
+                Timber.i("${type.alias}-${this@UsbSerial.id} subscriber on port:${_config.portSub} closed")
             } catch (e: ZError.IOException) {
-                Timber.e("Error in closing ZMQ context for ${type.alias}-$id subscriber on port:${_config.portSub}")
+                Timber.e("Error in closing ZMQ context for ${type.alias}-${this@UsbSerial.id} subscriber on port:${_config.portSub}")
                 return
             } catch (e: Exception) {
                 Timber.e(e)
                 return
             }
+        }
+    }
+
+    inner class UsbHandlerThread: Thread() {
+
+        init {
+            name = "${this@UsbSerial.type.alias}-${this@UsbSerial.id}-handler-thread"
+        }
+
+        private var handler: UsbHandler? = null
+
+        override fun run() {
+            try {
+                Looper.prepare()
+                handler = UsbHandler(Looper.myLooper() ?: return)
+                Looper.loop()
+            } catch (e: Exception) {
+                Timber.e("Exception in $name caught : $e")
+            } finally {
+                handler = null
+            }
+        }
+
+        fun syncOpen() {
+            handler?.sendMessage(MSG_SYNC_OPEN_USB_SERIAL)
+        }
+
+        fun syncClose() {
+            handler?.sendMessage(MSG_SYNC_CLOSE_USB_SERIAL)
+        }
+
+        fun kill() {
+            handler?.sendMessage(Constants.SIG_KILL_THREAD)
+        }
+
+        inner class UsbHandler(private val myLooper: Looper): Handler(myLooper) {
+            override fun handleMessage(msg: Message) {
+                when(msg.what) {
+                    MSG_SYNC_OPEN_USB_SERIAL -> {
+                        Timber.d("Opening device on ${Thread.currentThread().name}")
+                        deviceOpenMutex.lock()
+                        usbSerialDevice!!.apply {
+                            if (syncOpen()) {
+                                setBaudRate(_config.baudRate.value as Int)
+                                setDataBits(UsbSerialInterface.DATA_BITS_8)
+                                setParity(UsbSerialInterface.PARITY_NONE)
+                                setStopBits(UsbSerialInterface.STOP_BITS_1)
+                                setFlowControl(UsbSerialInterface.FLOW_CONTROL_OFF)
+                            }
+                        }
+                        deviceOpenMutex.unlock()
+
+                        readerThread = ReaderThread()
+                        readerThread?.start()
+
+                        writerThread = WriterThread()
+                        writerThread?.start()
+                    }
+                    MSG_SYNC_CLOSE_USB_SERIAL -> {
+                        deviceOpenMutex.lock()
+                        usbSerialDevice?.syncClose()
+                        deviceOpenMutex.unlock()
+                    }
+                    Constants.SIG_KILL_THREAD -> {
+                        myLooper.quitSafely()
+                    }
+                }
+            }
+
+            fun sendMessage(what: Int, obj: Any? = null) {
+                sendMessage(obtainMessage(what, obj))
+            }
+
         }
     }
 

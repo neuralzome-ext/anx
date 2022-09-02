@@ -144,6 +144,13 @@ class PhoneImu @Inject constructor(
         return Result(success = false, Constants.UNKNOWN_ERROR_MSG)
     }
 
+    override fun destroy() {
+        angularVelocity = null
+        linearAcceleration = null
+        quaternion = null
+        publisherThread = null
+    }
+
     private fun getImuData(): Imu {
         return Imu.new(
             linearAcceleration,
