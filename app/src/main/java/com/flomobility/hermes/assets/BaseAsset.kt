@@ -21,4 +21,6 @@ interface BaseAsset {
 
     fun stop(): Result
 
+    fun destroy()
+
 }

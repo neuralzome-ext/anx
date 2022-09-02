@@ -1,9 +1,11 @@
 package com.flomobility.hermes.di
 
 import android.content.Context
+import android.hardware.usb.UsbManager
 import androidx.core.app.NotificationCompat
 import com.flomobility.hermes.R
 import com.flomobility.hermes.other.Constants.NOTIFICATION_CHANNEL_ID
+import com.flomobility.hermes.other.GsonUtils
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import dagger.Module
@@ -30,9 +32,11 @@ object AppModule {
 
     @Singleton
     @Provides
-    fun providesGson() = GsonBuilder()
-        .setPrettyPrinting()
-        .enableComplexMapKeySerialization()
-        .create()
+    fun providesGson() = GsonUtils.getGson()
+
+    @Singleton
+    @Provides
+    fun providesUsbManager(@ApplicationContext app: Context) =
+        app.getSystemService(Context.USB_SERVICE) as UsbManager
 
 }

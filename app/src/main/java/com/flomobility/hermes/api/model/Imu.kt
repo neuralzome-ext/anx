@@ -1,5 +1,6 @@
 package com.flomobility.hermes.api.model
 
+import com.flomobility.hermes.other.GsonUtils
 import org.json.JSONObject
 
 data class Imu(
@@ -21,11 +22,13 @@ data class Imu(
     }
 
     override fun toJson(): String {
-        return JSONObject().apply {
-            put("a", listOf(linearAcceleration.x, linearAcceleration.y, linearAcceleration.z))
-            put("w", listOf(angularVelocity.x, angularVelocity.y, angularVelocity.z))
-            put("q", listOf(quaternion.x, quaternion.y, quaternion.z, quaternion.w))
-        }.toString()
+        val imuMap = hashMapOf(
+            "a" to listOf(linearAcceleration.x, linearAcceleration.y, linearAcceleration.z),
+            "w" to listOf(angularVelocity.x, angularVelocity.y, angularVelocity.z),
+            "q" to listOf(quaternion.x, quaternion.y, quaternion.z, quaternion.w)
+
+        )
+        return GsonUtils.getGson().toJson(imuMap)
     }
 }
 

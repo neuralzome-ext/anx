@@ -13,6 +13,8 @@ abstract class BaseAssetConfig {
 
     open var portSub = 10101
 
+    open var connectedDeviceIp = ""
+
 //    abstract fun <T: Any> getFields(): List<Field<T>>
 
     abstract fun getFields(): List<Field<*>>
