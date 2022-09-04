@@ -5,7 +5,6 @@ import com.flomobility.hermes.assets.AssetState
 import com.flomobility.hermes.assets.AssetType
 import com.flomobility.hermes.assets.BaseAssetConfig
 import com.flomobility.hermes.common.Result
-import com.serenegiant.usb.USBMonitor
 import com.serenegiant.usb.UVCCamera
 import com.serenegiant.usbcameracommon.CameraCallback
 import com.serenegiant.usbcameracommon.UVCCameraHandler
@@ -31,6 +30,18 @@ class UsbCamera : Camera() {
 
     override val state: AssetState
         get() = _state
+
+    private var camThread: UVCCameraHandler? = null
+
+    private val callbacks = mutableListOf<FrameCallback>()
+
+    companion object {
+        fun createNew(id: String): UsbCamera {
+            return UsbCamera().apply {
+                this._id = id
+            }
+        }
+    }
 
     override fun updateConfig(config: BaseAssetConfig): Result {
         if (config !is Camera.Config) {
@@ -65,10 +76,6 @@ class UsbCamera : Camera() {
     override fun destroy() {
         TODO("Not yet implemented")
     }
-
-    private var camThread: UVCCameraHandler? = null
-
-    private val callbacks = mutableListOf<FrameCallback>()
 
     fun registerCallback(cb: FrameCallback) {
         callbacks.add(cb)
@@ -115,44 +122,8 @@ class UsbCamera : Camera() {
         })
     }
 
-    fun initNew(metaInfo: MetaInfo) {
-        /*this.metaInfo = metaInfo
-        this.metaInfo?.let { meta ->
-            val handler = UVCCameraHandler.createHandler(
-                null,
-                2,
-                meta.width,
-                meta.height,
-                UVCCamera.FRAME_FORMAT_MJPEG,
-                1f
-            )
-            setCameraThread(handler)
-            Timber.d("Init done")
-        }*/
-    }
-
-    fun startStream() {
-        /*Timber.d("Starting stream")
-        this.camThread?.open(this.metaInfo?.ctrlBlock)
-        this.camThread?.startPreview()*/
-    }
-
     fun close() {
         this.camThread?.close()
-    }
-
-    data class MetaInfo(
-        val device: UsbDevice?,
-        val ctrlBlock: USBMonitor.UsbControlBlock?,
-        val width: Int = DEFAULT_WIDTH,
-        val height: Int = DEFAULT_HEIGHT,
-        val fps: Int = DEFAULT_FPS
-    ) {
-        companion object {
-            const val DEFAULT_WIDTH = 1280
-            const val DEFAULT_HEIGHT = 720
-            const val DEFAULT_FPS = 30
-        }
     }
 
     interface FrameCallback {

@@ -3,6 +3,9 @@ package com.flomobility.hermes.usb.camera
 import android.content.Context
 import android.hardware.usb.UsbDevice
 import com.flomobility.hermes.assets.AssetManager
+import com.flomobility.hermes.assets.AssetType
+import com.flomobility.hermes.assets.types.camera.Camera
+import com.flomobility.hermes.assets.types.camera.UsbCamera
 import com.flomobility.hermes.usb.UsbDeviceType
 import com.flomobility.hermes.usb.getDeviceType
 import com.serenegiant.usb.USBMonitor
@@ -12,6 +15,7 @@ import com.serenegiant.usbcameracommon.UVCCameraHandler
 import dagger.hilt.android.qualifiers.ApplicationContext
 import timber.log.Timber
 import java.lang.Exception
+import java.util.concurrent.locks.ReentrantLock
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -26,13 +30,16 @@ class UsbCamManager @Inject constructor(
 
     private var mUSBMonitor: USBMonitor? = null
 
+    private var deviceMutex = ReentrantLock(true)
+
     private val mOnDeviceConnectListener = object : USBMonitor.OnDeviceConnectListener {
         override fun onAttach(device: UsbDevice?) {
             if (device?.getDeviceType() == UsbDeviceType.VIDEO) {
                 Timber.i("[UsbCam-ATTACHED] : $device")
                 val port = registerUsbCamDevice(device.deviceId)
-                // TODO add usb-cam asset to asset manager
-//                assetManager.addAsset()
+                deviceMutex.lock()
+                assetManager.addAsset(UsbCamera.createNew("$port"))
+                deviceMutex.unlock()
                 mUSBMonitor?.processConnect(device)
             }
         }
@@ -41,9 +48,8 @@ class UsbCamManager @Inject constructor(
             if (device?.getDeviceType() == UsbDeviceType.VIDEO) {
                 Timber.i("[UsbCam-DETACHED] : $device")
                 val port = unRegisterUsbCamDevice(device.deviceId)
-//                assetManager.removeAsset("$port", AssetType.CAM)
+                assetManager.removeAsset("$port", AssetType.CAM)
             }
-//            cameraRegistry[device?.deviceName]?.setState(UsbCamera.State.DISCONNECTED)
         }
 
         override fun onConnect(
@@ -52,11 +58,21 @@ class UsbCamManager @Inject constructor(
             createNew: Boolean
         ) {
             Timber.i("[UsbCam-CONNECTED] : ${device?.deviceId}")
+            val port = cameraRegistry[device?.deviceId ?: return]
+            val usbCam =
+                assetManager.assets.find { it.id == "$port" && it.type == AssetType.CAM } as UsbCamera
             val handler =
-                UVCCameraHandler.createHandler(null, 2, 1280, 720, UVCCamera.FRAME_FORMAT_MJPEG, 1f)
+                UVCCameraHandler.createHandler(2)
             handler?.addCallback(object : CameraCallback {
                 override fun onOpen() {
-                    Timber.d("Supported streams : ${handler.camera?.supportedStreams}")
+                    deviceMutex.lock()
+                    val supportedStreams = handler.camera?.supportedStreams ?: return
+                    (usbCam.config as Camera.Config).loadStreams(
+                        Camera.Config.toStreamList(
+                            supportedStreams
+                        )
+                    )
+                    deviceMutex.unlock()
                 }
 
                 override fun onClose() {

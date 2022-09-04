@@ -329,6 +329,8 @@ abstract class AbstractUVCCameraHandler extends Handler {
         private float mBandwidthFactor;
         private boolean mIsPreviewing;
         private boolean mIsRecording;
+
+        private int minFps, maxFps;
         /**
          * shutter sound
          */
@@ -371,10 +373,28 @@ abstract class AbstractUVCCameraHandler extends Handler {
 //			loadShutterSound(parent);
         }
 
+        CameraThread(final Class<? extends AbstractUVCCameraHandler> clazz, final int encoderType) {
+            super("CameraThread");
+            mHandlerClass = clazz;
+            mWeakParent = new WeakReference<Activity>(null);
+            mEncoderType = encoderType;
+        }
+
         @Override
         protected void finalize() throws Throwable {
             Log.i(TAG, "CameraThread#finalize");
             super.finalize();
+        }
+
+        public void setStreamingParams(int width, int height, int fps, int pixelFormat, int bandwidthFactor) {
+            synchronized (mSync) {
+                mWidth = width;
+                mHeight = height;
+                minFps = 1;
+                maxFps = fps;
+                mPreviewMode = pixelFormat;
+                mBandwidthFactor = bandwidthFactor;
+            }
         }
 
         public AbstractUVCCameraHandler getHandler() {
@@ -458,8 +478,6 @@ abstract class AbstractUVCCameraHandler extends Handler {
         public void handleStartPreview(/*final Object surface*/) {
             if (DEBUG) Log.v(TAG_THREAD, "handleStartPreview:");
             if ((mUVCCamera == null) || mIsPreviewing) return;
-            int minFps = 1;
-            int maxFps = 15;
             try {
                 mUVCCamera.setPreviewSize(mWidth, mHeight, minFps, maxFps, mPreviewMode, mBandwidthFactor);
             } catch (final IllegalArgumentException e) {
