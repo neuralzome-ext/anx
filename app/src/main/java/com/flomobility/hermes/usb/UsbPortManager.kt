@@ -9,6 +9,7 @@ import android.hardware.usb.UsbManager
 import com.flomobility.hermes.assets.AssetManager
 import com.flomobility.hermes.assets.AssetType
 import com.flomobility.hermes.assets.types.UsbSerial
+import com.flomobility.hermes.usb.camera.UsbCamManager
 import com.flomobility.hermes.usb.serial.UsbSerialManager
 import dagger.hilt.android.qualifiers.ApplicationContext
 import timber.log.Timber
@@ -21,12 +22,12 @@ class UsbPortManager @Inject constructor(
     @ApplicationContext private val context: Context,
     private val assetManager: AssetManager,
     private val usbManager: UsbManager,
-    private val usbSerialManager: UsbSerialManager
+    private val usbSerialManager: UsbSerialManager,
+    private val usbCamManager: UsbCamManager
 ) {
 
     private val usbReceiver: BroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(arg0: Context, arg1: Intent) {
-            Timber.d("USB Listening on ${Thread.currentThread().name}")
             if (arg1.action == ACTION_USB_ATTACHED) {
                 val usbDevice = arg1.getParcelableExtra<UsbDevice>(UsbManager.EXTRA_DEVICE)
                 Timber.i("USB device attached $usbDevice")
@@ -66,6 +67,8 @@ class UsbPortManager @Inject constructor(
         filter.addAction(ACTION_USB_DETACHED)
         filter.addAction(ACTION_USB_ATTACHED)
         context.registerReceiver(usbReceiver, filter)
+
+        usbCamManager.register()
     }
 
     companion object {
