@@ -353,9 +353,9 @@ class UsbSerial : BaseAsset {
 
     class Config : BaseAssetConfig() {
 
-        val baudRate = Field<Int>()
+        val baudRate = Field<Int>(Int::class.java)
 
-        val delimiter = Field<String>()
+        val delimiter = Field<String>(String::class.java)
 
         init {
             baudRate.range = listOf(

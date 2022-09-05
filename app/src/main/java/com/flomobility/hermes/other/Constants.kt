@@ -12,4 +12,6 @@ object Constants {
     const val UNKNOWN_ERROR_MSG = "An unknown error occurred"
 
     const val SIG_KILL_THREAD = 1011
+
+    const val SOCKET_BIND_DELAY_IN_MS = 500L
 }

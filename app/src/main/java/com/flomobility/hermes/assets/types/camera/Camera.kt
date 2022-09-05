@@ -5,14 +5,15 @@ import com.flomobility.hermes.assets.BaseAssetConfig
 import com.flomobility.hermes.other.GsonUtils
 import com.google.gson.annotations.SerializedName
 import com.google.gson.reflect.TypeToken
+import com.serenegiant.usb.UVCCamera
 
 abstract class Camera : BaseAsset {
 
     class Config : BaseAssetConfig() {
 
-        val stream = Field<Stream>()
+        val stream = Field<Stream>(Stream::class.java)
 
-        val compressionQuality = Field<Int>()
+        val compressionQuality = Field<Int>(Int::class.java)
 
         init {
             stream.name = "stream"
@@ -30,13 +31,21 @@ abstract class Camera : BaseAsset {
         }
 
         data class Stream(
+            @SerializedName("fps")
             val fps: Int,
+            @SerializedName("width")
             val width: Int,
+            @SerializedName("height")
             val height: Int,
+            @SerializedName("pixel_format")
             val pixelFormat: PixelFormat
         ) {
-            enum class PixelFormat(val alias: String, val code: Int) {
-                MJPEG("mjpeg", 6), YUYV("yuyv", 4), UNK("unkown", -1)
+            enum class PixelFormat(val alias: String, val code: Int, val uvcCode: Int) {
+                @SerializedName("mjpeg")
+                MJPEG("mjpeg", 6, UVCCamera.FRAME_FORMAT_MJPEG),
+                @SerializedName("yuyv")
+                YUYV("yuyv", 4, UVCCamera.FRAME_FORMAT_YUYV),
+                UNK("unkown", -1, -1)
             }
 
             companion object {
@@ -58,7 +67,7 @@ abstract class Camera : BaseAsset {
         }
 
         override fun getFields(): List<Field<*>> {
-            return listOf(stream)
+            return listOf(stream, compressionQuality)
         }
 
         companion object {

@@ -23,13 +23,13 @@ abstract class BaseAssetConfig {
 
     fun findField(fieldName: String) = getFields().find { it.name == fieldName }
 
-    open class Field<T : Any> {
+    open class Field<T : Any>(val cls: Class<T>) {
 
         open var range: List<T> = listOf()
 
         open var name: String = ""
 
-        open var value = Any()
+        open var value = Any() as T
 
         inline fun <reified S : Any> inRange(value: S/*, fieldType: KClass<*>*/): Result {
             if (value is JSONObject) {
@@ -40,11 +40,14 @@ abstract class BaseAssetConfig {
                     success = obj in range
                 )
             }
-//            if (value::class.java == fieldType) {
+//            if (S::class.java == this.cls) {
                 return Result(success = range.contains(value as T))
 //            }
 //            return Result(success = false, message = Constants.UNKNOWN_ERROR_MSG)
         }
 
+        fun updateValue(value: Any) {
+            this.value = value as T
+        }
     }
 }

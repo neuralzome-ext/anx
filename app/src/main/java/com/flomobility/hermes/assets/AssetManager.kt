@@ -7,6 +7,7 @@ import com.flomobility.hermes.assets.types.PhoneImu
 import com.flomobility.hermes.common.Result
 import com.flomobility.hermes.comms.SessionManager
 import com.flomobility.hermes.other.Constants
+import com.flomobility.hermes.other.Constants.SOCKET_BIND_DELAY_IN_MS
 import com.flomobility.hermes.other.handleExceptions
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -124,7 +125,7 @@ class AssetManager @Inject constructor(
                 publisher = assetsStatePublisherContext.createSocket(SocketType.PUB)
                 publisher.bind(ASSETS_STATE_PUBLISHER_ADDR)
                 // wait for socket to bind
-                sleep(500)
+                sleep(SOCKET_BIND_DELAY_IN_MS)
                 Looper.prepare()
                 handler = PublisherHandler(Looper.myLooper() ?: return)
                 Looper.loop()
@@ -146,7 +147,7 @@ class AssetManager @Inject constructor(
                 when (msg.what) {
                     MSG_PUBLISH_ASSET_STATE -> {
                         val assetState = msg.obj as String
-                        Timber.d("Publishing asset state $assetState")
+//                        Timber.d("Publishing asset state $assetState")
                         publisher.send(assetState.toByteArray(ZMQ.CHARSET), 0)
                     }
                 }

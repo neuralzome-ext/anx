@@ -123,7 +123,7 @@ public class UVCCameraHandler extends AbstractUVCCameraHandler {
 		return getCameraThread().mUVCCamera;
 	}
 
-	public void setStreamingParams(int width, int height, int fps, int pixelFormat, int bandwidthFactor) {
+	public void setStreamingParams(int width, int height, int fps, int pixelFormat, float bandwidthFactor) {
 		getCameraThread().setStreamingParams(width, height, fps, pixelFormat, bandwidthFactor);
 	}
 

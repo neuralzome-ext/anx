@@ -38,7 +38,7 @@ class UsbCamManager @Inject constructor(
                 Timber.i("[UsbCam-ATTACHED] : $device")
                 val port = registerUsbCamDevice(device.deviceId)
                 deviceMutex.lock()
-                assetManager.addAsset(UsbCamera.createNew("$port"))
+                assetManager.addAsset(UsbCamera.Builder.createNew("$port"))
                 deviceMutex.unlock()
                 mUSBMonitor?.processConnect(device)
             }
@@ -63,14 +63,13 @@ class UsbCamManager @Inject constructor(
                 assetManager.assets.find { it.id == "$port" && it.type == AssetType.CAM } as UsbCamera
             val handler =
                 UVCCameraHandler.createHandler(2)
+            usbCam.setCameraThread(handler)
             handler?.addCallback(object : CameraCallback {
                 override fun onOpen() {
                     deviceMutex.lock()
                     val supportedStreams = handler.camera?.supportedStreams ?: return
                     (usbCam.config as Camera.Config).loadStreams(
-                        Camera.Config.toStreamList(
-                            supportedStreams
-                        )
+                        Camera.Config.toStreamList(supportedStreams)
                     )
                     deviceMutex.unlock()
                 }

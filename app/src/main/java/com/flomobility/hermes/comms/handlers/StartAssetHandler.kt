@@ -6,7 +6,9 @@ import com.flomobility.hermes.assets.AssetType
 import com.flomobility.hermes.assets.getAssetTypeFromAlias
 import com.flomobility.hermes.assets.types.PhoneImu
 import com.flomobility.hermes.assets.types.UsbSerial
+import com.flomobility.hermes.assets.types.camera.Camera
 import com.flomobility.hermes.comms.SocketManager
+import com.flomobility.hermes.other.Constants
 import com.google.gson.Gson
 import org.json.JSONObject
 import org.zeromq.SocketType
@@ -35,7 +37,12 @@ class StartAssetHandler @Inject constructor(
                         Timber.d("[Start-Asset] -- Request : $msgStr")
                         handleStartAssetRequest(msgStr)
                     }
-                } catch (e: Exception) {
+                } catch (e: IllegalArgumentException) {
+                    Timber.e(e)
+                    val resp = StandardResponse(success = false, message = e.message ?: Constants.UNKNOWN_ERROR_MSG)
+                    socket.send(gson.toJson(resp).toByteArray(ZMQ.CHARSET), 0)
+                }
+                catch (e: Exception) {
                     Timber.e(e)
                 }
             }
@@ -62,8 +69,11 @@ class StartAssetHandler @Inject constructor(
             AssetType.USB_SERIAL -> {
                 UsbSerial.Config()
             }
-            AssetType.UNK -> throw IllegalArgumentException("Unknown asset type")
-            else -> throw IllegalArgumentException("Unknown asset type")
+            AssetType.CAM -> {
+                Camera.Config()
+            }
+            AssetType.UNK -> throw IllegalArgumentException("Unknown asset type - $type")
+            else -> throw IllegalArgumentException("Unknown asset type - $type")
         }
 
         kotlin.run lit@{
@@ -97,7 +107,7 @@ class StartAssetHandler @Inject constructor(
                     )
                     return
                 }
-                field.value = fieldValue
+                field.updateValue(fieldValue)
             }
         }
         config.apply {
@@ -106,6 +116,11 @@ class StartAssetHandler @Inject constructor(
         }
 
         val updateAssetConfig = assetManager.updateAssetConfig(id, assetType, config)
+        if(!updateAssetConfig.success) {
+            val resp = StandardResponse(success = false, updateAssetConfig.message)
+            socket.send(gson.toJson(resp).toByteArray(ZMQ.CHARSET), 0)
+            return
+        }
 
         val startAsset = assetManager.startAsset(id, assetType)
         val resp = StandardResponse().apply {

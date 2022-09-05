@@ -1,5 +1,6 @@
 package com.flomobility.hermes.other
 
+import java.nio.ByteBuffer
 import kotlin.reflect.KClass
 
 /**
@@ -23,5 +24,24 @@ inline fun <T> handleExceptions(
         }
         catchBlock(e)
         e
+    }
+}
+
+/**
+ * converts a [ByteBuffer] object to a byte array.
+ *
+ * If array doesn't exist, empty array is returned
+ * @return data from buffer in an array
+ * */
+fun ByteBuffer.toByteArray(): ByteArray {
+    try {
+        rewind()
+        if(hasArray())
+            return this.array()
+        val bytes = ByteArray(remaining())
+        get(bytes)
+        return bytes
+    } catch (e: Exception) {
+        return ByteArray(0)
     }
 }

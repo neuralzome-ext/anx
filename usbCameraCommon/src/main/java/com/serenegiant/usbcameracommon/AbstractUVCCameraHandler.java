@@ -60,7 +60,7 @@ import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 abstract class AbstractUVCCameraHandler extends Handler {
-    private static final boolean DEBUG = false;    // TODO set false on release
+    private static final boolean DEBUG = true;    // TODO set false on release
     private static final String TAG = "AbsUVCCameraHandler";
 
     private static final int MSG_OPEN = 0;
@@ -166,7 +166,7 @@ abstract class AbstractUVCCameraHandler extends Handler {
             if (thread == null) return;
             synchronized (thread.mSync) {
                 sendEmptyMessage(MSG_PREVIEW_STOP);
-                if (!isCameraThread()) {
+                /*if (!isCameraThread()) {
                     // wait for actually preview stopped to avoid releasing Surface/SurfaceTexture
                     // while preview is still running.
                     // therefore this method will take a time to execute
@@ -174,7 +174,7 @@ abstract class AbstractUVCCameraHandler extends Handler {
                         thread.mSync.wait();
                     } catch (final InterruptedException e) {
                     }
-                }
+                }*/
             }
         }
         if (DEBUG) Log.v(TAG, "stopPreview:finished");
@@ -386,7 +386,7 @@ abstract class AbstractUVCCameraHandler extends Handler {
             super.finalize();
         }
 
-        public void setStreamingParams(int width, int height, int fps, int pixelFormat, int bandwidthFactor) {
+        public void setStreamingParams(int width, int height, int fps, int pixelFormat, float bandwidthFactor) {
             synchronized (mSync) {
                 mWidth = width;
                 mHeight = height;

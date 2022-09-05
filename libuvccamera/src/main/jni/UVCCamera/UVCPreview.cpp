@@ -359,28 +359,31 @@ int UVCPreview::stopPreview() {
 		mIsRunning = false;
 		pthread_cond_signal(&preview_sync);
 		pthread_cond_signal(&capture_sync);
-		if (pthread_join(capture_thread, NULL) != EXIT_SUCCESS) {
-			LOGW("UVCPreview::terminate capture thread: pthread_join failed");
-		}
+		LOGI("Joining preview thread");
 		if (pthread_join(preview_thread, NULL) != EXIT_SUCCESS) {
 			LOGW("UVCPreview::terminate preview thread: pthread_join failed");
 		}
-		clearDisplay();
+		/*LOGI("Joining capture thread");
+		if (pthread_join(capture_thread, NULL) != EXIT_SUCCESS) {
+			LOGW("UVCPreview::terminate capture thread: pthread_join failed");
+		}*/
+//		clearDisplay();
 	}
 	clearPreviewFrame();
 	clearCaptureFrame();
-	pthread_mutex_lock(&preview_mutex);
-	if (mPreviewWindow) {
-		ANativeWindow_release(mPreviewWindow);
-		mPreviewWindow = NULL;
-	}
-	pthread_mutex_unlock(&preview_mutex);
-	pthread_mutex_lock(&capture_mutex);
-	if (mCaptureWindow) {
-		ANativeWindow_release(mCaptureWindow);
-		mCaptureWindow = NULL;
-	}
-	pthread_mutex_unlock(&capture_mutex);
+	LOGI("Done joining capture and preview threads");
+//	pthread_mutex_lock(&preview_mutex);
+//	if (mPreviewWindow) {
+//		ANativeWindow_release(mPreviewWindow);
+//		mPreviewWindow = NULL;
+//	}
+//	pthread_mutex_unlock(&preview_mutex);
+//	pthread_mutex_lock(&capture_mutex);
+//	if (mCaptureWindow) {
+//		ANativeWindow_release(mCaptureWindow);
+//		mCaptureWindow = NULL;
+//	}
+//	pthread_mutex_unlock(&capture_mutex);
 	RETURN(0, int);
 }
 
@@ -520,12 +523,21 @@ void UVCPreview::do_preview(uvc_stream_ctrl_t *ctrl) {
 
 	if (LIKELY(!result)) {
 		clearPreviewFrame();
-		pthread_create(&capture_thread, NULL, capture_thread_func, (void *)this);
+//		pthread_create(&capture_thread, NULL, capture_thread_func, (void *)this);
+		UVCPreview *preview = reinterpret_cast<UVCPreview *>((void *)this);
 
-#if LOCAL_DEBUG
+//#if LOCAL_DEBUG
 		LOGI("Streaming...");
-#endif
-		if (frameMode) {
+//#endif
+		JavaVM *vm = getVM();
+		JNIEnv *env;
+		// attach to JavaVM
+		vm->AttachCurrentThread(&env, NULL);
+		preview->do_capture(env); // wait here till streaming is done
+		LOGI("Detaching current thread...");
+		vm->DetachCurrentThread();
+		MARK("DetachCurrentThread");
+		/*if (frameMode) {
 			// MJPEG mode
 			for ( ; LIKELY(isRunning()) ; ) {
 				frame_mjpeg = waitPreviewFrame();
@@ -534,7 +546,7 @@ void UVCPreview::do_preview(uvc_stream_ctrl_t *ctrl) {
 					result = uvc_mjpeg2yuyv(frame_mjpeg, frame);   // MJPEG => yuyv
 					recycle_frame(frame_mjpeg);
 					if (LIKELY(!result)) {
-						frame = draw_preview_one(frame, &mPreviewWindow, uvc_any2rgbx, 4);
+//						frame = draw_preview_one(frame, &mPreviewWindow, uvc_any2rgbx, 4);
 						addCaptureFrame(frame);
 					} else {
 						recycle_frame(frame);
@@ -550,15 +562,16 @@ void UVCPreview::do_preview(uvc_stream_ctrl_t *ctrl) {
 					addCaptureFrame(frame);
 				}
 			}
-		}
-		pthread_cond_signal(&capture_sync);
-#if LOCAL_DEBUG
+		}*/
+
+//		pthread_cond_signal(&capture_sync);
+//#if LOCAL_DEBUG
 		LOGI("preview_thread_func:wait for all callbacks complete");
-#endif
+//#endif
 		uvc_stop_streaming(mDeviceHandle);
-#if LOCAL_DEBUG
+//#if LOCAL_DEBUG
 		LOGI("Streaming finished");
-#endif
+//#endif
 	} else {
 		uvc_perror(result, "failed start_streaming");
 	}
@@ -777,27 +790,33 @@ void UVCPreview::do_capture(JNIEnv *env) {
 
 	ENTER();
 
-	clearCaptureFrame();
-	callbackPixelFormatChanged();
+//	clearCaptureFrame();
+//	callbackPixelFormatChanged();
+	LOGI("Capturing started...");
 	for (; isRunning() ;) {
-		mIsCapturing = true;
-		if (mCaptureWindow) {
+//		mIsCapturing = true;
+		/*if (mCaptureWindow) {
 			do_capture_surface(env);
-		} else {
+		} else {*/
 			do_capture_idle_loop(env);
-		}
-		pthread_cond_broadcast(&capture_sync);
+//		}
+//		pthread_cond_broadcast(&capture_sync);
 	}	// end of for (; isRunning() ;)
+	LOGI("Capturing done");
 	EXIT();
 }
 
 void UVCPreview::do_capture_idle_loop(JNIEnv *env) {
 	ENTER();
 
-	for (; isRunning() && isCapturing() ;) {
-		do_capture_callback(env, waitCaptureFrame());
+	LOGI("Capture IDLE Loop");
+
+	for (; isRunning()/* && isCapturing()*/ ;) {
+//		do_capture_callback(env, waitCaptureFrame());
+		do_capture_callback(env, waitPreviewFrame());
 	}
 
+	LOGI("Done Capture IDLE Loop");
 	EXIT();
 }
 
@@ -852,7 +871,7 @@ void UVCPreview::do_capture_callback(JNIEnv *env, uvc_frame_t *frame) {
 	if (LIKELY(frame)) {
 		uvc_frame_t *callback_frame = frame;
 		if (mFrameCallbackObj) {
-			if (mFrameCallbackFunc) {
+			/*if (mFrameCallbackFunc) {
 				callback_frame = get_frame(callbackPixelBytes);
 				if (LIKELY(callback_frame)) {
 					int b = mFrameCallbackFunc(frame, callback_frame);
@@ -866,11 +885,14 @@ void UVCPreview::do_capture_callback(JNIEnv *env, uvc_frame_t *frame) {
 					callback_frame = frame;
 					goto SKIP;
 				}
-			}
-			jobject buf = env->NewDirectByteBuffer(callback_frame->data, callbackPixelBytes);
+			}*/
+
+			const size_t sz = requestWidth * requestHeight;
+			jobject buf = env->NewDirectByteBuffer(callback_frame->data, sz);
 			env->CallVoidMethod(mFrameCallbackObj, iframecallback_fields.onFrame, buf);
 			env->ExceptionClear();
 			env->DeleteLocalRef(buf);
+//			recycle_frame(frame);
 		}
 		SKIP:
 		recycle_frame(callback_frame);

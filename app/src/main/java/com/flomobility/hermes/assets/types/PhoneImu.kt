@@ -208,7 +208,7 @@ class PhoneImu @Inject constructor(
                     try {
                         val jsonStr = this@PhoneImu.getImuData().toJson()
 //                        Timber.d("[Publishing] -- imu : $jsonStr")
-                        socket.send(jsonStr.toByteArray(ZMQ.CHARSET), 0)
+                        socket.send(jsonStr.toByteArray(ZMQ.CHARSET), ZMQ.DONTWAIT)
                         Thread.sleep(1000L / (config.fps.value as Int))
                     } catch (e: InterruptedException) {
                         Timber.i("Publisher closed")
@@ -226,7 +226,7 @@ class PhoneImu @Inject constructor(
 
     class Config : BaseAssetConfig() {
 
-        val fps = Field<Int>()
+        val fps = Field<Int>(Int::class.java)
         private val fpsRange = listOf(1, 2, 5, 10, 15, 25, 30, 60, 75, 100, 125, 150, 200)
 
         init {
