@@ -18,11 +18,13 @@ class SocketManager @Inject constructor(
         Thread(subscribeAssetHandler, "subscribe-asset-thread").start()
         Thread(startAssetHandler, "start-asset-socket-thread").start()
         Thread(stopAssetHandler, "stop-asset-socket-thread").start()
+        Thread(stopAssetHandler, "stop-asset-socket-thread").start()
     }
 
     companion object {
         const val SUBSCRIBE_ASSET_SOCKET_ADDR = "tcp://*:10000"
         const val START_ASSET_SOCKET_ADDR = "tcp://*:10001"
         const val STOP_ASSET_SOCKET_ADDR = "tcp://*:10002"
+        const val GET_IDENTITY_SOCKET_ADDR = "tcp://*:10004"
     }
 }

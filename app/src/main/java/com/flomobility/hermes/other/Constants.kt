@@ -12,4 +12,6 @@ object Constants {
     const val UNKNOWN_ERROR_MSG = "An unknown error occurred"
 
     const val SIG_KILL_THREAD = 1011
+
+    const val RPC_DEFAULT_TIMEOUT_IN_MS = 5000
 }
