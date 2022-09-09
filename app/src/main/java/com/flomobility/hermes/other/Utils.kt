@@ -25,3 +25,12 @@ inline fun <T> handleExceptions(
         e
     }
 }
+
+/**
+ * Executes any command inputted
+ * @param cmd command to execute
+ * */
+fun exec(cmd: String) {
+    val process = Runtime.getRuntime().exec(cmd)
+    process.waitFor()
+}
