@@ -1,8 +1,10 @@
 package com.flomobility.hermes.comms.handlers
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import com.flomobility.hermes.comms.SocketManager.Companion.GET_IDENTITY_SOCKET_ADDR
 import com.flomobility.hermes.other.Constants
-import org.json.JSONObject
+import com.flomobility.hermes.phone.PhoneManager
 import org.zeromq.SocketType
 import org.zeromq.ZContext
 import org.zeromq.ZMQ
@@ -11,8 +13,9 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
+@RequiresApi(Build.VERSION_CODES.O)
 class GetIdentityHandler @Inject constructor(
-    // TODO add phone identity manager here
+    private val phoneManager: PhoneManager
 ) : Runnable {
 
     lateinit var socket: ZMQ.Socket
@@ -21,6 +24,7 @@ class GetIdentityHandler @Inject constructor(
         try {
             ZContext().use { ctx ->
                 socket = ctx.createSocket(SocketType.REP)
+                socket.sendTimeOut = Constants.RPC_DEFAULT_TIMEOUT_IN_MS
                 socket.receiveTimeOut = Constants.RPC_DEFAULT_TIMEOUT_IN_MS
                 socket.bind(GET_IDENTITY_SOCKET_ADDR)
                 while (!Thread.currentThread().isInterrupted) {
@@ -29,8 +33,8 @@ class GetIdentityHandler @Inject constructor(
                             val data = String(bytes, ZMQ.CHARSET)
                             if(data.isEmpty()) {
                                 // valid request
-                                /*val result = phoneManager.getImei()
-                                socket.send()*/
+                                val result = phoneManager.getIdentity()
+                                socket.send(result.toByteArray(ZMQ.CHARSET), 0)
                             }
                         }
                     } catch (e: Exception) {
