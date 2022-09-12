@@ -3,6 +3,7 @@ package com.flomobility.hermes.assets
 import android.os.Handler
 import android.os.Looper
 import android.os.Message
+import com.flomobility.hermes.assets.types.Phone
 import com.flomobility.hermes.assets.types.PhoneImu
 import com.flomobility.hermes.common.Result
 import com.flomobility.hermes.comms.SessionManager
@@ -20,11 +21,12 @@ import timber.log.Timber
 class AssetManager @Inject constructor(
     private val gson: Gson,
     private val sessionManager: SessionManager,
-    private val phoneImu: PhoneImu
+    private val phoneImu: PhoneImu,
+    private val phone: Phone
 ) {
 
     private val _assets = mutableListOf<BaseAsset>(
-        phoneImu
+        phoneImu, phone
     )
     val assets: List<BaseAsset> = _assets
 

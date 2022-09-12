@@ -1,6 +1,7 @@
 package com.flomobility.hermes.phone
 
 import android.content.Context
+import android.os.BatteryManager
 import android.os.Build
 import android.telephony.TelephonyManager
 import androidx.annotation.RequiresApi
@@ -20,8 +21,18 @@ class PhoneManager @Inject constructor(
         ) as TelephonyManager
     }
 
+    private val batteryManager by lazy {
+        context.getSystemService(Context.BATTERY_SERVICE) as BatteryManager
+    }
+
     fun getIdentity(): String {
         return "${telephony.getImei(0)}:${telephony.getImei(1)}"
+    }
+
+    fun getChargingStatus(): Boolean {
+        val batteryStatus = batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_STATUS)
+        return (batteryStatus == BatteryManager.BATTERY_STATUS_CHARGING
+            || batteryStatus == BatteryManager.BATTERY_STATUS_FULL)
     }
 
 }
