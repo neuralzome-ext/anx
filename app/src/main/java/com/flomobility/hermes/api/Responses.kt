@@ -8,3 +8,8 @@ class StandardResponse(
     @SerializedName("message")
     var message: String = ""
 )
+
+data class GetIdentityResponse(
+    @SerializedName("imei")
+    val imei: String = ""
+)

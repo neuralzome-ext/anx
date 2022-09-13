@@ -15,7 +15,13 @@ interface BaseAsset {
 
     fun updateConfig(config: BaseAssetConfig): Result
 
-    fun getDesc(): Map<String, Any>
+    fun getDesc(): Map<String, Any> {
+        val map = hashMapOf<String, Any>("id" to id)
+        config.getFields().forEach { field ->
+            map[field.name] = field.range
+        }
+        return map
+    }
 
     fun start(): Result
 

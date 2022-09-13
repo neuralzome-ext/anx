@@ -4,6 +4,7 @@ import com.flomobility.hermes.api.StandardResponse
 import com.flomobility.hermes.assets.AssetManager
 import com.flomobility.hermes.assets.getAssetTypeFromAlias
 import com.flomobility.hermes.comms.SocketManager
+import com.flomobility.hermes.other.Constants
 import com.google.gson.Gson
 import org.json.JSONObject
 import org.zeromq.SocketType
@@ -21,21 +22,40 @@ class StopAssetHandler @Inject constructor(
     lateinit var socket: ZMQ.Socket
 
     override fun run() {
-        ZContext().use { ctx ->
-            socket = ctx.createSocket(SocketType.REP)
-            socket.bind(SocketManager.STOP_ASSET_SOCKET_ADDR)
-            while (true) {
-                try {
-                    socket.recv(0)?.let { bytes ->
-                        val msgStr = String(bytes, ZMQ.CHARSET)
-
-                        // TODO handle stop asset
-                        handleStopAssetReq(msgStr)
+        try {
+            ZContext().use { ctx ->
+                socket = ctx.createSocket(SocketType.REP)
+                socket.bind(SocketManager.STOP_ASSET_SOCKET_ADDR)
+                Timber.i("Stop asset handler running on ${SocketManager.STOP_ASSET_SOCKET_ADDR}")
+                while (!Thread.currentThread().isInterrupted) {
+                    try {
+                        socket.recv(0)?.let { bytes ->
+                            val msgStr = String(bytes, ZMQ.CHARSET)
+                            handleStopAssetReq(msgStr)
+                        }
+                    } catch (e: Exception) {
+                        Timber.e("Error in stop asset handler : $e")
+                        socket.send(
+                            gson.toJson(
+                                StandardResponse(
+                                    success = false,
+                                    message = e.message ?: Constants.UNKNOWN_ERROR_MSG
+                                )
+                            ).toByteArray(ZMQ.CHARSET), 0
+                        )
                     }
-                } catch (e: Exception) {
-                    Timber.e(e)
                 }
             }
+        } catch (e: Exception) {
+            Timber.e("Error in stop asset handler : $e")
+            socket.send(
+                gson.toJson(
+                    StandardResponse(
+                        success = false,
+                        message = e.message ?: Constants.UNKNOWN_ERROR_MSG
+                    )
+                ).toByteArray(ZMQ.CHARSET), 0
+            )
         }
     }
 

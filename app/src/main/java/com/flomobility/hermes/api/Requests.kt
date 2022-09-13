@@ -15,3 +15,12 @@ data class SubscribeRequest(
         val type = object : TypeToken<SubscribeRequest>() {}.type
     }
 }
+
+data class SignalRequest(
+    @SerializedName("signal")
+    val signal: Int
+) {
+    companion object {
+        val type = object : TypeToken<SignalRequest>() {}.type
+    }
+}
