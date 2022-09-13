@@ -3,6 +3,7 @@ package com.flomobility.hermes.comms.handlers
 import android.os.Build
 import androidx.annotation.RequiresApi
 import com.flomobility.hermes.api.GetIdentityResponse
+import com.flomobility.hermes.comms.SocketManager
 import com.flomobility.hermes.comms.SocketManager.Companion.GET_IDENTITY_SOCKET_ADDR
 import com.flomobility.hermes.other.Constants
 import com.flomobility.hermes.phone.PhoneManager
@@ -29,6 +30,7 @@ class GetIdentityHandler @Inject constructor(
             ZContext().use { ctx ->
                 socket = ctx.createSocket(SocketType.REP)
                 socket.bind(GET_IDENTITY_SOCKET_ADDR)
+                Timber.i("Get Identity handler running on ${SocketManager.GET_IDENTITY_SOCKET_ADDR}")
                 while (!Thread.currentThread().isInterrupted) {
                     try {
                         socket.recv(0)?.let { bytes ->

@@ -24,6 +24,7 @@ class StopAssetHandler @Inject constructor(
         ZContext().use { ctx ->
             socket = ctx.createSocket(SocketType.REP)
             socket.bind(SocketManager.STOP_ASSET_SOCKET_ADDR)
+            Timber.i("Stop asset handler running on ${SocketManager.STOP_ASSET_SOCKET_ADDR}")
             while (true) {
                 try {
                     socket.recv(0)?.let { bytes ->

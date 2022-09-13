@@ -27,11 +27,12 @@ class SubscribeAssetHandler @Inject constructor(
         ZContext().use { ctx ->
             socket = ctx.createSocket(SocketType.REP)
             socket.bind(SocketManager.SUBSCRIBE_ASSET_SOCKET_ADDR)
+            Timber.i("Subscriber Handler running on ${SocketManager.SUBSCRIBE_ASSET_SOCKET_ADDR}")
             while (true) {
                 try {
                     socket.recv(0)?.let { bytes ->
                         val msgStr = String(bytes, ZMQ.CHARSET)
-                        Timber.d("[Subscribe] -- Request : $msgStr")
+                        Timber.i("[Subscribe] -- Request : $msgStr")
                         val subscribeReq =
                             gson.fromJson<SubscribeRequest>(
                                 msgStr,

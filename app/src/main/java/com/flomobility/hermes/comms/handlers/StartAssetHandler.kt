@@ -29,6 +29,7 @@ class StartAssetHandler @Inject constructor(
         ZContext().use { ctx ->
             socket = ctx.createSocket(SocketType.REP)
             socket.bind(SocketManager.START_ASSET_SOCKET_ADDR)
+            Timber.i("Start asset handler running on ${SocketManager.START_ASSET_SOCKET_ADDR}")
             while (true) {
                 try {
                     socket.recv(0)?.let { bytes ->

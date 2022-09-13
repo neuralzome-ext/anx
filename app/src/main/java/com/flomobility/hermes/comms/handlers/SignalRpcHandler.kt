@@ -29,6 +29,7 @@ class SignalRpcHandler @Inject constructor(
             ZContext().use { ctx ->
                 socket = ctx.createSocket(SocketType.REP)
                 socket.bind(SocketManager.SIGNAL_RPC_SOCKET_ADDR)
+                Timber.i("Signal RPC handler running on ${SocketManager.SIGNAL_RPC_SOCKET_ADDR}")
                 while (!Thread.currentThread().isInterrupted) {
                     try {
                         socket.recv(0)?.let { bytes ->
