@@ -37,10 +37,12 @@ class AssetManager @Inject constructor(
     fun init() {
         assetsStatePublisherThread = AssetsStatePublisher()
         assetsStatePublisherThread?.start()
+
+        Timber.i("Available assets : \n${getAssets()}")
     }
 
     fun addAsset(asset: BaseAsset): Result {
-        if (assets.find { it.id == asset.id } != null) {
+        if (assets.find { it.id == asset.id && it.type == asset.type } != null) {
             return Result(
                 success = false,
                 message = "${asset.type} Asset with ${asset.id} already exists"

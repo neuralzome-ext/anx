@@ -45,6 +45,10 @@ class UsbSerialManager @Inject constructor() {
         return serialPort
     }
 
+    fun isRegistryEmpty(): Boolean {
+        return serialPortRegistry.isEmpty()
+    }
+
     companion object {
         private const val MAX_USB_SERIAL = 100
     }
