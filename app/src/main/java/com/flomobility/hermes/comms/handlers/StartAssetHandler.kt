@@ -4,6 +4,7 @@ import com.flomobility.hermes.api.StandardResponse
 import com.flomobility.hermes.assets.AssetManager
 import com.flomobility.hermes.assets.AssetType
 import com.flomobility.hermes.assets.getAssetTypeFromAlias
+import com.flomobility.hermes.assets.types.Phone
 import com.flomobility.hermes.assets.types.PhoneImu
 import com.flomobility.hermes.assets.types.UsbSerial
 import com.flomobility.hermes.comms.SocketManager
@@ -61,6 +62,9 @@ class StartAssetHandler @Inject constructor(
             }
             AssetType.USB_SERIAL -> {
                 UsbSerial.Config()
+            }
+            AssetType.PHONE -> {
+                Phone.Config()
             }
             AssetType.UNK -> throw IllegalArgumentException("Unknown asset type")
             else -> throw IllegalArgumentException("Unknown asset type")

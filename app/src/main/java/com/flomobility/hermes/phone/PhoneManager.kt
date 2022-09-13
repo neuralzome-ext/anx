@@ -5,7 +5,9 @@ import android.os.BatteryManager
 import android.os.Build
 import android.telephony.TelephonyManager
 import androidx.annotation.RequiresApi
+import com.flomobility.hermes.other.runAsRoot
 import dagger.hilt.android.qualifiers.ApplicationContext
+import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -33,6 +35,21 @@ class PhoneManager @Inject constructor(
         val batteryStatus = batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_STATUS)
         return (batteryStatus == BatteryManager.BATTERY_STATUS_CHARGING
             || batteryStatus == BatteryManager.BATTERY_STATUS_FULL)
+    }
+
+    fun invokeSignal(signal: Int) {
+        Thread({
+            when (signal) {
+                Signals.SIG_SHUTDOWN -> {
+                    Timber.i("[OS] --  Shutting Down...")
+                    runAsRoot("reboot -p")
+                }
+            }
+        }, "execute-signal-$signal-thread").start()
+    }
+
+    companion object Signals {
+        const val SIG_SHUTDOWN = 0
     }
 
 }

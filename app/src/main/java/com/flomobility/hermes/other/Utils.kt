@@ -1,5 +1,8 @@
 package com.flomobility.hermes.other
 
+import timber.log.Timber
+import java.io.BufferedReader
+import java.io.InputStreamReader
 import kotlin.reflect.KClass
 
 /**
@@ -30,7 +33,8 @@ inline fun <T> handleExceptions(
  * Executes any command inputted
  * @param cmd command to execute
  * */
-fun exec(cmd: String) {
-    val process = Runtime.getRuntime().exec(cmd)
+fun runAsRoot(cmd: String) {
+    val process = Runtime.getRuntime().exec("su -c $cmd")
     process.waitFor()
+    Timber.d("${BufferedReader(InputStreamReader(process.inputStream)).readLines()}")
 }

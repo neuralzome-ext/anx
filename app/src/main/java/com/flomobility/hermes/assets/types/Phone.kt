@@ -80,7 +80,6 @@ class Phone @Inject constructor(
         }) {
             _state = AssetState.IDLE
             publisherThread?.interrupt()
-            publisherThread?.join()
             publisherThread = null
             return Result(success = true)
         }
@@ -112,6 +111,8 @@ class Phone @Inject constructor(
                             )
                             socket.send(gson.toJson(phoneState).toByteArray(ZMQ.CHARSET), 0)
                             sleep(1000L / (_config.fps.value as Int))
+                        } catch (e: InterruptedException) {
+                            break
                         } catch (e: Exception) {
                             Timber.e(e)
                         }
