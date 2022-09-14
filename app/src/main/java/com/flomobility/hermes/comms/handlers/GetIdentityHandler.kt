@@ -3,6 +3,7 @@ package com.flomobility.hermes.comms.handlers
 import android.os.Build
 import androidx.annotation.RequiresApi
 import com.flomobility.hermes.api.GetIdentityResponse
+import com.flomobility.hermes.comms.SessionManager
 import com.flomobility.hermes.comms.SocketManager
 import com.flomobility.hermes.comms.SocketManager.Companion.GET_IDENTITY_SOCKET_ADDR
 import com.flomobility.hermes.other.Constants
@@ -20,6 +21,7 @@ import javax.inject.Singleton
 @RequiresApi(Build.VERSION_CODES.O)
 class GetIdentityHandler @Inject constructor(
     private val phoneManager: PhoneManager,
+    private val sessionManager: SessionManager,
     private val gson: Gson
 ) : Runnable {
 
@@ -35,6 +37,9 @@ class GetIdentityHandler @Inject constructor(
                     try {
                         socket.recv(0)?.let { bytes ->
                             val data = String(bytes, ZMQ.CHARSET)
+                            if (!sessionManager.connected) {
+                                throw IllegalStateException("Cannot start asset without being subscribed!")
+                            }
                             Timber.d("[Get Identity] -- Requested : $data")
                             if (JSONObject(data).length() == 0) {
                                 // valid request

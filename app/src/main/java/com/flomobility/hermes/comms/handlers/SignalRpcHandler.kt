@@ -4,6 +4,7 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import com.flomobility.hermes.api.SignalRequest
 import com.flomobility.hermes.api.StandardResponse
+import com.flomobility.hermes.comms.SessionManager
 import com.flomobility.hermes.comms.SocketManager
 import com.flomobility.hermes.other.Constants
 import com.flomobility.hermes.phone.PhoneManager
@@ -19,6 +20,7 @@ import javax.inject.Singleton
 @Singleton
 class SignalRpcHandler @Inject constructor(
     private val phoneManager: PhoneManager,
+    private val sessionManager: SessionManager,
     private val gson: Gson
 ): Runnable {
 
@@ -34,6 +36,9 @@ class SignalRpcHandler @Inject constructor(
                     try {
                         socket.recv(0)?.let { bytes ->
                             val msgStr = String(bytes, ZMQ.CHARSET)
+                            if (!sessionManager.connected) {
+                                throw IllegalStateException("Cannot invoke signal without being subscribed! Subscribe first.")
+                            }
                             Timber.d("[Signal RPC] -- Request : $msgStr")
                             val signalReq = gson.fromJson<SignalRequest>(
                                 msgStr,

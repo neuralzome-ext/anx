@@ -27,9 +27,7 @@ class AssetManager @Inject constructor(
     private val speaker: Speaker
 ) {
 
-    private val _assets = mutableListOf<BaseAsset>(
-        /*phoneImu,*/ /*phone, */speaker
-    )
+    private val _assets = mutableListOf<BaseAsset>()
     val assets: List<BaseAsset> = _assets
 
     private val assetsStatePublisherContext = ZContext()
@@ -40,7 +38,10 @@ class AssetManager @Inject constructor(
         assetsStatePublisherThread = AssetsStatePublisher()
         assetsStatePublisherThread?.start()
 
-        Timber.i("Available assets : \n${getAssets()}")
+        // Add inbuilt assets here
+        addAsset(phoneImu)
+        addAsset(phone)
+        addAsset(speaker)
     }
 
     fun addAsset(asset: BaseAsset): Result {

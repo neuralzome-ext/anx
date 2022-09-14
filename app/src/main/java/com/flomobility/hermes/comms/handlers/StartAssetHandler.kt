@@ -4,12 +4,8 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import com.flomobility.hermes.api.StandardResponse
 import com.flomobility.hermes.assets.AssetManager
-import com.flomobility.hermes.assets.AssetType
 import com.flomobility.hermes.assets.getAssetTypeFromAlias
-import com.flomobility.hermes.assets.types.Phone
-import com.flomobility.hermes.assets.types.PhoneImu
-import com.flomobility.hermes.assets.types.Speaker
-import com.flomobility.hermes.assets.types.UsbSerial
+import com.flomobility.hermes.comms.SessionManager
 import com.flomobility.hermes.comms.SocketManager
 import com.flomobility.hermes.other.Constants
 import com.google.gson.Gson
@@ -25,7 +21,8 @@ import javax.inject.Singleton
 @Singleton
 class StartAssetHandler @Inject constructor(
     private val gson: Gson,
-    private val assetManager: AssetManager
+    private val assetManager: AssetManager,
+    private val sessionManager: SessionManager
 ) : Runnable {
 
     lateinit var socket: ZMQ.Socket
@@ -41,6 +38,9 @@ class StartAssetHandler @Inject constructor(
                         socket.recv(0)?.let { bytes ->
                             val msgStr = String(bytes, ZMQ.CHARSET)
                             Timber.d("[Start-Asset] -- Request : $msgStr")
+                            if (!sessionManager.connected) {
+                                throw IllegalStateException("Cannot start asset without being subscribed! Subscribe first")
+                            }
                             handleStartAssetRequest(msgStr)
                         }
                     } catch (e: Exception) {
