@@ -3,6 +3,7 @@ package com.flomobility.hermes.comms.handlers
 import com.flomobility.hermes.api.StandardResponse
 import com.flomobility.hermes.assets.AssetManager
 import com.flomobility.hermes.assets.getAssetTypeFromAlias
+import com.flomobility.hermes.comms.SessionManager
 import com.flomobility.hermes.comms.SocketManager
 import com.flomobility.hermes.other.Constants
 import com.google.gson.Gson
@@ -17,6 +18,7 @@ import javax.inject.Singleton
 @Singleton
 class StopAssetHandler @Inject constructor(
     private val assetManager: AssetManager,
+    private val sessionManager: SessionManager,
     private val gson: Gson
 ): Runnable {
     lateinit var socket: ZMQ.Socket
@@ -31,6 +33,9 @@ class StopAssetHandler @Inject constructor(
                     try {
                         socket.recv(0)?.let { bytes ->
                             val msgStr = String(bytes, ZMQ.CHARSET)
+                            if (!sessionManager.connected) {
+                                throw IllegalStateException("Cannot start asset without being subscribed! Subscribe first.")
+                            }
                             handleStopAssetReq(msgStr)
                         }
                     } catch (e: Exception) {
