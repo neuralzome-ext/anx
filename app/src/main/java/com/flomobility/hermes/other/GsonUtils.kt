@@ -10,7 +10,7 @@ object GsonUtils {
     fun getGson(): Gson {
         if (instance == null) {
             instance = GsonBuilder()
-                .setPrettyPrinting()
+//                .setPrettyPrinting()
                 .enableComplexMapKeySerialization()
                 .create()
         }

@@ -13,6 +13,9 @@ interface BaseAsset {
 
     val state: AssetState
 
+    val name: String
+        get() = "${type.alias}-$id"
+
     fun updateConfig(config: BaseAssetConfig): Result
 
     fun getDesc(): Map<String, Any> {
