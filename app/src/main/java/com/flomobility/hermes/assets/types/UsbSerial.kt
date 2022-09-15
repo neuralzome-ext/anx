@@ -54,7 +54,6 @@ class UsbSerial : BaseAsset {
 
     companion object {
         fun create(id: String, usbDevice: UsbDevice, usbManager: UsbManager): UsbSerial {
-            Timber.d("Creating usb asset on ${Thread.currentThread().name}")
             return UsbSerial().apply {
                 this.usbDevice = usbDevice
                 this._id = id
@@ -104,7 +103,6 @@ class UsbSerial : BaseAsset {
     }
 
     override fun start(): Result {
-        Timber.d("Starting usb asset on ${Thread.currentThread().name}")
         // close usb serial and open it with new baud rate
         handleExceptions(catchBlock = { e ->
             return Result(success = false, message = e.message ?: Constants.UNKNOWN_ERROR_MSG)
@@ -124,7 +122,6 @@ class UsbSerial : BaseAsset {
     }
 
     override fun stop(): Result {
-        Timber.d("Stopping usb asset on ${Thread.currentThread().name}")
         handleExceptions(catchBlock = { e ->
             return Result(success = false, message = e.message ?: Constants.UNKNOWN_ERROR_MSG)
         }) {
@@ -145,7 +142,6 @@ class UsbSerial : BaseAsset {
     }
 
     override fun destroy() {
-        Timber.d("Destroying usb asset on ${Thread.currentThread().name}")
         usbDevice = null
         usbManager = null
         usbSerialDevice = null
@@ -353,9 +349,9 @@ class UsbSerial : BaseAsset {
 
     class Config : BaseAssetConfig() {
 
-        val baudRate = Field<Int>(Int::class.java)
+        val baudRate = Field<Int>()
 
-        val delimiter = Field<String>(String::class.java)
+        val delimiter = Field<String>()
 
         init {
             baudRate.range = listOf(

@@ -226,7 +226,7 @@ class PhoneImu @Inject constructor(
 
     class Config : BaseAssetConfig() {
 
-        val fps = Field<Int>(Int::class.java)
+        val fps = Field<Int>()
         private val fpsRange = listOf(1, 2, 5, 10, 15, 25, 30, 60, 75, 100, 125, 150, 200)
 
         init {

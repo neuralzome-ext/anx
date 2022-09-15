@@ -8,6 +8,7 @@ enum class AssetType(val alias: String) {
     CLASSIC_BT("classic_bt"),
     BLE("ble"),
     SPEAKER("speaker"),
+    PHONE("phone"),
     UNK("unknown")
 }
 
@@ -19,5 +20,6 @@ fun getAssetTypeFromAlias(alias: String) = when (alias) {
     AssetType.CLASSIC_BT.alias -> AssetType.CLASSIC_BT
     AssetType.BLE.alias -> AssetType.BLE
     AssetType.SPEAKER.alias -> AssetType.SPEAKER
+    AssetType.PHONE.alias -> AssetType.PHONE
     else -> AssetType.UNK
 }

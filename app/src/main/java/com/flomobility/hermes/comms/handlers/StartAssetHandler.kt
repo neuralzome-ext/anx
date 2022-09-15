@@ -1,9 +1,11 @@
 package com.flomobility.hermes.comms.handlers
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import com.flomobility.hermes.api.StandardResponse
 import com.flomobility.hermes.assets.AssetManager
-import com.flomobility.hermes.assets.AssetType
 import com.flomobility.hermes.assets.getAssetTypeFromAlias
+import com.flomobility.hermes.comms.SessionManager
 import com.flomobility.hermes.assets.types.PhoneImu
 import com.flomobility.hermes.assets.types.UsbSerial
 import com.flomobility.hermes.assets.types.camera.Camera
@@ -18,34 +20,55 @@ import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Singleton
 class StartAssetHandler @Inject constructor(
     private val gson: Gson,
-    private val assetManager: AssetManager
+    private val assetManager: AssetManager,
+    private val sessionManager: SessionManager
 ) : Runnable {
 
     lateinit var socket: ZMQ.Socket
 
     override fun run() {
-        ZContext().use { ctx ->
-            socket = ctx.createSocket(SocketType.REP)
-            socket.bind(SocketManager.START_ASSET_SOCKET_ADDR)
-            while (true) {
-                try {
-                    socket.recv(0)?.let { bytes ->
-                        val msgStr = String(bytes, ZMQ.CHARSET)
-                        Timber.d("[Start-Asset] -- Request : $msgStr")
-                        handleStartAssetRequest(msgStr)
+        try {
+            ZContext().use { ctx ->
+                socket = ctx.createSocket(SocketType.REP)
+                socket.bind(SocketManager.START_ASSET_SOCKET_ADDR)
+                Timber.i("Start asset handler running on ${SocketManager.START_ASSET_SOCKET_ADDR}")
+                while (!Thread.currentThread().isInterrupted) {
+                    try {
+                        socket.recv(0)?.let { bytes ->
+                            val msgStr = String(bytes, ZMQ.CHARSET)
+                            Timber.d("[Start-Asset] -- Request : $msgStr")
+                            if (!sessionManager.connected) {
+                                throw IllegalStateException("Cannot start asset without being subscribed! Subscribe first")
+                            }
+                            handleStartAssetRequest(msgStr)
+                        }
+                    } catch (e: Exception) {
+                        Timber.e("Error in start asset handler : $e")
+                        socket.send(
+                            gson.toJson(
+                                StandardResponse(
+                                    success = false,
+                                    message = e.message ?: Constants.UNKNOWN_ERROR_MSG
+                                )
+                            ).toByteArray(ZMQ.CHARSET), 0
+                        )
                     }
-                } catch (e: IllegalArgumentException) {
-                    Timber.e(e)
-                    val resp = StandardResponse(success = false, message = e.message ?: Constants.UNKNOWN_ERROR_MSG)
-                    socket.send(gson.toJson(resp).toByteArray(ZMQ.CHARSET), 0)
-                }
-                catch (e: Exception) {
-                    Timber.e(e)
                 }
             }
+        } catch (e: Exception) {
+            Timber.e("Error in start asset handler : $e")
+            socket.send(
+                gson.toJson(
+                    StandardResponse(
+                        success = false,
+                        message = e.message ?: Constants.UNKNOWN_ERROR_MSG
+                    )
+                ).toByteArray(ZMQ.CHARSET), 0
+            )
         }
     }
 
@@ -54,7 +77,10 @@ class StartAssetHandler @Inject constructor(
         val asset = startAssetReq.getJSONObject("asset")
         val type = asset.getString("type")
 
-        val portPub = startAssetReq.getJSONObject("port").getInt("pub")
+        var portPub = -1
+        if (startAssetReq.getJSONObject("port").has("pub"))
+            portPub = startAssetReq.getJSONObject("port").getInt("pub")
+
         var portSub: Int = -1
         if (startAssetReq.getJSONObject("port").has("sub"))
             portSub = startAssetReq.getJSONObject("port").getInt("sub")
@@ -62,25 +88,10 @@ class StartAssetHandler @Inject constructor(
         val assetType = getAssetTypeFromAlias(type)
         val meta = asset.getJSONObject("meta")
         val id = meta.getString("id")
-        val config = when (assetType) {
-            AssetType.IMU -> {
-                PhoneImu.Config()
-            }
-            AssetType.USB_SERIAL -> {
-                UsbSerial.Config()
-            }
-            AssetType.CAM -> {
-                Camera.Config()
-            }
-            AssetType.UNK -> throw IllegalArgumentException("Unknown asset type - $type")
-            else -> throw IllegalArgumentException("Unknown asset type - $type")
-        }
-
-        kotlin.run lit@{
-            meta.keys().forEach { key ->
-                if(key == "id") {
-                    return@lit
-                }
+        val config = assetManager.assets.find { it.id == id && it.type == assetType }?.config
+            ?: throw IllegalArgumentException("Asset $id of type $type doesn't exist")
+        meta.keys().forEach { key ->
+            if (key != "id") {
                 val field = config.findField(key)
                 if (field == null) {
                     socket.send(
@@ -94,8 +105,7 @@ class StartAssetHandler @Inject constructor(
                     return
                 }
                 val fieldValue = meta.get(key)
-                // TODO update field in config with value
-                val inRange = field.inRange(fieldValue/*, field::value::class*/)
+                val inRange = field.inRange(fieldValue)
                 if (!inRange.success) {
                     socket.send(
                         gson.toJson(
@@ -110,6 +120,7 @@ class StartAssetHandler @Inject constructor(
                 field.updateValue(fieldValue)
             }
         }
+
         config.apply {
             this.portPub = portPub
             this.portSub = portSub

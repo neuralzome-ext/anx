@@ -3,7 +3,9 @@ package com.flomobility.hermes.assets
 import android.os.Handler
 import android.os.Looper
 import android.os.Message
+import com.flomobility.hermes.assets.types.Phone
 import com.flomobility.hermes.assets.types.PhoneImu
+import com.flomobility.hermes.assets.types.Speaker
 import com.flomobility.hermes.common.Result
 import com.flomobility.hermes.comms.SessionManager
 import com.flomobility.hermes.other.Constants
@@ -21,12 +23,12 @@ import timber.log.Timber
 class AssetManager @Inject constructor(
     private val gson: Gson,
     private val sessionManager: SessionManager,
-    private val phoneImu: PhoneImu
+    private val phoneImu: PhoneImu,
+    private val phone: Phone,
+    private val speaker: Speaker
 ) {
 
-    private val _assets = mutableListOf<BaseAsset>(
-        phoneImu
-    )
+    private val _assets = mutableListOf<BaseAsset>()
     val assets: List<BaseAsset> = _assets
 
     private val assetsStatePublisherContext = ZContext()
@@ -36,10 +38,15 @@ class AssetManager @Inject constructor(
     fun init() {
         assetsStatePublisherThread = AssetsStatePublisher()
         assetsStatePublisherThread?.start()
+
+        // Add inbuilt assets here
+        addAsset(phoneImu)
+        addAsset(phone)
+        addAsset(speaker)
     }
 
     fun addAsset(asset: BaseAsset): Result {
-        if (assets.find { it.id == asset.id } != null) {
+        if (assets.find { it.id == asset.id && it.type == asset.type } != null) {
             return Result(
                 success = false,
                 message = "${asset.type} Asset with ${asset.id} already exists"
