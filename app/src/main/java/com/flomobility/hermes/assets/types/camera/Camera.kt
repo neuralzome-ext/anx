@@ -6,14 +6,15 @@ import com.flomobility.hermes.other.GsonUtils
 import com.google.gson.annotations.SerializedName
 import com.google.gson.reflect.TypeToken
 import com.serenegiant.usb.UVCCamera
+import org.json.JSONObject
 
 abstract class Camera : BaseAsset {
 
     class Config : BaseAssetConfig() {
 
-        val stream = Field<Stream>(Stream::class.java)
+        val stream = StreamField()
 
-        val compressionQuality = Field<Int>(Int::class.java)
+        val compressionQuality = Field<Int>()
 
         init {
             stream.name = "stream"
@@ -30,6 +31,17 @@ abstract class Camera : BaseAsset {
             stream.range = streams
         }
 
+        class StreamField : Field<Stream>() {
+            override fun fromJson(value: JSONObject): Stream {
+                return Stream(
+                    fps = value.getInt("fps"),
+                    width = value.getInt("width"),
+                    height = value.getInt("height"),
+                    pixelFormat = Stream.getPixelFormatFromAlias(value.getString("pixel_format"))
+                )
+            }
+        }
+
         data class Stream(
             @SerializedName("fps")
             val fps: Int,
@@ -43,6 +55,7 @@ abstract class Camera : BaseAsset {
             enum class PixelFormat(val alias: String, val code: Int, val uvcCode: Int) {
                 @SerializedName("mjpeg")
                 MJPEG("mjpeg", 6, UVCCamera.FRAME_FORMAT_MJPEG),
+
                 @SerializedName("yuyv")
                 YUYV("yuyv", 4, UVCCamera.FRAME_FORMAT_YUYV),
                 UNK("unkown", -1, -1)
@@ -60,6 +73,14 @@ abstract class Camera : BaseAsset {
                     return when (code) {
                         PixelFormat.MJPEG.code -> PixelFormat.MJPEG
                         PixelFormat.YUYV.code -> PixelFormat.YUYV
+                        else -> PixelFormat.UNK
+                    }
+                }
+
+                fun getPixelFormatFromAlias(alias: String): PixelFormat {
+                    return when (alias) {
+                        PixelFormat.MJPEG.alias -> PixelFormat.MJPEG
+                        PixelFormat.YUYV.alias -> PixelFormat.YUYV
                         else -> PixelFormat.UNK
                     }
                 }

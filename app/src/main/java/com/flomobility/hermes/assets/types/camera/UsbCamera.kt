@@ -19,13 +19,16 @@ import com.flomobility.hermes.other.toByteArray
 import com.serenegiant.usb.UVCCamera
 import com.serenegiant.usbcameracommon.CameraCallback
 import com.serenegiant.usbcameracommon.UVCCameraHandler
+import org.apache.commons.collections4.queue.CircularFifoQueue
 import org.zeromq.SocketType
 import org.zeromq.ZContext
 import org.zeromq.ZMQ
 import timber.log.Timber
 import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
+import java.util.*
 import kotlin.Exception
+import kotlin.system.measureTimeMillis
 
 class UsbCamera : Camera() {
 
@@ -55,6 +58,9 @@ class UsbCamera : Camera() {
 
     private var shouldCompress = true
 
+
+    private val frames = CircularFifoQueue<ByteBuffer>(5)
+
     object Builder {
         fun createNew(id: String): UsbCamera {
             return UsbCamera().apply {
@@ -77,7 +83,6 @@ class UsbCamera : Camera() {
         override fun onStartPreview() {
             Timber.i("[$name] - Started preview")
             this@UsbCamera.camThread?.camera?.setFrameCallback({ byteBuffer ->
-                Timber.d("Frame-${Thread.currentThread().name}")
                 callbacks.forEach { cb ->
                     cb.onFrame(byteBuffer)
                 }
@@ -104,6 +109,9 @@ class UsbCamera : Camera() {
     private val frameCallback = object : FrameCallback {
         override fun onFrame(byteBuffer: ByteBuffer) {
             streamingThread?.publishFrame(byteBuffer)
+            /*val duplicate = byteBuffer.duplicate()
+            Timber.d("${byteBuffer.hashCode()} & ${duplicate.hashCode()}")
+            frames.add(duplicate)*/
         }
     }
 
@@ -215,6 +223,22 @@ class UsbCamera : Camera() {
                     Looper.prepare()
                     handler = StreamingThreadHandler(Looper.myLooper() ?: return)
                     Looper.loop()
+                    /*while (!Thread.currentThread().isInterrupted) {
+                        if (frames.size == 0) continue
+                        val frame = frames.poll() ?: return
+                        frame.rewind()
+                        val bytes = ByteArray(frame.remaining())
+                        frame.get(bytes)
+                        if (bytes.isEmpty()) {
+                            return
+                        }
+                        frame.clear()
+                        Timber.d("Frame : ${bytes.size}")
+                        socket.send(
+                            bytes,
+                            ZMQ.DONTWAIT
+                        )
+                    }*/
                 }
                 socket.unbind(address)
                 sleep(SOCKET_BIND_DELAY_IN_MS)
@@ -236,28 +260,31 @@ class UsbCamera : Camera() {
             override fun handleMessage(msg: Message) {
                 when (msg.what) {
                     MSG_STREAM_FRAME -> {
-                        val frame = msg.obj as ByteBuffer
-                        Timber.d("Frame-${Thread.currentThread().name}")
-/*                        // 1. convert to byte array
-                        frame.rewind()
+//                        Thread.sleep(200)
+                        val elapsed = measureTimeMillis {
+                            val frame = msg.obj as ByteBuffer
+                            socket.sendByteBuffer(frame, ZMQ.DONTWAIT)
+                        }
+                        Timber.d("$elapsed")
+
+                        // 1. convert to byte array
+/*                        frame.rewind()
                         var bytes = ByteArray(frame.remaining())
                         frame.get(bytes)
                         if (bytes.isEmpty()) {
                             return
-                        }
+                        }*/
                         // 2. compression according to quality
-                        *//*if (shouldCompress) {
+/*                        if (shouldCompress) {
                             bytes = compressImage(bytes)
-                        }*//*
+                        }*/
 
                         // 3. convert to base64
 //                        val base64 = bytes.toBase64()
-                        val base64 = Base64.encodeToString(bytes, Base64.NO_CLOSE)
+//                        val base64 = Base64.encodeToString(bytes, Base64.NO_CLOSE)
 //                        val rawData = Raw(data = base64)
-                        socket.send(
-                            base64.toByteArray(ZMQ.CHARSET),
-                            ZMQ.DONTWAIT
-                        )*/
+//                        socket.sendByteBuffer(frame, ZMQ.DONTWAIT)
+
                     }
                     Constants.SIG_KILL_THREAD -> {
                         myLooper.quitSafely()

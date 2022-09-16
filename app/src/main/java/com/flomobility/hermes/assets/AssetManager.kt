@@ -39,10 +39,10 @@ class AssetManager @Inject constructor(
         assetsStatePublisherThread = AssetsStatePublisher()
         assetsStatePublisherThread?.start()
 
-        // Add inbuilt assets here
+        /*// Add inbuilt assets here
         addAsset(phoneImu)
         addAsset(phone)
-        addAsset(speaker)
+        addAsset(speaker)*/
     }
 
     fun addAsset(asset: BaseAsset): Result {

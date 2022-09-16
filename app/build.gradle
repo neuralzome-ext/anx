@@ -106,6 +106,9 @@ dependencies {
     // serialization
     implementation 'com.google.code.gson:gson:2.8.9'
 
+    // apache commons
+    implementation group: 'org.apache.commons', name: 'commons-collections4', version: '4.4'
+
     // usb camera utils
     implementation("com.serenegiant:common:${commonLibVersion}") {
         exclude module: 'support-v4'
