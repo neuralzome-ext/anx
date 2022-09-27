@@ -6,16 +6,13 @@ import android.os.Handler
 import android.os.Looper
 import android.os.Message
 import android.util.Base64
-import com.flomobility.hermes.api.model.Raw
 import com.flomobility.hermes.assets.AssetState
 import com.flomobility.hermes.assets.AssetType
 import com.flomobility.hermes.assets.BaseAssetConfig
 import com.flomobility.hermes.common.Result
 import com.flomobility.hermes.other.Constants
 import com.flomobility.hermes.other.Constants.SOCKET_BIND_DELAY_IN_MS
-import com.flomobility.hermes.other.GsonUtils
 import com.flomobility.hermes.other.handleExceptions
-import com.flomobility.hermes.other.toByteArray
 import com.serenegiant.usb.UVCCamera
 import com.serenegiant.usbcameracommon.CameraCallback
 import com.serenegiant.usbcameracommon.UVCCameraHandler
@@ -26,7 +23,6 @@ import org.zeromq.ZMQ
 import timber.log.Timber
 import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
-import java.util.*
 import kotlin.Exception
 import kotlin.system.measureTimeMillis
 
@@ -171,6 +167,7 @@ class UsbCamera : Camera() {
             camThread?.stopPreview()
             unRegisterCallback(frameCallback)
             Timber.d("[$name]-Stopped")
+            return Result(success = true)
         }
         return Result(success = false, message = Constants.UNKNOWN_ERROR_MSG)
     }
@@ -260,31 +257,11 @@ class UsbCamera : Camera() {
             override fun handleMessage(msg: Message) {
                 when (msg.what) {
                     MSG_STREAM_FRAME -> {
-//                        Thread.sleep(200)
-                        val elapsed = measureTimeMillis {
+//                        val elapsed = measureTimeMillis {
                             val frame = msg.obj as ByteBuffer
                             socket.sendByteBuffer(frame, ZMQ.DONTWAIT)
-                        }
-                        Timber.d("$elapsed")
-
-                        // 1. convert to byte array
-/*                        frame.rewind()
-                        var bytes = ByteArray(frame.remaining())
-                        frame.get(bytes)
-                        if (bytes.isEmpty()) {
-                            return
-                        }*/
-                        // 2. compression according to quality
-/*                        if (shouldCompress) {
-                            bytes = compressImage(bytes)
-                        }*/
-
-                        // 3. convert to base64
-//                        val base64 = bytes.toBase64()
-//                        val base64 = Base64.encodeToString(bytes, Base64.NO_CLOSE)
-//                        val rawData = Raw(data = base64)
-//                        socket.sendByteBuffer(frame, ZMQ.DONTWAIT)
-
+//                        }
+//                        Timber.d("$elapsed")
                     }
                     Constants.SIG_KILL_THREAD -> {
                         myLooper.quitSafely()
