@@ -22,6 +22,10 @@ class SocketManager @Inject constructor(
         Thread(signalRpcHandler, "signal-rpc-socket-thread").start()
     }
 
+    fun destroy() {
+        // TODO : interrupt all threads here
+    }
+
     companion object {
         const val SUBSCRIBE_ASSET_SOCKET_ADDR = "tcp://*:10000"
         const val START_ASSET_SOCKET_ADDR = "tcp://*:10001"
