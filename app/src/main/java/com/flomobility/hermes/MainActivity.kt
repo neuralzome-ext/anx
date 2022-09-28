@@ -7,6 +7,7 @@ import com.flomobility.hermes.daemon.EndlessService
 import com.flomobility.hermes.databinding.ActivityMainBinding
 import dagger.hilt.android.AndroidEntryPoint
 import com.flomobility.hermes.other.Constants
+import com.flomobility.hermes.other.getIPAddressList
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
@@ -20,7 +21,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         // Example of a call to a native method
-        binding.sampleText.text = stringFromJNI()
+        binding.sampleText.text = "IP Addrs : ${getIPAddressList(true)}"
 
         setOnEventListeners()
 
@@ -29,7 +30,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun setOnEventListeners() {
         binding.rootLyt.setOnLongClickListener {
-            // toggle debug mode
+            // TODO : toggle debug mode
             return@setOnLongClickListener true
         }
     }
