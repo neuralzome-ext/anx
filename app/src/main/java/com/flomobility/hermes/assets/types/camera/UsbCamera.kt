@@ -1,11 +1,8 @@
 package com.flomobility.hermes.assets.types.camera
 
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.os.Handler
 import android.os.Looper
 import android.os.Message
-import android.util.Base64
 import com.flomobility.hermes.assets.AssetState
 import com.flomobility.hermes.assets.AssetType
 import com.flomobility.hermes.assets.BaseAssetConfig
@@ -16,15 +13,12 @@ import com.flomobility.hermes.other.handleExceptions
 import com.serenegiant.usb.UVCCamera
 import com.serenegiant.usbcameracommon.CameraCallback
 import com.serenegiant.usbcameracommon.UVCCameraHandler
-import org.apache.commons.collections4.queue.CircularFifoQueue
 import org.zeromq.SocketType
 import org.zeromq.ZContext
 import org.zeromq.ZMQ
 import timber.log.Timber
-import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
 import kotlin.Exception
-import kotlin.system.measureTimeMillis
 
 class UsbCamera : Camera() {
 
@@ -55,8 +49,6 @@ class UsbCamera : Camera() {
     private var shouldCompress = true
 
 
-    private val frames = CircularFifoQueue<ByteBuffer>(5)
-
     object Builder {
         fun createNew(id: String): UsbCamera {
             return UsbCamera().apply {
@@ -82,7 +74,7 @@ class UsbCamera : Camera() {
                 callbacks.forEach { cb ->
                     cb.onFrame(byteBuffer)
                 }
-            }, UVCCamera.PIXEL_FORMAT_NV21)
+            }, UVCCamera.PIXEL_FORMAT_JPEG)
         }
 
         override fun onStopPreview() {
@@ -105,9 +97,6 @@ class UsbCamera : Camera() {
     private val frameCallback = object : FrameCallback {
         override fun onFrame(byteBuffer: ByteBuffer) {
             streamingThread?.publishFrame(byteBuffer)
-            /*val duplicate = byteBuffer.duplicate()
-            Timber.d("${byteBuffer.hashCode()} & ${duplicate.hashCode()}")
-            frames.add(duplicate)*/
         }
     }
 
@@ -125,14 +114,6 @@ class UsbCamera : Camera() {
         shouldCompress =
             (this._config.stream.value as Config.Stream).pixelFormat == Config.Stream.PixelFormat.MJPEG
         return Result(success = true)
-    }
-
-    override fun getDesc(): Map<String, Any> {
-        val map = hashMapOf<String, Any>("id" to id)
-        config.getFields().forEach { field ->
-            map[field.name] = field.range
-        }
-        return map
     }
 
     override fun start(): Result {
@@ -166,7 +147,6 @@ class UsbCamera : Camera() {
             _state = AssetState.IDLE
             camThread?.stopPreview()
             unRegisterCallback(frameCallback)
-            Timber.d("[$name]-Stopped")
             return Result(success = true)
         }
         return Result(success = false, message = Constants.UNKNOWN_ERROR_MSG)
@@ -220,22 +200,6 @@ class UsbCamera : Camera() {
                     Looper.prepare()
                     handler = StreamingThreadHandler(Looper.myLooper() ?: return)
                     Looper.loop()
-                    /*while (!Thread.currentThread().isInterrupted) {
-                        if (frames.size == 0) continue
-                        val frame = frames.poll() ?: return
-                        frame.rewind()
-                        val bytes = ByteArray(frame.remaining())
-                        frame.get(bytes)
-                        if (bytes.isEmpty()) {
-                            return
-                        }
-                        frame.clear()
-                        Timber.d("Frame : ${bytes.size}")
-                        socket.send(
-                            bytes,
-                            ZMQ.DONTWAIT
-                        )
-                    }*/
                 }
                 socket.unbind(address)
                 sleep(SOCKET_BIND_DELAY_IN_MS)
@@ -273,25 +237,6 @@ class UsbCamera : Camera() {
                 sendMessage(obtainMessage(what, obj))
             }
         }
-    }
-
-    // utility functions
-    private fun compressImage(bytes: ByteArray): ByteArray {
-        return try {
-            val bitmap =
-                BitmapFactory.decodeByteArray(bytes, 0, bytes.size, BitmapFactory.Options())
-            val baos = ByteArrayOutputStream()
-            bitmap.compress(Bitmap.CompressFormat.JPEG, _config.compressionQuality.value, baos)
-            baos.toByteArray()
-        } catch (e: Exception) {
-            Timber.e("Unable to compress frame : $e")
-            bytes
-        }
-    }
-
-
-    private fun ByteArray.toBase64(): String {
-        return Base64.encodeToString(this, Base64.NO_CLOSE)
     }
 
     companion object {

@@ -25,5 +25,5 @@ dependencyResolutionManagement {
 include ':libuvccamera'
 include ':usbCameraCommon'
 
-rootProject.name = "My Application"
+rootProject.name = "Hermes"
 include ':app'
