@@ -28,7 +28,7 @@ object AppModule {
         .setOngoing(true)
         .setSmallIcon(R.drawable.ic_launcher_foreground)
         .setContentTitle("Hermes service")
-        .setContentText("Active session <-> 192.168.43.223")
+        .setContentText("No active session.")
 
     @Singleton
     @Provides

@@ -6,11 +6,14 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.LifecycleService
 import com.flomobility.hermes.R
 import com.flomobility.hermes.assets.AssetManager
+import com.flomobility.hermes.comms.SessionManager
 import com.flomobility.hermes.comms.SocketManager
 import com.flomobility.hermes.other.Constants
 import com.flomobility.hermes.other.Constants.ACTION_START_OR_RESUME_SERVICE
@@ -40,6 +43,9 @@ class EndlessService : LifecycleService() {
 
     @Inject
     lateinit var assetManager: AssetManager
+
+    @Inject
+    lateinit var sessionManager: SessionManager
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         intent?.let {
@@ -74,11 +80,24 @@ class EndlessService : LifecycleService() {
                 },
                 PendingIntent.FLAG_UPDATE_CURRENT
             )
-        currentNotificationBuilder = baseNotificationBuilder.addAction(R.drawable.ic_stop, "Exit", pendingIntent)
+        currentNotificationBuilder =
+            baseNotificationBuilder.addAction(R.drawable.ic_stop, "Exit", pendingIntent)
         startForeground(NOTIFICATION_ID, currentNotificationBuilder.build())
 
         // init
         socketManager.init()
+        socketManager.doOnSubscribed { subscribed ->
+            Handler(Looper.getMainLooper()).postDelayed({
+                currentNotificationBuilder.setContentText(
+                    if (subscribed) {
+                        "Active session <-> ${sessionManager.connectedDeviceIp}"
+                    } else {
+                        "No active session."
+                    }
+                )
+                notificationManager.notify(NOTIFICATION_ID, currentNotificationBuilder.build())
+            }, 10L)
+        }
         usbPortManager.init()
         assetManager.init()
     }

@@ -24,6 +24,11 @@ class SubscribeAssetHandler @Inject constructor(
 
     lateinit var socket: ZMQ.Socket
 
+    private var onSubscribed: ((Boolean) -> Unit)? = null
+    fun doOnSubscribed(func: (Boolean) -> Unit) {
+        onSubscribed = func
+    }
+
     override fun run() {
         try {
             ZContext().use { ctx ->
@@ -85,6 +90,7 @@ class SubscribeAssetHandler @Inject constructor(
                     resp.success = true
                     socket.send(gson.toJson(resp).toByteArray(ZMQ.CHARSET), 0)
                     assetManager.publishAssetState()
+                    onSubscribed?.invoke(true)
                 }
                 !request.subscribe && sessionManager.connected -> {
                     sessionManager.connected = false
@@ -92,6 +98,7 @@ class SubscribeAssetHandler @Inject constructor(
                     resp.success = true
                     socket.send(gson.toJson(resp).toByteArray(ZMQ.CHARSET), 0)
                     assetManager.stopAllAssets()
+                    onSubscribed?.invoke(false)
                 }
                 else -> {}
             }

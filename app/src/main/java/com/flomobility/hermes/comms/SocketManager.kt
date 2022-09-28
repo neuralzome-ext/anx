@@ -22,6 +22,10 @@ class SocketManager @Inject constructor(
         Thread(signalRpcHandler, "signal-rpc-socket-thread").start()
     }
 
+    fun doOnSubscribed(func: (Boolean) -> Unit) {
+        subscribeAssetHandler.doOnSubscribed(func)
+    }
+
     fun destroy() {
         // TODO : interrupt all threads here
     }
