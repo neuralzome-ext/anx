@@ -4,7 +4,7 @@ enum class AssetType(val alias: String) {
     IMU("imu"),
     GNSS("gnss"),
     USB_SERIAL("usb_serial"),
-    CAM("cam"),
+    CAM("camera"),
     CLASSIC_BT("classic_bt"),
     BLE("ble"),
     SPEAKER("speaker"),

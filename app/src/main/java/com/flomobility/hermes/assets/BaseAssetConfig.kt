@@ -2,8 +2,10 @@ package com.flomobility.hermes.assets
 
 import com.flomobility.hermes.common.Result
 import com.flomobility.hermes.other.GsonUtils
+import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import org.json.JSONObject
+import timber.log.Timber
 
 abstract class BaseAssetConfig {
 
@@ -29,16 +31,24 @@ abstract class BaseAssetConfig {
 
         fun <S> inRange(value: S): Result {
             if (value is JSONObject) {
-                val obj = GsonUtils.getGson().fromJson<T>(
-                    value.toString(),
-                    object : TypeToken<T>() {}.type
-                )
+                val obj = fromJson(value)
                 return Result(success = obj in range)
             }
             return Result(success = range.contains(value as T))
         }
 
+        open fun fromJson(value: JSONObject): T {
+            return Gson().fromJson<T>(
+                value.toString(),
+                object : TypeToken<T>() {}.type
+            )
+        }
+
         fun updateValue(value: Any) {
+            if(value is JSONObject) {
+                this.value = fromJson(value)
+                return
+            }
             this.value = value as T
         }
 

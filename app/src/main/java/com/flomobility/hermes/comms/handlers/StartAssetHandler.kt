@@ -6,6 +6,9 @@ import com.flomobility.hermes.api.StandardResponse
 import com.flomobility.hermes.assets.AssetManager
 import com.flomobility.hermes.assets.getAssetTypeFromAlias
 import com.flomobility.hermes.comms.SessionManager
+import com.flomobility.hermes.assets.types.PhoneImu
+import com.flomobility.hermes.assets.types.UsbSerial
+import com.flomobility.hermes.assets.types.camera.Camera
 import com.flomobility.hermes.comms.SocketManager
 import com.flomobility.hermes.other.Constants
 import com.google.gson.Gson
@@ -124,6 +127,11 @@ class StartAssetHandler @Inject constructor(
         }
 
         val updateAssetConfig = assetManager.updateAssetConfig(id, assetType, config)
+        if(!updateAssetConfig.success) {
+            val resp = StandardResponse(success = false, updateAssetConfig.message)
+            socket.send(gson.toJson(resp).toByteArray(ZMQ.CHARSET), 0)
+            return
+        }
 
         val startAsset = assetManager.startAsset(id, assetType)
         val resp = StandardResponse().apply {

@@ -9,6 +9,7 @@ import android.hardware.usb.UsbManager
 import com.flomobility.hermes.assets.AssetManager
 import com.flomobility.hermes.assets.AssetType
 import com.flomobility.hermes.assets.types.UsbSerial
+import com.flomobility.hermes.usb.camera.UsbCamManager
 import com.flomobility.hermes.usb.serial.UsbSerialManager
 import dagger.hilt.android.qualifiers.ApplicationContext
 import timber.log.Timber
@@ -21,7 +22,8 @@ class UsbPortManager @Inject constructor(
     @ApplicationContext private val context: Context,
     private val assetManager: AssetManager,
     private val usbManager: UsbManager,
-    private val usbSerialManager: UsbSerialManager
+    private val usbSerialManager: UsbSerialManager,
+    private val usbCamManager: UsbCamManager
 ) {
 
     private val usbReceiver: BroadcastReceiver = object : BroadcastReceiver() {
@@ -29,14 +31,14 @@ class UsbPortManager @Inject constructor(
             if (arg1.action == ACTION_USB_ATTACHED) {
                 val usbDevice = arg1.getParcelableExtra<UsbDevice>(UsbManager.EXTRA_DEVICE)
                 Timber.i("USB device attached $usbDevice")
-                if(usbDevice == null) {
+                if (usbDevice == null) {
                     Timber.e("No usb device attached")
                     return
                 }
                 usbDeviceCallback.onAttach(usbDevice)
             } else if (arg1.action == ACTION_USB_DETACHED) {
                 val usbDevice = arg1.getParcelableExtra<UsbDevice>(UsbManager.EXTRA_DEVICE)
-                if(usbDevice == null) {
+                if (usbDevice == null) {
                     Timber.e("No usb device detached")
                     return
                 }
@@ -50,11 +52,11 @@ class UsbPortManager @Inject constructor(
         override fun onAttach(usbDevice: UsbDevice?) {
             if (usbDevice?.getDeviceType() == UsbDeviceType.SERIAL) {
                 val serialPort = usbSerialManager.registerSerialDevice(usbDevice.deviceId)
-                if(serialPort == -1) {
+                if (serialPort == -1) {
                     Timber.e("No ports available for ${usbDevice.deviceName}")
                     return
                 }
-                assetManager.addAsset(UsbSerial.create("$serialPort",usbDevice, usbManager))
+                assetManager.addAsset(UsbSerial.create("$serialPort", usbDevice, usbManager))
             }
         }
 
@@ -84,10 +86,11 @@ class UsbPortManager @Inject constructor(
         filter.addAction(ACTION_USB_ATTACHED)
         context.registerReceiver(usbReceiver, filter)
 
-//        if(usbSerialManager.isRegistryEmpty()) {
-            attachDevices()
-//        }
+        usbCamManager.register()
+
+        attachDevices()
     }
+
     companion object {
         private const val ACTION_USB_ATTACHED = UsbManager.ACTION_USB_DEVICE_ATTACHED
         private const val ACTION_USB_DETACHED = UsbManager.ACTION_USB_DEVICE_DETACHED

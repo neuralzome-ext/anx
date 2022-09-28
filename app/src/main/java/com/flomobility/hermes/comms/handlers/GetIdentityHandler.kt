@@ -3,6 +3,7 @@ package com.flomobility.hermes.comms.handlers
 import android.os.Build
 import androidx.annotation.RequiresApi
 import com.flomobility.hermes.api.GetIdentityResponse
+import com.flomobility.hermes.api.StandardResponse
 import com.flomobility.hermes.comms.SessionManager
 import com.flomobility.hermes.comms.SocketManager
 import com.flomobility.hermes.comms.SocketManager.Companion.GET_IDENTITY_SOCKET_ADDR
@@ -48,15 +49,21 @@ class GetIdentityHandler @Inject constructor(
                                 socket.send(gson.toJson(imeiResponse).toByteArray(ZMQ.CHARSET), 0)
                             }
                         }
+                    } catch (e: SecurityException) {
+                        Timber.e("Error in GetIdentityHandler : $e")
+                        val response = StandardResponse(success = false, message = "Unable to provide identity -> Insufficient permissions to access IMEI. ${e.message}")
+                        socket.send(gson.toJson(response).toByteArray(ZMQ.CHARSET), 0)
                     } catch (e: Exception) {
                         Timber.e("Error in GetIdentityHandler : $e")
-                        socket.send((e.message ?: Constants.UNKNOWN_ERROR_MSG).toByteArray(ZMQ.CHARSET), 0)
+                        val response = StandardResponse(success = false, message = (e.message ?: Constants.UNKNOWN_ERROR_MSG))
+                        socket.send(gson.toJson(response).toByteArray(ZMQ.CHARSET), 0)
                     }
                 }
             }
         } catch (e: Exception) {
             Timber.e("Error in GetIdentityHandler : $e")
-            socket.send((e.message ?: Constants.UNKNOWN_ERROR_MSG).toByteArray(ZMQ.CHARSET), 0)
+            val response = StandardResponse(success = false, message = (e.message ?: Constants.UNKNOWN_ERROR_MSG))
+            socket.send(gson.toJson(response).toByteArray(ZMQ.CHARSET), 0)
         }
     }
 }

@@ -15,7 +15,15 @@ dependencyResolutionManagement {
         google()
         mavenCentral()
         maven { url "https://jitpack.io" }
+        maven { url 'https://raw.githubusercontent.com/saki4510t/libcommon/master/repository/' }
+        maven {
+            url "https://maven.google.com"
+        }
     }
 }
-rootProject.name = "My Application"
+
+include ':libuvccamera'
+include ':usbCameraCommon'
+
+rootProject.name = "Hermes"
 include ':app'

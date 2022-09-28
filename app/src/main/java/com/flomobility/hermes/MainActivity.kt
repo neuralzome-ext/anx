@@ -7,6 +7,7 @@ import com.flomobility.hermes.daemon.EndlessService
 import com.flomobility.hermes.databinding.ActivityMainBinding
 import dagger.hilt.android.AndroidEntryPoint
 import com.flomobility.hermes.other.Constants
+import com.flomobility.hermes.other.getIPAddressList
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
@@ -20,9 +21,18 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         // Example of a call to a native method
-        binding.sampleText.text = stringFromJNI()
+        binding.sampleText.text = "IP Addrs : ${getIPAddressList(true)}"
+
+        setOnEventListeners()
 
         sendCommandToService(Constants.ACTION_START_OR_RESUME_SERVICE, EndlessService::class.java)
+    }
+
+    private fun setOnEventListeners() {
+        binding.rootLyt.setOnLongClickListener {
+            // TODO : toggle debug mode
+            return@setOnLongClickListener true
+        }
     }
 
     /**
@@ -42,9 +52,9 @@ class MainActivity : AppCompatActivity() {
      * Sends the action string to the specified service
      * @param action The action string which the service will refer to, to execute a set of tasks
      * @param serviceClass The ServiceClass to which the action string is to be sent
-     * @see ACTION_START_OR_RESUME_SERVICE
-     * @see ACTION_PAUSE_SERVICE
-     * @see ACTION_STOP_SERVICE
+     * @see Constants.ACTION_START_OR_RESUME_SERVICE
+     * @see Constants.ACTION_PAUSE_SERVICE
+     * @see Constants.ACTION_STOP_SERVICE
      * */
     private fun sendCommandToService(action: String, serviceClass: Class<*>) {
         Intent(this, serviceClass).also {
