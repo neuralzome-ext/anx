@@ -11,7 +11,7 @@ Refer [Hermes API docs](https://github.com/flomobility/api_docs/blob/main/hermes
 2. USB Serial
 3. Phone
 4. Speaker
-5. Camera (dev)
+5. Camera
 
 ### Style guide
 - [Kotlin style guide](https://developer.android.com/kotlin/style-guide)
