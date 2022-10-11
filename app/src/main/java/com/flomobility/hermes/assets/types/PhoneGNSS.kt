@@ -161,7 +161,7 @@ class PhoneGNSS @Inject constructor(
                             gnssData?.let {
                                 socket.send(gson.toJson(it).toByteArray(ZMQ.CHARSET), 0)
                             }
-                            sleep((_config.fps.value * 1000).toLong())
+                            sleep(1000L / (_config.fps.value as Int))
                         } catch (e: InterruptedException) {
                             break
                         } catch (e: Exception) {
