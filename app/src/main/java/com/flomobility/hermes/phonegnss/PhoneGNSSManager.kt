@@ -1,4 +1,4 @@
-package com.flomobility.hermes.gnss
+package com.flomobility.hermes.phonegnss
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -9,7 +9,7 @@ import android.location.OnNmeaMessageListener
 import android.os.Build
 import android.os.Bundle
 import androidx.annotation.RequiresApi
-import com.flomobility.hermes.assets.types.GNSS
+import com.flomobility.hermes.assets.types.PhoneGNSS
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -20,7 +20,7 @@ import javax.inject.Singleton
  */
 @RequiresApi(Build.VERSION_CODES.O)
 @Singleton
-class GNSSManager @Inject constructor(
+class PhoneGNSSManager @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
 
@@ -44,7 +44,7 @@ class GNSSManager @Inject constructor(
         override fun onStatusChanged(provider: String, status: Int, extras: Bundle) {}
     }
 
-    fun init(nmeaListener: OnNmeaMessageListener, config: GNSS.Config) : Boolean {
+    fun init(nmeaListener: OnNmeaMessageListener, config: PhoneGNSS.Config) : Boolean {
         val isGpsProviderEnabled: Boolean =
             locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
         if (isGpsProviderEnabled) {
@@ -86,8 +86,8 @@ class GNSSManager @Inject constructor(
         locationManager.removeUpdates(locationListener)
     }
 
-    fun updateConfig(config: GNSS.Config, nmeaListener: OnNmeaMessageListener) {
+    fun updateConfig(config: PhoneGNSS.Config, nmeaListener: OnNmeaMessageListener) {
         stop(nmeaListener)
-        init(nmeaListener, GNSS.Config())
+        init(nmeaListener, PhoneGNSS.Config())
     }
 }

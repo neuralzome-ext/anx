@@ -3,7 +3,6 @@ package com.flomobility.hermes.assets.types
 import android.content.Context
 import android.location.OnNmeaMessageListener
 import android.os.Build
-import android.util.Log
 import androidx.annotation.RequiresApi
 import com.flomobility.hermes.api.model.GNSSData
 import com.flomobility.hermes.assets.AssetState
@@ -11,7 +10,7 @@ import com.flomobility.hermes.assets.AssetType
 import com.flomobility.hermes.assets.BaseAsset
 import com.flomobility.hermes.assets.BaseAssetConfig
 import com.flomobility.hermes.common.Result
-import com.flomobility.hermes.gnss.GNSSManager
+import com.flomobility.hermes.phonegnss.PhoneGNSSManager
 import com.flomobility.hermes.other.Constants
 import com.flomobility.hermes.other.handleExceptions
 import com.google.gson.Gson
@@ -31,14 +30,14 @@ import javax.inject.Singleton
  */
 @RequiresApi(Build.VERSION_CODES.O)
 @Singleton
-class GNSS @Inject constructor(
+class PhoneGNSS @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val gnssManager: GNSSManager,
+    private val phoneGnssManager: PhoneGNSSManager,
     private val gson: Gson
 ) : BaseAsset, OnNmeaMessageListener {
 
     companion object {
-        const val TAG = "GNSS"
+        const val TAG = "PhoneGNSS"
     }
 
     private val _id = "0"
@@ -69,10 +68,11 @@ class GNSS @Inject constructor(
         this._config.apply {
             this.time.value = config.time.value
             this.distance.value = config.distance.value
+            this.fps.value = config.fps.value
             this.portPub = config.portPub
         }
 
-        gnssManager.updateConfig(config, this)
+        phoneGnssManager.updateConfig(config, this)
 
         return Result(success = true)
     }
@@ -83,7 +83,7 @@ class GNSS @Inject constructor(
         }) {
             try {
                 _state = AssetState.STREAMING
-                gnssManager.init(this, Config())
+                phoneGnssManager.init(this, Config())
                 publisherThread = PublisherGnssThread()
                 publisherThread?.start()
             } catch (e: Exception) {
@@ -99,7 +99,7 @@ class GNSS @Inject constructor(
             return Result(success = false, message = e.message ?: Constants.UNKNOWN_ERROR_MSG)
         }) {
             _state = AssetState.IDLE
-            gnssManager.stop(this)
+            phoneGnssManager.stop(this)
             publisherThread?.interrupt()
             publisherThread = null
             return Result(success = true)
@@ -108,24 +108,30 @@ class GNSS @Inject constructor(
     }
 
     override fun destroy() {
-
+        gnssData = null
+        publisherThread = null
     }
-
 
     class Config : BaseAssetConfig() {
 
         val distance = Field<Float>()
         val time = Field<Long>()
-        val nmeaInterval = Field<Int>()
+        val fps = Field<Int>()
 
         init {
             time.value = TimeUnit.SECONDS.toMillis(60L)
             distance.value = 1.0f
-            nmeaInterval.value = 1
+            fps.range = listOf(1)
+            fps.name = "fps"
+            fps.value = DEFAULT_FPS
         }
 
         override fun getFields(): List<Field<*>> {
-            return listOf(distance, time, nmeaInterval)
+            return listOf(fps)
+        }
+
+        companion object {
+            private const val DEFAULT_FPS = 1
         }
     }
 
@@ -145,25 +151,24 @@ class GNSS @Inject constructor(
             val address = "tcp://*:${_config.portPub}"
             try {
                 ZContext().use { ctx ->
-                    Timber.d("Starting phone-${this@GNSS._id} publisher on ${_config.portPub}")
+                    Timber.d("Starting phoneGNSS-${this@PhoneGNSS._id} publisher on ${_config.portPub}")
                     socket = ctx.createSocket(SocketType.PUB)
                     socket.bind(address)
                     // wait
-                    sleep(500)
+                    sleep(Constants.SOCKET_BIND_DELAY_IN_MS)
                     while (!Thread.currentThread().isInterrupted) {
                         try {
                             gnssData?.let {
-                                val isSend = socket.send(gson.toJson(it).toByteArray(ZMQ.CHARSET), 0)
-                                Timber.d("Send Data")
+                                socket.send(gson.toJson(it).toByteArray(ZMQ.CHARSET), 0)
                             }
-                            sleep((_config.nmeaInterval.value * 1000).toLong())
+                            sleep((_config.fps.value * 1000).toLong())
                         } catch (e: InterruptedException) {
                             break
                         } catch (e: Exception) {
                             Timber.e(e)
                         }
                     }
-                    Timber.d("Stopping phone-${this@GNSS._id} publisher")
+                    Timber.d("Stopping phoneGNSS-${this@PhoneGNSS._id} publisher")
                 }
             } catch (e: Exception) {
                 Timber.e(e)
