@@ -1,36 +1,27 @@
 package com.flomobility.hermes
 
 import android.Manifest.permission.ACCESS_FINE_LOCATION
-import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
+import android.annotation.SuppressLint
 import android.content.IntentSender
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.provider.Settings
-import android.util.Log
 import android.view.View
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import androidx.core.app.NotificationCompat
-import com.flomobility.hermes.assets.types.GNSS
 import com.flomobility.hermes.daemon.EndlessService
 import com.flomobility.hermes.databinding.ActivityMainBinding
 import dagger.hilt.android.AndroidEntryPoint
 import com.flomobility.hermes.other.Constants
 import com.flomobility.hermes.other.getIPAddressList
-import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
 import com.google.android.material.snackbar.Snackbar
-import dagger.hilt.android.AndroidEntryPoint
 import com.google.android.gms.location.Priority.PRIORITY_HIGH_ACCURACY
 import com.google.android.gms.tasks.Task
-import javax.inject.Inject
 
 
 @AndroidEntryPoint
