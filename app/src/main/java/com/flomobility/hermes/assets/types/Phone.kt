@@ -106,8 +106,16 @@ class Phone @Inject constructor(
                     while (!Thread.currentThread().isInterrupted) {
                         try {
                             val chargingStatus = phoneManager.getChargingStatus()
+                            val cpuRam = phoneManager.getMemoryInfo()
+                            val cpuTemp = phoneManager.getCPUTemperature()
+                            val cpuUsage = phoneManager.getCpuUsage()
+                            val gpuUsage = phoneManager.getGpuUsage()
                             val phoneState = PhoneState(
-                                charging = chargingStatus
+                                charging = chargingStatus,
+                                cpuRamUsage = cpuRam,
+                                cpuTemp = cpuTemp,
+                                cpuUsage = cpuUsage,
+                                gpuUsage = gpuUsage
                             )
                             socket.send(gson.toJson(phoneState).toByteArray(ZMQ.CHARSET), 0)
                             sleep(1000L / (_config.fps.value as Int))

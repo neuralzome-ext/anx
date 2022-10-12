@@ -62,6 +62,13 @@ fun runAsRoot(cmd: String) {
     Timber.d("${BufferedReader(InputStreamReader(process.inputStream)).readLines()}")
 }
 
+fun getRootOutput(cmd: String): String {
+    val command = arrayOf("su", "-c", cmd)
+    val process = Runtime.getRuntime().exec(command)
+    process.waitFor()
+    return BufferedReader(InputStreamReader(process.inputStream)).readLines()[0]
+}
+
 /**
  * Get IP address from first non-localhost interface
  * @param useIPv4   true=return ipv4, false=return ipv6
