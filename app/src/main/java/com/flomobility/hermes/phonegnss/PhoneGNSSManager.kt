@@ -11,6 +11,7 @@ import android.os.Bundle
 import androidx.annotation.RequiresApi
 import com.flomobility.hermes.assets.types.PhoneGNSS
 import dagger.hilt.android.qualifiers.ApplicationContext
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -44,7 +45,7 @@ class PhoneGNSSManager @Inject constructor(
         override fun onStatusChanged(provider: String, status: Int, extras: Bundle) {}
     }
 
-    fun init(nmeaListener: OnNmeaMessageListener, config: PhoneGNSS.Config) : Boolean {
+    fun init(nmeaListener: OnNmeaMessageListener) : Boolean {
         val isGpsProviderEnabled: Boolean =
             locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
         if (isGpsProviderEnabled) {
@@ -52,14 +53,14 @@ class PhoneGNSSManager @Inject constructor(
                 registerNMEAListener(nmeaListener)
                 locationManager.requestLocationUpdates(
                     LocationManager.NETWORK_PROVIDER,
-                    config.time.value,
-                    config.distance.value /* minDistance */,
+                    TimeUnit.SECONDS.toMillis(60L),
+                    1.0f /* minDistance */,
                     locationListener
                 )
                 locationManager.requestLocationUpdates(
                     LocationManager.GPS_PROVIDER,
-                    config.time.value,
-                    config.distance.value /* minDistance */,
+                    TimeUnit.SECONDS.toMillis(60L),
+                    0.0f /* minDistance */,
                     locationListener
                 )
             } catch (e: SecurityException) {
@@ -86,8 +87,4 @@ class PhoneGNSSManager @Inject constructor(
         locationManager.removeUpdates(locationListener)
     }
 
-    fun updateConfig(config: PhoneGNSS.Config, nmeaListener: OnNmeaMessageListener) {
-        stop(nmeaListener)
-        init(nmeaListener, PhoneGNSS.Config())
-    }
 }
