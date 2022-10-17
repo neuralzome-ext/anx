@@ -7,6 +7,7 @@ import com.flomobility.hermes.api.StandardResponse
 import com.flomobility.hermes.comms.SessionManager
 import com.flomobility.hermes.comms.SocketManager
 import com.flomobility.hermes.other.Constants
+import com.flomobility.hermes.phone.Device
 import com.flomobility.hermes.phone.PhoneManager
 import com.google.gson.Gson
 import org.zeromq.SocketType
@@ -26,6 +27,9 @@ class SignalRpcHandler @Inject constructor(
 
     lateinit var socket: ZMQ.Socket
 
+    @Inject
+    lateinit var device: Device
+
     override fun run() {
         try {
             ZContext().use { ctx ->
@@ -44,7 +48,13 @@ class SignalRpcHandler @Inject constructor(
                                 msgStr,
                                 SignalRequest.type
                             )
-                            val response = StandardResponse(success = true)
+                            val response = if (device.isRooted)
+                                StandardResponse(success = device.isRooted)
+                            else
+                                StandardResponse(
+                                    success = false,
+                                    message = "Can't shutdown as system isn't rooted"
+                                )
                             socket.send(gson.toJson(response).toByteArray(ZMQ.CHARSET), 0)
 
                             phoneManager.invokeSignal(signalReq.signal)

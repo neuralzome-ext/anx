@@ -63,10 +63,14 @@ fun runAsRoot(cmd: String) {
 }
 
 fun getRootOutput(cmd: String): String {
-    val command = arrayOf("su", "-c", cmd)
-    val process = Runtime.getRuntime().exec(command)
-    process.waitFor()
-    return BufferedReader(InputStreamReader(process.inputStream)).readLines()[0]
+    return try {
+        val command = arrayOf("su", "-c", cmd)
+        val process = Runtime.getRuntime().exec(command)
+        process.waitFor()
+        BufferedReader(InputStreamReader(process.inputStream)).readLines()[0]
+    } catch (e: Exception) {
+        ""
+    }
 }
 
 /**

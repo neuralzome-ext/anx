@@ -44,9 +44,12 @@ class GetIdentityHandler @Inject constructor(
                             if (JSONObject(data).length() == 0) {
                                 // valid request
                                 val result = phoneManager.getIdentity()
-                                val imeiResponse =
+                                val identityResponse =
                                     GetIdentityResponse(imei = result, success = true)
-                                socket.send(gson.toJson(imeiResponse).toByteArray(ZMQ.CHARSET), 0)
+                                socket.send(
+                                    gson.toJson(identityResponse).toByteArray(ZMQ.CHARSET),
+                                    0
+                                )
                             }
                         }
                     } catch (e: SecurityException) {
