@@ -24,6 +24,10 @@ import org.zeromq.ZMQ
 import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+
 
 /**
  * Provides implementation of Asset's methods.
@@ -80,7 +84,9 @@ class PhoneGNSS @Inject constructor(
         }) {
             try {
                 _state = AssetState.STREAMING
-                phoneGnssManager.init(this)
+                GlobalScope.launch(Dispatchers.Main) {
+                    phoneGnssManager.init(this@PhoneGNSS)
+                }
                 nmeaMsgThread = NMEAMessageThread()
                 nmeaMsgThread?.updateAddress()
                 nmeaMsgThread?.start()
@@ -99,7 +105,9 @@ class PhoneGNSS @Inject constructor(
             return Result(success = false, message = e.message ?: Constants.UNKNOWN_ERROR_MSG)
         }) {
             _state = AssetState.IDLE
-            phoneGnssManager.stop(this)
+            GlobalScope.launch(Dispatchers.Main) {
+                phoneGnssManager.stop(this@PhoneGNSS)
+            }
             return Result(success = true)
         }
         return Result(success = false, message = Constants.UNKNOWN_ERROR_MSG)
