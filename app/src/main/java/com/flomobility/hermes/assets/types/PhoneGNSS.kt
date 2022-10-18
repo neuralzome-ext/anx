@@ -108,6 +108,8 @@ class PhoneGNSS @Inject constructor(
             GlobalScope.launch(Dispatchers.Main) {
                 phoneGnssManager.stop(this@PhoneGNSS)
             }
+            nmeaMsgThread?.kill()
+            nmeaMsgThread = null
             return Result(success = true)
         }
         return Result(success = false, message = Constants.UNKNOWN_ERROR_MSG)
@@ -138,7 +140,7 @@ class PhoneGNSS @Inject constructor(
     }
 
     override fun onNmeaMessage(nmeadata: String?, timestamp: Long) {
-        Timber.d("onNmeaMessage $nmeadata\n $timestamp")
+//        Timber.d("onNmeaMessage $nmeadata\n $timestamp")
         val gnssData = GNSSData(
             nmea = nmeadata.toString(),
             //timestamp = timestamp
