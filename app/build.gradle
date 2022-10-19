@@ -109,6 +109,9 @@ dependencies {
     // apache commons
     implementation group: 'org.apache.commons', name: 'commons-collections4', version: '4.4'
 
+    //Location
+    implementation 'com.google.android.gms:play-services-location:20.0.0'
+
     // usb camera utils
     implementation("com.serenegiant:common:${commonLibVersion}") {
         exclude module: 'support-v4'
