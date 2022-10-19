@@ -73,17 +73,6 @@ class PhoneCamera : Camera() {
     private val executor = Executors.newSingleThreadExecutor()
     private lateinit var camera: androidx.camera.core.Camera
 
-
-    object Builder {
-        fun createNew(id: String): PhoneCamera {
-            return PhoneCamera().apply {
-                this._id = id
-                this.streamingThread = StreamingThread()
-                this.streamingThread?.start()
-            }
-        }
-    }
-
     override fun updateConfig(config: BaseAssetConfig): Result {
         if (config !is Camera.Config) {
             return Result(success = false, message = "unknown config type")
@@ -107,6 +96,8 @@ class PhoneCamera : Camera() {
             Result(success = false, message = e.message ?: Constants.UNKNOWN_ERROR_MSG)
         }) {
             _state = AssetState.STREAMING
+            streamingThread = StreamingThread()
+            streamingThread?.start()
             val stream = _config.stream.value
             streamingThread?.updateAddress()
 
