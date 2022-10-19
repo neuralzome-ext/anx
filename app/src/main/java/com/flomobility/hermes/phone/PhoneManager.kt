@@ -85,12 +85,12 @@ class PhoneManager @Inject constructor(
             if (line != null) {
                 line.toDouble() / 1000
             } else {
-                25.0
+                -1.0
             }
         } catch (e: Exception) {
             Timber.e(e.localizedMessage)
 //            Timber.e(e.localizedMessage)
-            0.0
+            -1.0
         }
     }
 

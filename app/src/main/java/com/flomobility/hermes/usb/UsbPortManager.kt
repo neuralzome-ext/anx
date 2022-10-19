@@ -1,5 +1,6 @@
 package com.flomobility.hermes.usb
 
+import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -25,19 +26,35 @@ class UsbPortManager @Inject constructor(
     private val usbSerialManager: UsbSerialManager,
     private val usbCamManager: UsbCamManager
 ) {
-
+    private var mPermissionIntent: PendingIntent? = null
     private val usbReceiver: BroadcastReceiver = object : BroadcastReceiver() {
-        override fun onReceive(arg0: Context, arg1: Intent) {
-            if (arg1.action == ACTION_USB_ATTACHED) {
-                val usbDevice = arg1.getParcelableExtra<UsbDevice>(UsbManager.EXTRA_DEVICE)
+        override fun onReceive(arg0: Context, intent: Intent) {
+            if (intent.action == ACTION_USB_PERMISSION) {
+                // when received the result of requesting USB permission
+                synchronized(UsbPortManager) {
+                    val device: UsbDevice? = intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
+                    if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
+                        if (device != null) {
+                            // get permission, call onConnect
+                            usbDeviceCallback.onAttach(device);
+                        }
+                    } else {
+                        // failed to get permission
+                        usbDeviceCallback.onDetach(device);
+                    }
+                }
+            }
+            if (intent.action == ACTION_USB_ATTACHED) {
+                val usbDevice = intent.getParcelableExtra<UsbDevice>(UsbManager.EXTRA_DEVICE)
                 Timber.i("USB device attached $usbDevice")
                 if (usbDevice == null) {
                     Timber.e("No usb device attached")
                     return
                 }
-                usbDeviceCallback.onAttach(usbDevice)
-            } else if (arg1.action == ACTION_USB_DETACHED) {
-                val usbDevice = arg1.getParcelableExtra<UsbDevice>(UsbManager.EXTRA_DEVICE)
+                requestPermission(usbDevice)
+//                usbDeviceCallback.onAttach(usbDevice)
+            } else if (intent.action == ACTION_USB_DETACHED) {
+                val usbDevice = intent.getParcelableExtra<UsbDevice>(UsbManager.EXTRA_DEVICE)
                 if (usbDevice == null) {
                     Timber.e("No usb device detached")
                     return
@@ -76,12 +93,83 @@ class UsbPortManager @Inject constructor(
         Timber.i("Looking for devices")
         val devices = usbManager.deviceList ?: return
         devices.values.sortedBy { it.deviceId }.forEach { usbDevice ->
-            usbDeviceCallback.onAttach(usbDevice)
+            requestPermission(usbDevice)
+//            usbDeviceCallback.onAttach(usbDevice)
         }
     }
 
+    @Throws(IllegalStateException::class)
+    fun hasPermission(device: UsbDevice?): Boolean {
+//        check(!destroyed) { "already destroyed" }
+        return device != null && usbManager.hasPermission(device)
+//        return updatePermission(device, device != null && usbManager.hasPermission(device))
+    }
+
+    /**
+     * 内部で保持しているパーミッション状態を更新
+     * @param device
+     * @param hasPermission
+     * @return hasPermission
+     */
+/*
+    private fun updatePermission(device: UsbDevice?, hasPermission: Boolean): Boolean {
+        val deviceKey: Int = getDeviceKey(device, true)
+        synchronized(mHasPermissions) {
+            if (hasPermission) {
+                if (mHasPermissions.get(deviceKey) == null) {
+                    mHasPermissions.put(
+                        deviceKey,
+                        WeakReference<UsbDevice>(device)
+                    )
+                }
+            } else {
+                mHasPermissions.remove(deviceKey)
+            }
+        }
+        return hasPermission
+    }
+*/
+
+    /**
+     * request permission to access to USB device
+     * @param device
+     * @return true if fail to request permission
+     */
+    @Synchronized
+    fun requestPermission(device: UsbDevice?): Boolean {
+//		if (DEBUG) Log.v(TAG, "requestPermission:device=" + device);
+        var result = false
+        if (mPermissionIntent != null) {
+            if (device != null) {
+                if (usbManager.hasPermission(device)) {
+                    // call onConnect if app already has permission
+                    usbDeviceCallback.onAttach(device)
+                } else {
+                    try {
+                        // パーミッションがなければ要求する
+                        usbManager.requestPermission(device, mPermissionIntent)
+                    } catch (e: Exception) {
+                        // Android5.1.xのGALAXY系でandroid.permission.sec.MDM_APP_MGMTという意味不明の例外生成するみたい
+//                        Log.w(TAG, e)
+                        usbDeviceCallback.onDetach(device)
+                        result = true
+                    }
+                }
+            } else {
+                usbDeviceCallback.onDetach(device)
+                result = true
+            }
+        } else {
+            usbDeviceCallback.onDetach(device)
+            result = true
+        }
+        return result
+    }
+
     fun init() {
-        val filter = IntentFilter()
+        mPermissionIntent =
+            PendingIntent.getBroadcast(context, 0, Intent(ACTION_USB_PERMISSION), 0);
+        val filter = IntentFilter(ACTION_USB_PERMISSION)
         filter.addAction(ACTION_USB_DETACHED)
         filter.addAction(ACTION_USB_ATTACHED)
         context.registerReceiver(usbReceiver, filter)
@@ -94,6 +182,8 @@ class UsbPortManager @Inject constructor(
     companion object {
         private const val ACTION_USB_ATTACHED = UsbManager.ACTION_USB_DEVICE_ATTACHED
         private const val ACTION_USB_DETACHED = UsbManager.ACTION_USB_DEVICE_DETACHED
+        private const val ACTION_USB_PERMISSION_BASE = "com.flomobility.hermes.USB_PERMISSION."
+        val ACTION_USB_PERMISSION = ACTION_USB_PERMISSION_BASE + hashCode()
     }
 
 }
