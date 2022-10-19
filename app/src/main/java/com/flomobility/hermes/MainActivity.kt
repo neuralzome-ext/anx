@@ -1,9 +1,16 @@
 package com.flomobility.hermes
 
 import android.Manifest
+import android.Manifest.permission.ACCESS_FINE_LOCATION
+import android.app.Activity
 import android.content.Intent
+import android.annotation.SuppressLint
+import android.content.IntentSender
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Bundle
+import android.provider.Settings
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import com.flomobility.hermes.daemon.EndlessService
@@ -15,11 +22,15 @@ import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
 import javax.inject.Inject
+import com.google.android.gms.common.api.ResolvableApiException
+import com.google.android.gms.location.*
+
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
+    private lateinit var locationRequest: LocationRequest
 
     @Inject
     lateinit var device: Device
@@ -85,6 +96,12 @@ class MainActivity : AppCompatActivity() {
         }
         Timber.d("All permissions granted")
         sendCommandToService(Constants.ACTION_START_OR_RESUME_SERVICE, EndlessService::class.java)
+
+        if (!checkPermissions()) {
+            requestPermissions()
+        } else {
+            createLocationRequest()
+        }
         /*requestPermissionLauncher.launch(
                arrayOf(
                    Manifest.permission.READ_SMS,
@@ -132,6 +149,10 @@ class MainActivity : AppCompatActivity() {
     external fun stringFromJNI(): String
 
     companion object {
+        const val REQUEST_PERMISSIONS_REQUEST_CODE = 1001
+        const val REQUEST_CHECK_SETTINGS = 1002
+
+        private const val TAG = "MainActivity"
         // Used to load the 'hermes' library on application startup.
         init {
             System.loadLibrary("hermes")
@@ -150,6 +171,81 @@ class MainActivity : AppCompatActivity() {
         Intent(this, serviceClass).also {
             it.action = action
             startService(it)
+        }
+    }
+
+    private fun requestPermissions() {
+        val shouldProvideRationale: Boolean = ActivityCompat.shouldShowRequestPermissionRationale(
+            this,
+            ACCESS_FINE_LOCATION
+        )
+        // Provide an additional rationale to the user. This would happen if the user denied the
+        // request previously, but didn't check the "Don't ask again" checkbox.
+        if (shouldProvideRationale) {
+            Snackbar.make(
+                binding.root,
+               "Your Permission is not enable so please enable",
+                Snackbar.LENGTH_INDEFINITE
+            )
+                .setAction("Ok", object : View.OnClickListener {
+                    override fun onClick(view: View?) {
+                        // Request permission
+                        ActivityCompat.requestPermissions(
+                            this@MainActivity,
+                            arrayOf<String>(ACCESS_FINE_LOCATION),
+                            REQUEST_PERMISSIONS_REQUEST_CODE
+                        )
+                    }
+                })
+                .show()
+        } else {
+            // Request permission. It's possible this can be auto answered if device policy
+            // sets the permission in a given state or the user denied the permission
+            // previously and checked "Never ask again".
+            ActivityCompat.requestPermissions(
+                this@MainActivity, arrayOf<String>(ACCESS_FINE_LOCATION),
+                REQUEST_PERMISSIONS_REQUEST_CODE
+            )
+        }
+    }
+
+    private fun createLocationRequest() {
+        locationRequest = LocationRequest.create().apply {
+            interval = 10000
+            fastestInterval = 5000
+            priority = PRIORITY_HIGH_ACCURACY
+        }
+        val builder = LocationSettingsRequest.Builder()
+            .addLocationRequest(locationRequest)
+        val client: SettingsClient = LocationServices.getSettingsClient(this)
+        val task: Task<LocationSettingsResponse> = client.checkLocationSettings(builder.build())
+
+        task.addOnFailureListener { exception ->
+            if (exception is ResolvableApiException){
+                // Location settings are not satisfied, but this can be fixed
+                // by showing the user a dialog.
+                try {
+                    // Show the dialog by calling startResolutionForResult(),
+                    // and check the result in onActivityResult().
+                    exception.startResolutionForResult(this@MainActivity,
+                        REQUEST_CHECK_SETTINGS)
+                } catch (sendEx: IntentSender.SendIntentException) {
+                    // Ignore the error.
+                }
+            }
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        when(requestCode) {
+            REQUEST_CHECK_SETTINGS ->{
+                when(resultCode){
+                    Activity.RESULT_OK->{
+
+                    }
+                }
+            }
         }
     }
 }
