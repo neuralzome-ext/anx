@@ -8,6 +8,7 @@ import android.annotation.SuppressLint
 import android.content.IntentSender
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.view.View
@@ -24,6 +25,8 @@ import timber.log.Timber
 import javax.inject.Inject
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
+import com.google.android.gms.location.Priority.PRIORITY_HIGH_ACCURACY
+import com.google.android.gms.tasks.Task
 
 
 @AndroidEntryPoint
@@ -79,38 +82,25 @@ class MainActivity : AppCompatActivity() {
             ) != PackageManager.PERMISSION_GRANTED
         ) {
             Timber.d("All permissions not granted")
-            requestPermissions(
-                arrayOf(
-                    Manifest.permission.READ_SMS,
-                    Manifest.permission.READ_PHONE_NUMBERS,
-                    Manifest.permission.READ_PHONE_STATE,
-                    Manifest.permission.CAMERA,
-                    Manifest.permission.FOREGROUND_SERVICE,
-                    Manifest.permission.ACCESS_FINE_LOCATION,
-                    Manifest.permission.ACCESS_COARSE_LOCATION,
-                    Manifest.permission.READ_EXTERNAL_STORAGE,
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE
-                ), 1234
-            )
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                requestPermissions(
+                    arrayOf(
+                        Manifest.permission.READ_SMS,
+                        Manifest.permission.READ_PHONE_NUMBERS,
+                        Manifest.permission.READ_PHONE_STATE,
+                        Manifest.permission.CAMERA,
+                        Manifest.permission.FOREGROUND_SERVICE,
+                        Manifest.permission.ACCESS_FINE_LOCATION,
+                        Manifest.permission.ACCESS_COARSE_LOCATION,
+                        Manifest.permission.READ_EXTERNAL_STORAGE,
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE
+                    ), 1234
+                )
+            }
             return
         }
         Timber.d("All permissions granted")
         sendCommandToService(Constants.ACTION_START_OR_RESUME_SERVICE, EndlessService::class.java)
-
-        if (!checkPermissions()) {
-            requestPermissions()
-        } else {
-            createLocationRequest()
-        }
-        /*requestPermissionLauncher.launch(
-               arrayOf(
-                   Manifest.permission.READ_SMS,
-                   Manifest.permission.READ_PHONE_NUMBERS,
-                   Manifest.permission.READ_PHONE_STATE,
-
-                   )
-           )*/
-
     }
 
     override fun onRequestPermissionsResult(
