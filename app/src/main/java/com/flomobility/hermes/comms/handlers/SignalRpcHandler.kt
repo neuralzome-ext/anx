@@ -49,7 +49,7 @@ class SignalRpcHandler @Inject constructor(
                                 SignalRequest.type
                             )
                             val response = if (device.isRooted)
-                                StandardResponse(success = device.isRooted)
+                                StandardResponse(success = true)
                             else
                                 StandardResponse(
                                     success = false,

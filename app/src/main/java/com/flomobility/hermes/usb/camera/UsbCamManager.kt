@@ -1,20 +1,23 @@
 package com.flomobility.hermes.usb.camera
 
+import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.hardware.usb.UsbDevice
+import android.hardware.usb.UsbManager
 import com.flomobility.hermes.assets.AssetManager
 import com.flomobility.hermes.assets.AssetType
 import com.flomobility.hermes.assets.types.camera.Camera
 import com.flomobility.hermes.assets.types.camera.UsbCamera
 import com.flomobility.hermes.usb.UsbDeviceType
+import com.flomobility.hermes.usb.UsbPortManager
 import com.flomobility.hermes.usb.getDeviceType
 import com.serenegiant.usb.USBMonitor
-import com.serenegiant.usb.UVCCamera
 import com.serenegiant.usbcameracommon.CameraCallback
 import com.serenegiant.usbcameracommon.UVCCameraHandler
 import dagger.hilt.android.qualifiers.ApplicationContext
 import timber.log.Timber
-import java.lang.Exception
 import java.util.concurrent.locks.ReentrantLock
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -32,24 +35,36 @@ class UsbCamManager @Inject constructor(
 
     private var deviceMutex = ReentrantLock(true)
 
+    private val usbReceiver: BroadcastReceiver = object : BroadcastReceiver() {
+        override fun onReceive(arg0: Context, intent: Intent) {
+            if (intent.action == UsbPortManager.ACTION_USB_PERMISSION) {
+                // when received the result of requesting USB permission
+//                synchronized(UsbPortManager) {
+                val device: UsbDevice? = intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
+                if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
+                    if (device != null) {
+                        // get permission, call onConnect
+                        mOnDeviceConnectListener.onAttach(device);
+                    }
+                } else {
+                    // failed to get permission
+                    mOnDeviceConnectListener.onDettach(device);
+                }
+//                }
+            }
+        }
+    }
     private val mOnDeviceConnectListener = object : USBMonitor.OnDeviceConnectListener {
         override fun onAttach(device: UsbDevice?) {
-            if (device?.getDeviceType() == UsbDeviceType.VIDEO) {
-                Timber.i("[UsbCam-ATTACHED] : $device")
-                val port = registerUsbCamDevice(device.deviceId)
-                deviceMutex.lock()
-                assetManager.addAsset(UsbCamera.Builder.createNew("$port"))
-                deviceMutex.unlock()
-                mUSBMonitor?.processConnect(device)
-            }
+            if (mUSBMonitor?.hasPermission(device) == true)
+                processAttach(device)
+            else
+                mUSBMonitor?.requestPermission(device)
         }
 
         override fun onDettach(device: UsbDevice?) {
-            if (device?.getDeviceType() == UsbDeviceType.VIDEO) {
-                Timber.i("[UsbCam-DETACHED] : $device")
-                val port = unRegisterUsbCamDevice(device.deviceId)
-                assetManager.removeAsset("$port", AssetType.CAM)
-            }
+            if (mUSBMonitor?.hasPermission(device) == true)
+                processDetach(device)
         }
 
         override fun onConnect(
@@ -104,13 +119,35 @@ class UsbCamManager @Inject constructor(
         }
     }
 
+    fun processAttach(device: UsbDevice?) {
+        if (device?.getDeviceType() == UsbDeviceType.VIDEO) {
+            Timber.i("[UsbCam-ATTACHED] : $device")
+            val port = registerUsbCamDevice(device.deviceId)
+            deviceMutex.lock()
+            assetManager.addAsset(UsbCamera.Builder.createNew("$port"))
+            deviceMutex.unlock()
+            mUSBMonitor?.processConnect(device)
+        }
+    }
+
+    fun processDetach(device: UsbDevice?) {
+        if (device?.getDeviceType() == UsbDeviceType.VIDEO) {
+            Timber.i("[UsbCam-DETACHED] : $device")
+            val port = unRegisterUsbCamDevice(device.deviceId)
+            assetManager.removeAsset("$port", AssetType.CAM)
+        }
+    }
+
     fun register() {
         mUSBMonitor = USBMonitor(context, mOnDeviceConnectListener)
+        val filter = IntentFilter(UsbPortManager.ACTION_USB_PERMISSION)
+        context.registerReceiver(usbReceiver, filter)
         mUSBMonitor?.register()
     }
 
     fun dispose() {
         mUSBMonitor?.destroy()
+        context.unregisterReceiver(usbReceiver)
         mUSBMonitor = null
     }
 
