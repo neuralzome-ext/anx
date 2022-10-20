@@ -1,18 +1,24 @@
 package com.flomobility.hermes.assets.types.camera
 
 import android.annotation.SuppressLint
+import android.content.Context
+import android.content.res.Configuration
 import android.hardware.camera2.CameraMetadata
 import android.hardware.camera2.CaptureRequest
 import android.os.Handler
 import android.os.Looper
 import android.os.Message
+import android.util.Range
+import android.util.Size
+import androidx.camera.camera2.internal.compat.CameraCharacteristicsCompat
+import androidx.camera.camera2.internal.compat.quirk.CamcorderProfileResolutionQuirk
 import androidx.camera.camera2.interop.Camera2CameraControl
+import androidx.camera.camera2.interop.Camera2CameraInfo
 import androidx.camera.camera2.interop.CaptureRequestOptions
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.lifecycle.ProcessCameraProvider
-import androidx.lifecycle.LifecycleOwner
-import com.flomobility.hermes.HermesApplication
+import androidx.lifecycle.ProcessLifecycleOwner
 import com.flomobility.hermes.assets.AssetState
 import com.flomobility.hermes.assets.AssetType
 import com.flomobility.hermes.assets.BaseAssetConfig
@@ -20,6 +26,9 @@ import com.flomobility.hermes.common.Result
 import com.flomobility.hermes.other.Constants
 import com.flomobility.hermes.other.Constants.SOCKET_BIND_DELAY_IN_MS
 import com.flomobility.hermes.other.handleExceptions
+import com.flomobility.hermes.other.toByteArray
+import com.flomobility.hermes.other.toJpeg
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -29,11 +38,17 @@ import org.zeromq.ZMQ
 import timber.log.Timber
 import java.nio.ByteBuffer
 import java.util.concurrent.Executors
+import javax.inject.Inject
+import javax.inject.Singleton
 import kotlin.Exception
 
-class PhoneCamera : Camera() {
+@SuppressLint("RestrictedApi", "UnsafeOptInUsageError", "VisibleForTests")
+@Singleton
+class PhoneBackCamera @Inject constructor(
+    @ApplicationContext private val context: Context
+) : Camera() {
 
-    private var _id: String = ""
+    private var _id: String = "0"
 
     private val _config = Config()
 
@@ -58,11 +73,10 @@ class PhoneCamera : Camera() {
     /**
      * CameraX Related Initialisation
      */
-    private val cameraProviderFuture = ProcessCameraProvider.getInstance(HermesApplication.appContext)
+    private val cameraProviderFuture = ProcessCameraProvider.getInstance(context)
 
-    private val imageAnalysis = ImageAnalysis.Builder()
+    private val imageAnalysisBuilder = ImageAnalysis.Builder()
         .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-        .build()
 
     private val cameraProvider = cameraProviderFuture.get()
 
@@ -72,6 +86,35 @@ class PhoneCamera : Camera() {
 
     private val executor = Executors.newSingleThreadExecutor()
     private lateinit var camera: androidx.camera.core.Camera
+
+    init {
+        GlobalScope.launch(Dispatchers.Main) {
+            camera = cameraProvider.bindToLifecycle(
+                ProcessLifecycleOwner.get(),
+                cameraSelector
+            )
+            val characteristics = CameraCharacteristicsCompat.toCameraCharacteristicsCompat(
+                Camera2CameraInfo.extractCameraCharacteristics(camera.cameraInfo)
+            )
+            val previewSizes = CamcorderProfileResolutionQuirk(characteristics).supportedResolutions
+//            Timber.d("Preview sizes : $previewSizes")
+            val streams = mutableListOf<Config.Stream>()
+            listOf(1, 2, 5, 10, 15, 30).forEach { fps ->
+                previewSizes.forEach { size ->
+                    streams.add(
+                        Config.Stream(
+                            fps = fps,
+                            width = size.width,
+                            height = size.height,
+                            pixelFormat = Config.Stream.PixelFormat.MJPEG
+                        )
+                    )
+                }
+            }
+            this@PhoneBackCamera._config.loadStreams(streams)
+            cameraProvider.unbindAll()
+        }
+    }
 
     override fun updateConfig(config: BaseAssetConfig): Result {
         if (config !is Camera.Config) {
@@ -98,13 +141,28 @@ class PhoneCamera : Camera() {
             _state = AssetState.STREAMING
             streamingThread = StreamingThread()
             streamingThread?.start()
-            val stream = _config.stream.value
             streamingThread?.updateAddress()
 
             GlobalScope.launch(Dispatchers.Main) {
 
+                val imageAnalysis = imageAnalysisBuilder
+                    .setTargetResolution(
+                        when (context.resources.configuration.orientation) {
+                            Configuration.ORIENTATION_PORTRAIT -> Size(
+                                _config.stream.value.height,
+                                _config.stream.value.width
+                            )
+                            Configuration.ORIENTATION_LANDSCAPE -> Size(
+                                _config.stream.value.width,
+                                _config.stream.value.height
+                            )
+                            else -> Size(_config.stream.value.width, _config.stream.value.height)
+                        }
+                    )
+                    .build()
+
                 camera = cameraProvider.bindToLifecycle(
-                    HermesApplication.appContext as LifecycleOwner,
+                    ProcessLifecycleOwner.get(),
                     cameraSelector,
                     imageAnalysis
                 )
@@ -115,27 +173,34 @@ class PhoneCamera : Camera() {
                 val captureRequestOptions = CaptureRequestOptions.Builder()
                     .setCaptureRequestOption(
                         CaptureRequest.CONTROL_AF_MODE,
-                        CameraMetadata.CONTROL_AF_MODE_OFF
+                        CameraMetadata.CONTROL_AF_MODE_OFF,
+                    )
+                    .setCaptureRequestOption(
+                        CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE,
+                        Range(_config.stream.value.fps, _config.stream.value.fps)
                     )
                     .build()
 
                 camera2CameraControl.captureRequestOptions = captureRequestOptions
 
-                cameraPreviewCallBack()
+                cameraPreviewCallBack(imageAnalysis)
             }
             return Result(success = true)
         }
         return Result(success = false, message = Constants.UNKNOWN_ERROR_MSG)
     }
 
-    private fun cameraPreviewCallBack(){
+    private fun cameraPreviewCallBack(imageAnalysis: ImageAnalysis) {
         cameraProviderFuture.addListener(Runnable {
             imageAnalysis.setAnalyzer(executor, ImageAnalysis.Analyzer { image ->
-                Timber.i("cameraPreview - Phone Camera CallBack")
-                val bytes = ByteArray(image.planes[0].buffer.remaining())
-                val byteBuffer = image.planes[0].buffer[bytes]
-                streamingThread?.publishFrame(byteBuffer)
-                image.close()
+                try {
+                    Timber.i("cameraPreview - Phone Camera CallBack")
+                    streamingThread?.publishFrame(
+                        image.toJpeg(compressionQuality = 50) ?: throw Throwable("Couldn't get JPEG image")
+                    )
+                } catch (t: Throwable) {
+                    Timber.e("Error in getting Img : ${t.message}")
+                }
             })
 
         }, executor)
@@ -147,6 +212,11 @@ class PhoneCamera : Camera() {
             Result(success = false, message = e.message ?: Constants.UNKNOWN_ERROR_MSG)
         }) {
             _state = AssetState.IDLE
+            GlobalScope.launch(Dispatchers.Main) {
+                cameraProvider.unbindAll()
+            }
+            streamingThread?.kill()
+            streamingThread = null
             return Result(success = true)
         }
         return Result(success = false, message = Constants.UNKNOWN_ERROR_MSG)
@@ -161,7 +231,7 @@ class PhoneCamera : Camera() {
     inner class StreamingThread : Thread() {
 
         init {
-            name = "${this@PhoneCamera.name}-streaming-thread"
+            name = "${this@PhoneBackCamera.name}-streaming-thread"
         }
 
         private var handler: StreamingThreadHandler? = null
@@ -178,7 +248,7 @@ class PhoneCamera : Camera() {
             while (address.isEmpty()) {
                 continue
             }
-            Timber.i("[${this@PhoneCamera.name}] - Starting Publisher on $address")
+            Timber.i("[${this@PhoneBackCamera.name}] - Starting Publisher on $address")
             try {
                 ZContext().use { ctx ->
                     socket = ctx.createSocket(SocketType.PUB)
@@ -190,7 +260,7 @@ class PhoneCamera : Camera() {
                 }
                 socket.unbind(address)
                 sleep(SOCKET_BIND_DELAY_IN_MS)
-                Timber.i("[${this@PhoneCamera.name}] - Stopping Publisher on $address")
+                Timber.i("[${this@PhoneBackCamera.name}] - Stopping Publisher on $address")
             } catch (e: Exception) {
                 Timber.e(e)
             }
@@ -198,6 +268,10 @@ class PhoneCamera : Camera() {
 
         fun publishFrame(frame: ByteBuffer) {
             handler?.sendMsg(MSG_STREAM_FRAME, frame)
+        }
+
+        fun publishFrame(frame: ByteArray) {
+            handler?.sendMsg(MSG_STREAM_FRAME_BYTE_ARRAY, frame)
         }
 
         fun kill() {
@@ -209,10 +283,14 @@ class PhoneCamera : Camera() {
                 when (msg.what) {
                     MSG_STREAM_FRAME -> {
 //                        val elapsed = measureTimeMillis {
-                            val frame = msg.obj as ByteBuffer
-                            socket.sendByteBuffer(frame, ZMQ.DONTWAIT)
+                        val frame = msg.obj as ByteBuffer
+                        socket.sendByteBuffer(frame, ZMQ.DONTWAIT)
 //                        }
 //                        Timber.d("$elapsed")
+                    }
+                    MSG_STREAM_FRAME_BYTE_ARRAY -> {
+                        val frame = msg.obj as ByteArray
+                        socket.send(frame, ZMQ.DONTWAIT)
                     }
                     Constants.SIG_KILL_THREAD -> {
                         myLooper.quitSafely()
@@ -228,6 +306,7 @@ class PhoneCamera : Camera() {
 
     companion object {
         private const val MSG_STREAM_FRAME = 9
+        private const val MSG_STREAM_FRAME_BYTE_ARRAY = 10
     }
 
 }
