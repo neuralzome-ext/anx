@@ -99,7 +99,6 @@ class PhoneManager @Inject constructor(
         for (i in 0 until calcCpuCoreCount()) {
             currentFreq.add(takeCurrentCpuFreq(i))
         }
-        Timber.d("Current Frequencies : ${currentFreq.toList()}")
         return currentFreq.average()
 //        return -1.0
     }
