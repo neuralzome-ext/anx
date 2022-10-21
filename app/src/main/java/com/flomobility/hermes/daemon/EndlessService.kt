@@ -15,7 +15,6 @@ import com.flomobility.hermes.R
 import com.flomobility.hermes.assets.AssetManager
 import com.flomobility.hermes.comms.SessionManager
 import com.flomobility.hermes.comms.SocketManager
-import com.flomobility.hermes.other.Constants
 import com.flomobility.hermes.other.Constants.ACTION_START_OR_RESUME_SERVICE
 import com.flomobility.hermes.other.Constants.ACTION_STOP_SERVICE
 import com.flomobility.hermes.other.Constants.NOTIFICATION_CHANNEL_ID
@@ -78,7 +77,7 @@ class EndlessService : LifecycleService() {
                 Intent(this, EndlessService::class.java).apply {
                     action = ACTION_STOP_SERVICE
                 },
-                PendingIntent.FLAG_UPDATE_CURRENT
+                if (Build.VERSION.SDK_INT >= 31) PendingIntent.FLAG_IMMUTABLE else PendingIntent.FLAG_UPDATE_CURRENT
             )
         currentNotificationBuilder =
             baseNotificationBuilder.addAction(R.drawable.ic_stop, "Exit", pendingIntent)

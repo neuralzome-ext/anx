@@ -11,5 +11,9 @@ class StandardResponse(
 
 data class GetIdentityResponse(
     @SerializedName("imei")
-    val imei: String = ""
+    val imei: String = "0",
+    @SerializedName("success")
+    var success: Boolean = false,
+    @SerializedName("message")
+    var message: String = ""
 )

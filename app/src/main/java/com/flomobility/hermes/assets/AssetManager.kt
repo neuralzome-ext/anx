@@ -3,6 +3,7 @@ package com.flomobility.hermes.assets
 import android.os.Handler
 import android.os.Looper
 import android.os.Message
+import com.flomobility.hermes.assets.types.PhoneGNSS
 import com.flomobility.hermes.assets.types.Phone
 import com.flomobility.hermes.assets.types.PhoneImu
 import com.flomobility.hermes.assets.types.Speaker
@@ -27,6 +28,7 @@ class AssetManager @Inject constructor(
     private val phoneImu: PhoneImu,
     private val phone: Phone,
     private val speaker: Speaker,
+    private val phoneGnss: PhoneGNSS,
     private val phoneBackCamera: PhoneBackCamera
 ) {
 
@@ -45,6 +47,7 @@ class AssetManager @Inject constructor(
         addAsset(phoneImu)
         addAsset(phone)
         addAsset(speaker)
+        addAsset(phoneGnss)
         addAsset(phoneBackCamera)
     }
 
