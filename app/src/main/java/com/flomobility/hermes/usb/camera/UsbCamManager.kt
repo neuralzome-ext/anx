@@ -56,15 +56,19 @@ class UsbCamManager @Inject constructor(
     }
     private val mOnDeviceConnectListener = object : USBMonitor.OnDeviceConnectListener {
         override fun onAttach(device: UsbDevice?) {
-            if (mUSBMonitor?.hasPermission(device) == true)
-                processAttach(device)
-            else
-                mUSBMonitor?.requestPermission(device)
+            if(device?.getDeviceType() == UsbDeviceType.VIDEO) {
+                if (mUSBMonitor?.hasPermission(device) == true)
+                    processAttach(device)
+                else
+                    mUSBMonitor?.requestPermission(device)
+            }
         }
 
         override fun onDettach(device: UsbDevice?) {
-            if (mUSBMonitor?.hasPermission(device) == true)
-                processDetach(device)
+            if(device?.getDeviceType() == UsbDeviceType.VIDEO) {
+                if (mUSBMonitor?.hasPermission(device) == true)
+                    processDetach(device)
+            }
         }
 
         override fun onConnect(
@@ -73,41 +77,7 @@ class UsbCamManager @Inject constructor(
             createNew: Boolean
         ) {
             Timber.i("[UsbCam-CONNECTED] : ${device?.deviceId}")
-            val port = cameraRegistry[device?.deviceId ?: return]
-            val usbCam =
-                assetManager.assets.find { it.id == "$port" && it.type == AssetType.CAM } as UsbCamera
-            val handler =
-                UVCCameraHandler.createHandler(2)
-            usbCam.setCameraThread(handler)
-            handler?.addCallback(object : CameraCallback {
-                override fun onOpen() {
-                    deviceMutex.lock()
-                    val supportedStreams = handler.camera?.supportedStreams ?: return
-                    (usbCam.config as Camera.Config).loadStreams(
-                        Camera.Config.toStreamList(supportedStreams)
-                    )
-                    deviceMutex.unlock()
-                }
 
-                override fun onClose() {
-                }
-
-                override fun onStartPreview() {
-                }
-
-                override fun onStopPreview() {
-                }
-
-                override fun onStartRecording() {
-                }
-
-                override fun onStopRecording() {
-                }
-
-                override fun onError(e: Exception?) {
-                }
-            })
-            handler?.open(ctrlBlock)
         }
 
         override fun onDisconnect(device: UsbDevice?, ctrlBlock: USBMonitor.UsbControlBlock?) {
@@ -123,10 +93,10 @@ class UsbCamManager @Inject constructor(
         if (device?.getDeviceType() == UsbDeviceType.VIDEO) {
             Timber.i("[UsbCam-ATTACHED] : $device")
             val port = registerUsbCamDevice(device.deviceId)
-            deviceMutex.lock()
+            /*deviceMutex.lock()
             assetManager.addAsset(UsbCamera.Builder.createNew("$port"))
             deviceMutex.unlock()
-            mUSBMonitor?.processConnect(device)
+            mUSBMonitor?.processConnect(device)*/
         }
     }
 
@@ -136,19 +106,6 @@ class UsbCamManager @Inject constructor(
             val port = unRegisterUsbCamDevice(device.deviceId)
             assetManager.removeAsset("$port", AssetType.CAM)
         }
-    }
-
-    fun register() {
-        mUSBMonitor = USBMonitor(context, mOnDeviceConnectListener)
-        val filter = IntentFilter(UsbPortManager.ACTION_USB_PERMISSION)
-        context.registerReceiver(usbReceiver, filter)
-        mUSBMonitor?.register()
-    }
-
-    fun dispose() {
-        mUSBMonitor?.destroy()
-        context.unregisterReceiver(usbReceiver)
-        mUSBMonitor = null
     }
 
     /**
