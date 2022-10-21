@@ -50,7 +50,7 @@ class Phone @Inject constructor(
         get() = _state
 
     override fun updateConfig(config: BaseAssetConfig): Result {
-        if (config !is Phone.Config) {
+        if (config !is Config) {
             return Result(success = false, message = "Unknown config type")
         }
 
@@ -103,14 +103,23 @@ class Phone @Inject constructor(
                     socket.bind(address)
                     // wait
                     sleep(500)
-                    while (!Thread.currentThread().isInterrupted) {
+                    while (!currentThread().isInterrupted) {
                         try {
                             val chargingStatus = phoneManager.getChargingStatus()
+                            val cpuRam = phoneManager.getMemoryInfo()
+                            val cpuTemp = phoneManager.getCPUTemperature()
+                            val cpuUsage = phoneManager.getCpu()
+                            val gpuUsage = phoneManager.getGpuUsage()
                             val phoneState = PhoneState(
-                                charging = chargingStatus
+                                charging = chargingStatus,
+                                cpuRamUsage = cpuRam,
+                                cpuTemp = cpuTemp,
+                                cpuUsage = cpuUsage,
+                                gpuUsage = gpuUsage,
+                                gpuVramUsage = -1.0
                             )
                             socket.send(gson.toJson(phoneState).toByteArray(ZMQ.CHARSET), 0)
-                            sleep(1000L / (_config.fps.value as Int))
+                            sleep(1000L / _config.fps.value)
                         } catch (e: InterruptedException) {
                             break
                         } catch (e: Exception) {
