@@ -23,16 +23,6 @@
 
 package com.serenegiant.usb;
 
-import java.io.UnsupportedEncodingException;
-import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-
 import android.annotation.SuppressLint;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
@@ -43,6 +33,7 @@ import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbInterface;
 import android.hardware.usb.UsbManager;
+import android.os.Build;
 import android.os.Handler;
 import android.text.TextUtils;
 import android.util.Log;
@@ -50,6 +41,16 @@ import android.util.SparseArray;
 
 import com.serenegiant.utils.BuildCheck;
 import com.serenegiant.utils.HandlerThreadHandler;
+
+import java.io.UnsupportedEncodingException;
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 @SuppressLint("NewApi")
 public final class USBMonitor {
@@ -169,28 +170,50 @@ public final class USBMonitor {
     }
 
     /**
-     * register BroadcastReceiver to monitor USB events
-     *
-     * @throws IllegalStateException
+     * BroadcastReceiver for USB permission
      */
-    public synchronized void register() throws IllegalStateException {
-        if (destroyed) throw new IllegalStateException("already destroyed");
-        if (mPermissionIntent == null) {
-            if (DEBUG) Log.i(TAG, "register:");
-            final Context context = mWeakContext.get();
-            if (context != null) {
-                mPermissionIntent = PendingIntent.getBroadcast(context, 0, new Intent(ACTION_USB_PERMISSION), 0);
-                final IntentFilter filter = new IntentFilter(ACTION_USB_PERMISSION);
-                // ACTION_USB_DEVICE_ATTACHED never comes on some devices so it should not be added here
-                filter.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED);
-                filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
-                context.registerReceiver(mUsbReceiver, filter);
+    private final BroadcastReceiver mUsbReceiver = new BroadcastReceiver() {
+
+        @Override
+        public void onReceive(final Context context, final Intent intent) {
+            if (destroyed) return;
+            final String action = intent.getAction();
+            Log.d(TAG, "onReceive: Action is " + action);
+/*            if (ACTION_USB_PERMISSION.equals(action)) {
+                // when received the result of requesting USB permission
+                synchronized (USBMonitor.this) {
+                    final UsbDevice device = intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
+                    if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
+                        if (device != null) {
+                            // get permission, call onConnect
+                            processConnect(device);
+                        }
+                    } else {
+                        // failed to get permission
+                        processCancel(device);
+                    }
+                }
+            } else if (UsbManager.ACTION_USB_DEVICE_ATTACHED.equals(action)) {
+                final UsbDevice device = intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
+                processAttach(device);
+//                requestPermission(device);
+//                updatePermission(device, hasPermission(device));
+            } else */
+            if (UsbManager.ACTION_USB_DEVICE_DETACHED.equals(action)) {
+                // when device removed
+                final UsbDevice device = intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
+                if (device != null) {
+                    UsbControlBlock ctrlBlock = mCtrlBlocks.remove(device);
+                    if (ctrlBlock != null) {
+                        // cleanup
+                        ctrlBlock.close();
+                    }
+                    mDeviceCounts = 0;
+                    processDettach(device);
+                }
             }
-            // start connection check
-            mDeviceCounts = 0;
-            mAsyncHandler.postDelayed(mDeviceCheckRunnable, 1000);
         }
-    }
+    };
 
     /**
      * unregister BroadcastReceiver
@@ -416,23 +439,28 @@ public final class USBMonitor {
     }
 
     /**
-     * 内部で保持しているパーミッション状態を更新
+     * register BroadcastReceiver to monitor USB events
      *
-     * @param device
-     * @param hasPermission
-     * @return hasPermission
+     * @throws IllegalStateException
      */
-    private boolean updatePermission(final UsbDevice device, final boolean hasPermission) {
-        synchronized (mHasPermissions) {
-            if (hasPermission) {
-                if(mHasPermissions.get(device.hashCode()) == null) {
-                    mHasPermissions.put(device.hashCode(), new WeakReference<UsbDevice>(device));
-                }
-            } else {
-                mHasPermissions.remove(device.hashCode());
+    public synchronized void register() throws IllegalStateException {
+        if (destroyed) throw new IllegalStateException("already destroyed");
+        if (mPermissionIntent == null) {
+            if (DEBUG) Log.i(TAG, "register:");
+            final Context context = mWeakContext.get();
+            if (context != null) {
+                mPermissionIntent = PendingIntent.getBroadcast(context, 0,
+                        new Intent(ACTION_USB_PERMISSION), Build.VERSION.SDK_INT >= 31 ? PendingIntent.FLAG_IMMUTABLE : 0);
+                final IntentFilter filter = new IntentFilter(ACTION_USB_PERMISSION);
+                // ACTION_USB_DEVICE_ATTACHED never comes on some devices so it should not be added here
+                filter.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED);
+                filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
+                context.registerReceiver(mUsbReceiver, filter);
             }
+            // start connection check
+            mDeviceCounts = 0;
+            mAsyncHandler.postDelayed(mDeviceCheckRunnable, 1000);
         }
-        return hasPermission;
     }
 
     /**
@@ -492,49 +520,24 @@ public final class USBMonitor {
     }
 
     /**
-     * BroadcastReceiver for USB permission
+     * 内部で保持しているパーミッション状態を更新
+     *
+     * @param device
+     * @param hasPermission
+     * @return hasPermission
      */
-    private final BroadcastReceiver mUsbReceiver = new BroadcastReceiver() {
-
-        @Override
-        public void onReceive(final Context context, final Intent intent) {
-            if (destroyed) return;
-            final String action = intent.getAction();
-            Log.d(TAG, "onReceive: Action is " + action);
-/*            if (ACTION_USB_PERMISSION.equals(action)) {
-                // when received the result of requesting USB permission
-                synchronized (USBMonitor.this) {
-                    final UsbDevice device = intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
-                    if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
-                        if (device != null) {
-                            // get permission, call onConnect
-                            processConnect(device);
-                        }
-                    } else {
-                        // failed to get permission
-                        processCancel(device);
-                    }
+    private boolean updatePermission(final UsbDevice device, final boolean hasPermission) {
+        synchronized (mHasPermissions) {
+            if (hasPermission) {
+                if (mHasPermissions.get(device.hashCode()) == null) {
+                    mHasPermissions.put(device.hashCode(), new WeakReference<UsbDevice>(device));
                 }
-            } else if (UsbManager.ACTION_USB_DEVICE_ATTACHED.equals(action)) {
-                final UsbDevice device = intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
-                processAttach(device);
-//                requestPermission(device);
-//                updatePermission(device, hasPermission(device));
-            } else */if (UsbManager.ACTION_USB_DEVICE_DETACHED.equals(action)) {
-                // when device removed
-                final UsbDevice device = intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
-                if (device != null) {
-                    UsbControlBlock ctrlBlock = mCtrlBlocks.remove(device);
-                    if (ctrlBlock != null) {
-                        // cleanup
-                        ctrlBlock.close();
-                    }
-                    mDeviceCounts = 0;
-                    processDettach(device);
-                }
+            } else {
+                mHasPermissions.remove(device.hashCode());
             }
         }
-    };
+        return hasPermission;
+    }
 
     /**
      * number of connected & detected devices
@@ -1021,7 +1024,7 @@ public final class USBMonitor {
          * @param monitor
          * @param device
          */
-        private UsbControlBlock(final USBMonitor monitor, final UsbDevice device) {
+        public UsbControlBlock(final USBMonitor monitor, final UsbDevice device) {
             if (DEBUG) Log.i(TAG, "UsbControlBlock:constructor");
             mWeakMonitor = new WeakReference<USBMonitor>(monitor);
             mWeakDevice = new WeakReference<UsbDevice>(device);
@@ -1046,6 +1049,31 @@ public final class USBMonitor {
                 Log.e(TAG, "could not connect to device " + name);
             }
 //			}
+        }
+
+        public UsbControlBlock(final UsbManager usbManager, final UsbDevice device) {
+            mWeakMonitor = new WeakReference<USBMonitor>(null);
+            mWeakDevice = new WeakReference<UsbDevice>(device);
+            mConnection = usbManager.openDevice(device);
+            mInfo = updateDeviceInfo(usbManager, device, null);
+            final String name = device.getDeviceName();
+            final String[] v = !TextUtils.isEmpty(name) ? name.split("/") : null;
+            int busnum = 0;
+            int devnum = 0;
+            if (v != null) {
+                busnum = Integer.parseInt(v[v.length - 2]);
+                devnum = Integer.parseInt(v[v.length - 1]);
+            }
+            mBusNum = busnum;
+            mDevNum = devnum;
+//			if (DEBUG) {
+            if (mConnection != null) {
+                final int desc = mConnection.getFileDescriptor();
+                final byte[] rawDesc = mConnection.getRawDescriptors();
+                Log.i(TAG, String.format(Locale.US, "name=%s,desc=%d,busnum=%d,devnum=%d,rawDesc=", name, desc, busnum, devnum) + rawDesc);
+            } else {
+                Log.e(TAG, "could not connect to device " + name);
+            }
         }
 
         /**

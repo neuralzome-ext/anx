@@ -37,7 +37,7 @@ import android.util.Log;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 
-import com.serenegiant.usb.USBMonitor.UsbControlBlock;
+import com.serenegiant.usb.UsbControlBlock;
 
 public class UVCCamera {
 	private static final boolean DEBUG = false;	// TODO set false when releasing
