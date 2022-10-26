@@ -23,7 +23,7 @@ fun ImageProxy.toYUV(): YuvImage? {
     return yuvImage
 }
 
-fun ImageProxy.toJpeg(compressionQuality: Int = 50): ByteBuffer?{
+fun ImageProxy.toJpeg(compressionQuality: Int = 80): ByteBuffer?{
     val yuv = this.toYUV() ?: return null
     val stream = ByteArrayOutputStream()
     yuv.compressToJpeg(Rect(0, 0, this.width, this.height), compressionQuality, stream)
