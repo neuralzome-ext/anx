@@ -44,11 +44,11 @@ import kotlin.system.measureTimeMillis
 
 @SuppressLint("RestrictedApi", "UnsafeOptInUsageError", "VisibleForTests")
 @Singleton
-class PhoneBackCamera @Inject constructor(
+class PhoneFrontCamera @Inject constructor(
     @ApplicationContext private val context: Context
 ) : Camera() {
 
-    private var _id: String = "0"
+    private var _id: String = "1"
 
     private val _config = Config()
 
@@ -84,7 +84,7 @@ class PhoneBackCamera @Inject constructor(
     private val cameraProvider = cameraProviderFuture.get()
 
     private val cameraSelector = CameraSelector.Builder()
-        .requireLensFacing(CameraSelector.LENS_FACING_BACK)
+        .requireLensFacing(CameraSelector.LENS_FACING_FRONT)
         .build()
 
     private val executor = Executors.newSingleThreadExecutor()
@@ -102,6 +102,12 @@ class PhoneBackCamera @Inject constructor(
             val previewSizes = CamcorderProfileResolutionQuirk(characteristics).supportedResolutions
 //            Timber.d("Preview sizes : $previewSizes")
             val streams = mutableListOf<Config.Stream>()
+            streams.add(Config.Stream(
+                fps = 30,
+                width = 640,
+                height = 480,
+                pixelFormat = Config.Stream.PixelFormat.MJPEG)
+            )
 /*            listOf(1, 2, 5, 10, 15, 30).forEach { fps ->
                 previewSizes.forEach { size ->
                     streams.add(
@@ -114,13 +120,7 @@ class PhoneBackCamera @Inject constructor(
                     )
                 }
             }*/
-            streams.add(Config.Stream(
-                fps = 30,
-                width = 640,
-                height = 480,
-                pixelFormat = Config.Stream.PixelFormat.MJPEG)
-            )
-            this@PhoneBackCamera._config.loadStreams(streams)
+            this@PhoneFrontCamera._config.loadStreams(streams)
             cameraProvider.unbindAll()
         }
     }
@@ -204,17 +204,15 @@ class PhoneBackCamera @Inject constructor(
         cameraProviderFuture.addListener(Runnable {
             val frameCount = 30
             imageAnalysis.setAnalyzer(executor, ImageAnalysis.Analyzer { image ->
+                if (++frameCounter % frameCount == 0) {
+                    frameCounter = 0
+                    val now = System.currentTimeMillis()
+                    val delta = now - lastFpsTimestamp
+                    val fps = 1000 * frameCount.toFloat() / delta
+                    Timber.d("FPS: ${"%.02f".format(fps)}")
+                    lastFpsTimestamp = now
+                }
                 image.use {
-                    // Compute the FPS of the entire pipeline
-                    Timber.d("$frameCounter and ${frameCounter % frameCount == 0}")
-                    if (++frameCounter % frameCount == 0) {
-                        frameCounter = 0
-                        val now = System.currentTimeMillis()
-                        val delta = now - lastFpsTimestamp
-                        val fps = 1000 * frameCount.toFloat() / delta
-                        Timber.d("FPS: ${"%.02f".format(fps)}")
-                        lastFpsTimestamp = now
-                    }
                     try {
 //                        val imageBuffer = image.image?.planes?.toNV21(image.width, image.height)
                         streamingThread?.publishFrame(
@@ -253,7 +251,7 @@ class PhoneBackCamera @Inject constructor(
     inner class StreamingThread : Thread() {
 
         init {
-            name = "${this@PhoneBackCamera.name}-streaming-thread"
+            name = "${this@PhoneFrontCamera.name}-streaming-thread"
         }
 
         private var handler: StreamingThreadHandler? = null
@@ -270,7 +268,7 @@ class PhoneBackCamera @Inject constructor(
             while (address.isEmpty()) {
                 continue
             }
-            Timber.i("[${this@PhoneBackCamera.name}] - Starting Publisher on $address")
+            Timber.i("[${this@PhoneFrontCamera.name}] - Starting Publisher on $address")
             try {
                 ZContext().use { ctx ->
                     socket = ctx.createSocket(SocketType.PUB)
@@ -282,7 +280,7 @@ class PhoneBackCamera @Inject constructor(
                 }
                 socket.unbind(address)
                 sleep(SOCKET_BIND_DELAY_IN_MS)
-                Timber.i("[${this@PhoneBackCamera.name}] - Stopping Publisher on $address")
+                Timber.i("[${this@PhoneFrontCamera.name}] - Stopping Publisher on $address")
             } catch (e: Exception) {
                 Timber.e(e)
             }
@@ -301,7 +299,7 @@ class PhoneBackCamera @Inject constructor(
                 when (msg.what) {
                     MSG_STREAM_FRAME -> {
 //                        val elapsed = measureTimeMillis {
-                        socket.sendByteBuffer(msg.obj as ByteBuffer, 0)
+                            socket.sendByteBuffer(msg.obj as ByteBuffer, 0)
 //                        }
 //                        Timber.d("$elapsed")
                     }
@@ -325,6 +323,7 @@ class PhoneBackCamera @Inject constructor(
         private const val MSG_STREAM_FRAME = 9
         private const val MSG_STREAM_FRAME_BYTE_ARRAY = 10
     }
+
 
 
 }
