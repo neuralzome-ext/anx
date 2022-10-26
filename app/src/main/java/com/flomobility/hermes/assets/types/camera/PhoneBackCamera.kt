@@ -3,6 +3,8 @@ package com.flomobility.hermes.assets.types.camera
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.Configuration
+import android.graphics.ImageFormat
+import android.graphics.YuvImage
 import android.hardware.camera2.CameraMetadata
 import android.hardware.camera2.CaptureRequest
 import android.os.Handler
@@ -23,11 +25,8 @@ import com.flomobility.hermes.assets.AssetState
 import com.flomobility.hermes.assets.AssetType
 import com.flomobility.hermes.assets.BaseAssetConfig
 import com.flomobility.hermes.common.Result
-import com.flomobility.hermes.other.Constants
+import com.flomobility.hermes.other.*
 import com.flomobility.hermes.other.Constants.SOCKET_BIND_DELAY_IN_MS
-import com.flomobility.hermes.other.handleExceptions
-import com.flomobility.hermes.other.toByteArray
-import com.flomobility.hermes.other.toJpeg
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -41,6 +40,7 @@ import java.util.concurrent.Executors
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.Exception
+import kotlin.system.measureTimeMillis
 
 @SuppressLint("RestrictedApi", "UnsafeOptInUsageError", "VisibleForTests")
 @Singleton
@@ -145,6 +145,7 @@ class PhoneBackCamera @Inject constructor(
 
             GlobalScope.launch(Dispatchers.Main) {
 
+                cameraProvider.unbindAll()
                 val imageAnalysis = imageAnalysisBuilder
                     .setTargetResolution(
                         when (context.resources.configuration.orientation) {
@@ -193,16 +194,17 @@ class PhoneBackCamera @Inject constructor(
     private fun cameraPreviewCallBack(imageAnalysis: ImageAnalysis) {
         cameraProviderFuture.addListener(Runnable {
             imageAnalysis.setAnalyzer(executor, ImageAnalysis.Analyzer { image ->
-                try {
-                    Timber.i("cameraPreview - Phone Camera CallBack")
-                    streamingThread?.publishFrame(
-                        image.toJpeg(compressionQuality = 50) ?: throw Throwable("Couldn't get JPEG image")
-                    )
-                } catch (t: Throwable) {
-                    Timber.e("Error in getting Img : ${t.message}")
+                image.use {
+                    try {
+//                        val imageBuffer = image.image?.planes?.toNV21(image.width, image.height)
+                        streamingThread?.publishFrame(
+                            image.toJpeg() ?: throw Throwable("Couldn't get JPEG image")
+                        )
+                    } catch (t: Throwable) {
+                        Timber.e("Error in getting Img : ${t.message}")
+                    }
                 }
             })
-
         }, executor)
     }
 
@@ -270,10 +272,6 @@ class PhoneBackCamera @Inject constructor(
             handler?.sendMsg(MSG_STREAM_FRAME, frame)
         }
 
-        fun publishFrame(frame: ByteArray) {
-            handler?.sendMsg(MSG_STREAM_FRAME_BYTE_ARRAY, frame)
-        }
-
         fun kill() {
             handler?.sendMsg(Constants.SIG_KILL_THREAD)
         }
@@ -283,8 +281,7 @@ class PhoneBackCamera @Inject constructor(
                 when (msg.what) {
                     MSG_STREAM_FRAME -> {
 //                        val elapsed = measureTimeMillis {
-                        val frame = msg.obj as ByteBuffer
-                        socket.sendByteBuffer(frame, ZMQ.DONTWAIT)
+                            socket.sendByteBuffer(msg.obj as ByteBuffer, 0)
 //                        }
 //                        Timber.d("$elapsed")
                     }
@@ -308,5 +305,7 @@ class PhoneBackCamera @Inject constructor(
         private const val MSG_STREAM_FRAME = 9
         private const val MSG_STREAM_FRAME_BYTE_ARRAY = 10
     }
+
+
 
 }
