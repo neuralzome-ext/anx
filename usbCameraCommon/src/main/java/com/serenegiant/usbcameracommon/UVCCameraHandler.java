@@ -113,8 +113,8 @@ public class UVCCameraHandler extends AbstractUVCCameraHandler {
 		return (UVCCameraHandler)thread.getHandler();
 	}
 
-	public static final UVCCameraHandler createHandler(final int encoderType) {
-		final CameraThread thread = new CameraThread(UVCCameraHandler.class, encoderType);
+	public static final UVCCameraHandler createHandler(final int encoderType, final int id) {
+		final CameraThread thread = new CameraThread(UVCCameraHandler.class, encoderType, id);
 		thread.start();
 		return (UVCCameraHandler)thread.getHandler();
 	}

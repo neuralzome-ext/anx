@@ -110,7 +110,7 @@ class UsbPortManager @Inject constructor(
                 val port = usbCamManager.registerUsbCamDevice(usbDevice.deviceId)
                 val usbCam = UsbCamera.Builder.createNew("$port")
                 val handler =
-                    UVCCameraHandler.createHandler(2)
+                    UVCCameraHandler.createHandler(2, port)
                 usbCam.setCameraThread(handler)
                 handler?.addCallback(object : CameraCallback {
                     override fun onOpen() {
