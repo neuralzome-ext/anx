@@ -34,6 +34,7 @@ android {
         implementation "androidx.preference:preference:1.1.1"
         implementation "androidx.viewpager:viewpager:1.0.0"
         implementation "com.google.android.material:material:1.4.0"
+        //implementation 'com.google.guava:guava:27.0.1-android'
         implementation "com.google.guava:guava:24.1-jre"
         implementation "io.noties.markwon:core:$markwonVersion"
         implementation "io.noties.markwon:ext-strikethrough:$markwonVersion"
@@ -42,6 +43,9 @@ android {
 
         implementation project(":terminal-view")
         implementation project(":termux-shared")
+
+        implementation project(':usbCameraCommon')
+        implementation project(':libuvccamera')
 
         //Location
         implementation 'com.google.android.gms:play-services-location:20.0.0'
@@ -202,6 +206,19 @@ dependencies {
 
     //Location
     implementation 'com.google.android.gms:play-services-location:20.0.0'
+
+    def camerax_version = "1.1.0"
+
+    // CameraX core library using camera2 implementation
+    implementation("androidx.camera:camera-camera2:${camerax_version}") {
+        exclude group: 'com.google.guava', module: 'listenablefuture'
+    }
+
+    // CameraX Lifecycle Library
+    implementation("androidx.camera:camera-lifecycle:${camerax_version}") {
+        exclude group: 'com.google.guava', module: 'listenablefuture'
+    }
+
 
     // usb camera utils
     implementation("com.serenegiant:common:${commonLibVersion}") {

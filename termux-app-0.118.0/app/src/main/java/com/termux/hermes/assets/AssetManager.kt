@@ -4,11 +4,15 @@ import android.os.Handler
 import android.os.Looper
 import android.os.Message
 import com.termux.hermes.assets.types.PhoneGNSS
+import com.termux.hermes.assets.types.Phone
+import com.termux.hermes.assets.types.Speaker
 import com.termux.hermes.assets.types.PhoneImu
 import com.termux.hermes.common.Result
 import com.termux.hermes.comms.SessionManager
 import com.termux.hermes.other.Constants
 import com.termux.hermes.other.Constants.SOCKET_BIND_DELAY_IN_MS
+import com.termux.hermes.assets.types.camera.PhoneBackCamera
+import com.termux.hermes.assets.types.camera.PhoneFrontCamera
 import com.termux.hermes.other.handleExceptions
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -23,7 +27,11 @@ class AssetManager @Inject constructor(
     private val gson: Gson,
     private val sessionManager: SessionManager,
     private val phoneImu: PhoneImu,
+    private val phone: Phone,
+    private val speaker: Speaker,
     private val phoneGnss: PhoneGNSS,
+    private val phoneBackCamera: PhoneBackCamera,
+    private val phoneFrontCamera: PhoneFrontCamera
 ) {
 
     private val _assets = mutableListOf<BaseAsset>()
@@ -40,7 +48,11 @@ class AssetManager @Inject constructor(
 
         // Add inbuilt assets here
         addAsset(phoneImu)
+        addAsset(phone)
+        addAsset(speaker)
         addAsset(phoneGnss)
+        addAsset(phoneBackCamera)
+        addAsset(phoneFrontCamera)
 
     }
 
