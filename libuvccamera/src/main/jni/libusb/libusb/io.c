@@ -1360,6 +1360,7 @@ void API_EXPORTED libusb_free_transfer(struct libusb_transfer *transfer) {
 		free(transfer->buffer);
 
 	itransfer = LIBUSB_TRANSFER_TO_USBI_TRANSFER(transfer);
+	usbi_mutex_lock(&itransfer->lock);
 	usbi_mutex_destroy(&itransfer->lock);
 	free(itransfer);
 	transfer->user_data = NULL;	// XXX
