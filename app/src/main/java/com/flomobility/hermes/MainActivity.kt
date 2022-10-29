@@ -4,12 +4,9 @@ import android.Manifest
 import android.Manifest.permission.ACCESS_FINE_LOCATION
 import android.app.Activity
 import android.content.Intent
-import android.annotation.SuppressLint
 import android.content.IntentSender
 import android.content.pm.PackageManager
-import android.net.Uri
 import android.os.Bundle
-import android.provider.Settings
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -18,12 +15,14 @@ import com.flomobility.hermes.databinding.ActivityMainBinding
 import com.flomobility.hermes.other.Constants
 import com.flomobility.hermes.other.getIPAddressList
 import com.flomobility.hermes.phone.Device
+import com.google.android.gms.common.api.ResolvableApiException
+import com.google.android.gms.location.*
+import com.google.android.gms.location.Priority.PRIORITY_HIGH_ACCURACY
+import com.google.android.gms.tasks.Task
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
 import javax.inject.Inject
-import com.google.android.gms.common.api.ResolvableApiException
-import com.google.android.gms.location.*
 
 
 @AndroidEntryPoint
@@ -95,22 +94,8 @@ class MainActivity : AppCompatActivity() {
             return
         }
         Timber.d("All permissions granted")
+        createLocationRequest()
         sendCommandToService(Constants.ACTION_START_OR_RESUME_SERVICE, EndlessService::class.java)
-
-        if (!checkPermissions()) {
-            requestPermissions()
-        } else {
-            createLocationRequest()
-        }
-        /*requestPermissionLauncher.launch(
-               arrayOf(
-                   Manifest.permission.READ_SMS,
-                   Manifest.permission.READ_PHONE_NUMBERS,
-                   Manifest.permission.READ_PHONE_STATE,
-
-                   )
-           )*/
-
     }
 
     override fun onRequestPermissionsResult(
@@ -130,6 +115,7 @@ class MainActivity : AppCompatActivity() {
                     return
                 }
             }
+            requestPermissions()
             checkPermissions()
         }
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)

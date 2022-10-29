@@ -1,2 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools"
+    tools:ignore="MissingTranslation">
+    <string name="sample_ip">&#8226; 192.168.43.1 (wlan0)</string>
 </resources>

@@ -7,6 +7,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.hardware.usb.UsbDevice
 import android.hardware.usb.UsbManager
+import android.os.Build
 import com.flomobility.hermes.assets.AssetManager
 import com.flomobility.hermes.assets.AssetType
 import com.flomobility.hermes.assets.types.UsbSerial
@@ -168,7 +169,7 @@ class UsbPortManager @Inject constructor(
 
     fun init() {
         mPermissionIntent =
-            PendingIntent.getBroadcast(context, 0, Intent(ACTION_USB_PERMISSION), 0);
+            PendingIntent.getBroadcast(context, 0, Intent(ACTION_USB_PERMISSION), if (Build.VERSION.SDK_INT >= 31) PendingIntent.FLAG_IMMUTABLE else 0);
         val filter = IntentFilter(ACTION_USB_PERMISSION)
         filter.addAction(ACTION_USB_DETACHED)
         filter.addAction(ACTION_USB_ATTACHED)

@@ -28,11 +28,19 @@ android {
 
     defaultConfig {
         applicationId "com.flomobility.hermes"
-        minSdk 21
+        minSdk 28
         targetSdk 32
         versionCode 1
         versionName "0.1.0"
 
+        Properties properties = new Properties()
+        properties.load(project.rootProject.file('local.properties').newDataInputStream())
+        def FLO_DEVELOPMENT_URL = "FLO_DEVELOPMENT_URL"
+        def FLO_STAGING_URL = "FLO_STAGING_URL"
+        def FLO_PRODUCTION_URL = "FLO_PRODUCTION_URL"
+        buildConfigField("String","FLO_DEVELOPMENT_URL",properties.getProperty(FLO_DEVELOPMENT_URL))
+        buildConfigField("String","FLO_STAGING_URL",properties.getProperty(FLO_STAGING_URL))
+        buildConfigField("String","FLO_PRODUCTION_URL",properties.getProperty(FLO_PRODUCTION_URL))
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         externalNativeBuild {
             cmake {
@@ -75,7 +83,8 @@ android {
 dependencies {
 
     implementation 'androidx.core:core-ktx:1.7.0'
-    implementation 'androidx.appcompat:appcompat:1.3.0'
+    implementation 'androidx.appcompat:appcompat:1.3.0-beta01'
+//    implementation 'androidx.appcompat:appcompat:1.3.0'
     implementation 'com.google.android.material:material:1.4.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
 
@@ -84,8 +93,16 @@ dependencies {
 
     // Lifecycle
     implementation "androidx.lifecycle:lifecycle-extensions:2.2.0"
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.0'
     implementation "androidx.lifecycle:lifecycle-livedata-ktx:2.3.1"
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.3.1"
+
+    implementation 'androidx.activity:activity-ktx:1.2.0-rc01'
+    implementation 'androidx.fragment:fragment-ktx:1.3.0-rc01'
+
+    implementation "com.google.android.gms:play-services-auth:20.3.0"
+    implementation "androidx.security:security-crypto:1.0.0-alpha02"
+
 
     //Multidex
     implementation 'com.android.support:multidex:1.0.3'
@@ -106,11 +123,21 @@ dependencies {
     // serialization
     implementation 'com.google.code.gson:gson:2.8.9'
 
+    implementation 'com.github.ybq:Android-SpinKit:1.4.0'
+
     // apache commons
     implementation group: 'org.apache.commons', name: 'commons-collections4', version: '4.4'
 
     //Location
     implementation 'com.google.android.gms:play-services-location:20.0.0'
+
+    // Retrofit
+    implementation "com.squareup.retrofit2:retrofit:$retrofit_version"
+    implementation "com.squareup.retrofit2:converter-gson:$retrofit_version"
+    implementation "com.squareup.retrofit2:converter-scalars:$retrofit_version"
+    implementation "com.squareup.okhttp3:logging-interceptor:$okhttp_version"
+
+    implementation "com.mindorks.android:prdownloader:0.6.0"
 
     // usb camera utils
     implementation("com.serenegiant:common:${commonLibVersion}") {
