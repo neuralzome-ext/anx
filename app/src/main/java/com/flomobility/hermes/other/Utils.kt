@@ -3,6 +3,8 @@ package com.flomobility.hermes.other
 import android.content.SharedPreferences
 import com.flomobility.hermes.other.Constants.DEVICE_EXPIRY
 import com.flomobility.hermes.other.Constants.DEVICE_ID
+import com.flomobility.hermes.other.Constants.INSTALL_STATUS
+import com.flomobility.hermes.other.Constants.ON_BOOT
 import com.flomobility.hermes.other.Constants.USER_TOKEN
 import timber.log.Timber
 import java.io.BufferedReader
@@ -10,6 +12,7 @@ import java.io.InputStreamReader
 import java.net.InetAddress
 import java.net.NetworkInterface
 import java.nio.ByteBuffer
+import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.reflect.KClass
 
@@ -158,6 +161,19 @@ fun getIPAddressList(useIPv4: Boolean): ArrayList<String> {
     return ipAddresses
 }
 
+fun isExpired(expiryStr: String?): Boolean {
+    if (expiryStr == null)
+        return true
+    val formatter = SimpleDateFormat("yyyy-MM-dd hh:mm:ss", Locale.getDefault())
+    formatter.timeZone = TimeZone.getTimeZone("UTC")
+//    val expiry = formatter.parse(expiryStr.split("T")[0])
+    val expiry = formatter.parse(expiryStr.replace("T", " ").replace("Z", ""))
+    val now = Date()
+    return now.after(expiry)
+//    return (expiry.time - now.time)/86400000 < 0
+}
+
+
 fun SharedPreferences.putToken(key: String?) {
     if (key != null)
         this.edit().putString(USER_TOKEN, key).apply()
@@ -187,6 +203,22 @@ fun SharedPreferences.putDeviceExpiry(key: String?) {
 
 fun SharedPreferences.getDeviceExpiry(): String? {
     return this.getString(DEVICE_EXPIRY, null)
+}
+
+fun SharedPreferences.setIsInstalled(isInstalled: Boolean) {
+    this.edit().putBoolean(INSTALL_STATUS, isInstalled).apply()
+}
+
+fun SharedPreferences.getIsInstalled(): Boolean {
+    return this.getBoolean(INSTALL_STATUS, false)
+}
+
+fun SharedPreferences.setIsOnBoot(isOnBoot: Boolean) {
+    this.edit().putBoolean(ON_BOOT, isOnBoot).apply()
+}
+
+fun SharedPreferences.getIsOnBoot(): Boolean {
+    return this.getBoolean(ON_BOOT, false)
 }
 
 fun SharedPreferences.clear() {

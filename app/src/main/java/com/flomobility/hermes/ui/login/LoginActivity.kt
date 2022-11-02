@@ -71,6 +71,7 @@ class LoginActivity : ComponentActivity() {
      * Checks current status whether a user has already login or not
      **/
     private fun checkLoginStatus() {
+        Timber.d(sharedPreferences.getIsInstalled().toString())
         if (sharedPreferences.checkToken()) {
             DownloadActivity.navigateToDownload(this@LoginActivity)
             finish()
@@ -108,6 +109,12 @@ class LoginActivity : ComponentActivity() {
                     bind.spinKitLogin.visibility = View.VISIBLE
                 }
                 is Resource.Success -> {
+                    if (isExpired(it.peekContent().data?.robot?.expiry)) {
+                        showSnack("Your subscription has expired")
+                        bind.spinKitLogin.visibility = View.GONE
+                        bind.btnLogin.visibility = View.VISIBLE
+                        return@observe
+                    }
                     sharedPreferences.putToken(it.peekContent().data?.token)
                     sharedPreferences.putDeviceExpiry(it.peekContent().data?.robot?.expiry)
                     DownloadActivity.navigateToDownload(this@LoginActivity)

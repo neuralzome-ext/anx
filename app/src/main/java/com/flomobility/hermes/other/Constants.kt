@@ -23,6 +23,8 @@ object Constants {
     const val USER_TOKEN = "token"
     const val DEVICE_ID = "deviceId"
     const val DEVICE_EXPIRY = "deviceExpiry"
+    const val INSTALL_STATUS = "installStatus"
+    const val ON_BOOT = "onBoot"
 
     val BASE_URL: String = when (BUILD_TYPE) {
         HermesApplication.BuildType.DEBUG -> FLO_DEVELOPMENT_URL

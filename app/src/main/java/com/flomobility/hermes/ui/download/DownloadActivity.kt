@@ -165,7 +165,7 @@ class DownloadActivity : AppCompatActivity() {
         bind.progressIndeterminate.visibility = View.VISIBLE
         bind.progressPercent.text = ""
         CoroutineScope(Dispatchers.Main).launch {
-            delay(5000)
+            delay(2000)
             runOnUiThread {
                 DashboardActivity.navigateToDashboard(this@DownloadActivity)
                 finish()

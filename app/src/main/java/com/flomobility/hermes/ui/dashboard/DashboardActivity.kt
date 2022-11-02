@@ -19,6 +19,7 @@ import com.flomobility.hermes.network.requests.InfoRequest
 import com.flomobility.hermes.other.*
 import com.flomobility.hermes.other.viewutils.AlertDialog
 import com.flomobility.hermes.ui.login.LoginActivity
+import com.flomobility.hermes.ui.settings.SettingsActivity
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -72,6 +73,9 @@ class DashboardActivity : AppCompatActivity() {
                     }
                 ).show(supportFragmentManager, AlertDialog.TAG)
             }
+            settings.setOnClickListener {
+                SettingsActivity.navigateToSetting(this@DashboardActivity)
+            }
         }
     }
 
@@ -82,12 +86,13 @@ class DashboardActivity : AppCompatActivity() {
 
                 }
                 is Resource.Success -> {
-                    if (it.peekContent().data?.access == false) {
+                    if (it.peekContent().data?.access == false || isExpired(it.peekContent().data?.expiry)) {
                         showSnack("Your access has been revoked")
                         logout()
                         return@observe
                     }
                     sharedPreferences.putDeviceExpiry(it.peekContent().data?.expiry)
+
                 }
                 is Resource.Error -> {
                     when (it.peekContent().errorData?.code) {
