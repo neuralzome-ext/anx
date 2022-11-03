@@ -1024,7 +1024,7 @@ public final class USBMonitor {
          * @param monitor
          * @param device
          */
-        private UsbControlBlock(final USBMonitor monitor, final UsbDevice device) {
+        public UsbControlBlock(final USBMonitor monitor, final UsbDevice device) {
             if (DEBUG) Log.i(TAG, "UsbControlBlock:constructor");
             mWeakMonitor = new WeakReference<USBMonitor>(monitor);
             mWeakDevice = new WeakReference<UsbDevice>(device);
@@ -1049,6 +1049,31 @@ public final class USBMonitor {
                 Log.e(TAG, "could not connect to device " + name);
             }
 //			}
+        }
+
+        public UsbControlBlock(final UsbManager usbManager, final UsbDevice device) {
+            mWeakMonitor = new WeakReference<USBMonitor>(null);
+            mWeakDevice = new WeakReference<UsbDevice>(device);
+            mConnection = usbManager.openDevice(device);
+            mInfo = updateDeviceInfo(usbManager, device, null);
+            final String name = device.getDeviceName();
+            final String[] v = !TextUtils.isEmpty(name) ? name.split("/") : null;
+            int busnum = 0;
+            int devnum = 0;
+            if (v != null) {
+                busnum = Integer.parseInt(v[v.length - 2]);
+                devnum = Integer.parseInt(v[v.length - 1]);
+            }
+            mBusNum = busnum;
+            mDevNum = devnum;
+//			if (DEBUG) {
+            if (mConnection != null) {
+                final int desc = mConnection.getFileDescriptor();
+                final byte[] rawDesc = mConnection.getRawDescriptors();
+                Log.i(TAG, String.format(Locale.US, "name=%s,desc=%d,busnum=%d,devnum=%d,rawDesc=", name, desc, busnum, devnum) + rawDesc);
+            } else {
+                Log.e(TAG, "could not connect to device " + name);
+            }
         }
 
         /**

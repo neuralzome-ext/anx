@@ -4,7 +4,7 @@
 ### Terminology
 > Asset - an entity of the phone for which access is granted via an API.
 
-Refer [Hermes API docs](https://github.com/flomobility/api_docs/blob/main/hermes_api.md)
+Refer [Hermes API docs](https://github.com/flomobility/api_docs/tree/v0.1.0)
 
 ### Available assets
 1. Phone IMU

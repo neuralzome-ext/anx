@@ -28,10 +28,10 @@ android {
 
     defaultConfig {
         applicationId "com.flomobility.hermes"
-        minSdk 28
-        targetSdk 32
-        versionCode 1
-        versionName "0.1.0"
+        minSdk 21
+        targetSdk 27
+        versionCode 5
+        versionName "0.6.3"
 
         Properties properties = new Properties()
         properties.load(project.rootProject.file('local.properties').newDataInputStream())
@@ -118,6 +118,7 @@ dependencies {
 
     // Dagger-Hilt
     implementation "com.google.dagger:hilt-android:2.42"
+    implementation 'androidx.camera:camera-video:1.1.0'
     kapt "com.google.dagger:hilt-compiler:2.42"
 
     // serialization
@@ -138,6 +139,14 @@ dependencies {
     implementation "com.squareup.okhttp3:logging-interceptor:$okhttp_version"
 
     implementation "com.mindorks.android:prdownloader:0.6.0"
+
+    def camerax_version = "1.1.0"
+
+    // CameraX core library using camera2 implementation
+    implementation "androidx.camera:camera-camera2:$camerax_version"
+
+    // CameraX Lifecycle Library
+    implementation "androidx.camera:camera-lifecycle:$camerax_version"
 
     // usb camera utils
     implementation("com.serenegiant:common:${commonLibVersion}") {

@@ -119,14 +119,20 @@ class Speaker @Inject constructor(
                     socket = ctx.createSocket(SocketType.SUB)
                     socket.connect(address)
                     socket.subscribe("")
+
+                    val poller = ctx.createPoller(1)
+                    poller.register(socket)
                     while (!interrupt.get()) {
                         try {
-                            val recvBytes = socket.recv(ZMQ.DONTWAIT) ?: continue
-                            val rawData = GsonUtils.getGson().fromJson<Raw>(
-                                String(recvBytes, ZMQ.CHARSET),
-                                Raw.type
-                            )
-                            speak(rawData.data)
+                            poller.poll(100)
+                            if (poller.pollin(0)) {
+                                val recvBytes = socket.recv(0)
+                                val rawData = GsonUtils.getGson().fromJson<Raw>(
+                                    String(recvBytes, ZMQ.CHARSET),
+                                    Raw.type
+                                )
+                                speak(rawData.data)
+                            }
                         } catch (e: Exception) {
                             Timber.e(e)
                             return

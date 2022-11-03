@@ -110,7 +110,8 @@ class Phone @Inject constructor(
                                 cpuRamUsage = cpuRam,
                                 cpuTemp = cpuTemp,
                                 cpuUsage = cpuUsage,
-                                gpuUsage = gpuUsage
+                                gpuUsage = gpuUsage,
+                                gpuVramUsage = -1.0
                             )
                             socket.send(gson.toJson(phoneState).toByteArray(ZMQ.CHARSET), 0)
                             sleep(1000L / _config.fps.value)

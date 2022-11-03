@@ -1,5 +1,6 @@
 package com.flomobility.hermes.phone
 
+import android.annotation.SuppressLint
 import android.app.ActivityManager
 import android.content.Context
 import android.os.BatteryManager
@@ -7,6 +8,7 @@ import android.os.Build
 import android.telephony.TelephonyManager
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import com.flomobility.hermes.common.Result
 import com.flomobility.hermes.other.getRootOutput
 import com.flomobility.hermes.other.runAsRoot
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -38,6 +40,7 @@ class PhoneManager @Inject constructor(
         context.getSystemService(Context.BATTERY_SERVICE) as BatteryManager
     }
 
+    @SuppressLint("MissingPermission")
     fun getIdentity(): String {
         val telemamanger =
             context.getSystemService(AppCompatActivity.TELEPHONY_SERVICE) as TelephonyManager
@@ -51,7 +54,7 @@ class PhoneManager @Inject constructor(
     fun getChargingStatus(): Boolean {
         val batteryStatus = batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_STATUS)
         return (batteryStatus == BatteryManager.BATTERY_STATUS_CHARGING
-                || batteryStatus == BatteryManager.BATTERY_STATUS_FULL)
+            || batteryStatus == BatteryManager.BATTERY_STATUS_FULL)
     }
 
     /**
@@ -64,7 +67,7 @@ class PhoneManager @Inject constructor(
         val memoryInfo = ActivityManager.MemoryInfo()
         val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
         activityManager.getMemoryInfo(memoryInfo)//Code not being used
-        return 100.0 - (memoryInfo.availMem * 100.0) / memoryInfo.totalMem
+        return (memoryInfo.availMem * 100.0) / memoryInfo.totalMem
     }
 
     /**
@@ -97,36 +100,40 @@ class PhoneManager @Inject constructor(
             currentFreq.add(takeCurrentCpuFreq(i))
         }
         return currentFreq.average()
+//        return -1.0
     }
 
     fun getGpuUsage(): Double {
-        return try {
+        try {
+            if (!device.isRooted) return -1.0
+
             val currentFreq: Double
             val curFreq = getRootOutput("cat /sys/class/kgsl/kgsl-3d0/clock_mhz")
             val minFreq = getRootOutput("cat /sys/class/kgsl/kgsl-3d0/min_clock_mhz")
             val maxFreq = getRootOutput("cat /sys/class/kgsl/kgsl-3d0/max_clock_mhz")
             currentFreq =
                 ((curFreq.toDouble() - minFreq.toDouble()) * 100 / (maxFreq.toDouble() - minFreq.toDouble()))
-            Timber.d("GPUUSAGE Current Frequency of Cores is $currentFreq")
-            currentFreq
-        } catch (ex: IOException) {
-            Timber.e("GPUUSAGE Core is Idle")
+//            Timber.d("GPUUSAGE Current Frequency of Cores is $currentFreq")
+            return currentFreq
+        } catch (ex: Exception) {
+//            Timber.e("GPUUSAGE Core is Idle")
             ex.printStackTrace()
-            -1.0
+            return -1.0
         }
     }
 
-    private fun readIntegerFile(filePath: String): Double {
-        return try {
-            val reader = BufferedReader(
+    private fun readIntegerFile(filePath: String): Int {
+        try {
+            BufferedReader(
                 InputStreamReader(FileInputStream(filePath)), 1000
-            )
-            val line = reader.readLine()
-            reader.close()
-            line.toDouble() / 1000
-        } catch (e: java.lang.Exception) {
-            e.printStackTrace()
-            -1.00
+            ).use { reader ->
+                val line = reader.readLine()
+                return Integer.parseInt(line)
+            }
+        } catch (e: Exception) {
+            // 冬眠してるコアのデータは取れないのでログを出力しない
+            //Timber.e(e);
+            return 0
         }
     }
 
@@ -134,19 +141,20 @@ class PhoneManager @Inject constructor(
         val curFreq =
             readIntegerFile("/sys/devices/system/cpu/cpu$coreIndex/cpufreq/scaling_cur_freq")
         val minFreq =
-            readIntegerFile("/sys/devices/system/cpu/cpu$coreIndex/cpufreq/scaling_min_freq")
+            readIntegerFile("/sys/devices/system/cpu/cpu$coreIndex/cpufreq/cpuinfo_min_freq")
         val maxFreq =
-            readIntegerFile("/sys/devices/system/cpu/cpu$coreIndex/cpufreq/scaling_max_freq")
-        val currentFreq = ((curFreq - minFreq) * 100 / (maxFreq - minFreq))
-        Timber.d(
-            "FLOCPU $coreIndex $currentFreq ${readIntegerFile("/sys/devices/system/cpu/cpu$coreIndex/cpufreq/scaling_min_freq")} ${
-                readIntegerFile(
-                    "/sys/devices/system/cpu/cpu$coreIndex/cpufreq/scaling_cur_freq"
-                )
-            } ${readIntegerFile("/sys/devices/system/cpu/cpu$coreIndex/cpufreq/scaling_max_freq")}"
-        )
+            readIntegerFile("/sys/devices/system/cpu/cpu$coreIndex/cpufreq/cpuinfo_max_freq")
+        val currentFreq = ((curFreq - minFreq).toDouble() / (maxFreq - minFreq).toDouble())
+//        Timber.d("CPU $coreIndex -- $curFreq, $minFreq, $maxFreq")
+//        Timber.d(
+//            "FLOCPU $coreIndex $currentFreq ${readIntegerFile("/sys/devices/system/cpu/cpu$coreIndex/cpufreq/scaling_min_freq")} ${
+//                readIntegerFile(
+//                    "/sys/devices/system/cpu/cpu$coreIndex/cpufreq/scaling_cur_freq"
+//                )
+//            } ${readIntegerFile("/sys/devices/system/cpu/cpu$coreIndex/cpufreq/scaling_max_freq")}"
+//        )
 //        return readIntegerFile("/sys/devices/system/cpu/cpu$coreIndex/cpufreq/scaling_cur_freq")
-        return curFreq
+        return currentFreq * 100
     }
 
     private fun calcCpuCoreCount(): Int {
@@ -172,8 +180,9 @@ class PhoneManager @Inject constructor(
         return sLastCpuCoreCount
     }
 
-    fun invokeSignal(signal: Int) {
-        Thread({
+    /**/
+    fun invokeSignal(signal: Int): Result {
+        /*Thread({
             when (signal) {
                 SIG_SHUTDOWN -> {
                     Timber.i("[OS] --  Shutting Down...")
@@ -182,8 +191,24 @@ class PhoneManager @Inject constructor(
                     else
                         Timber.e("Can't shutdown as system isn't rooted")
                 }
+                else -> {
+                    Timber.e("Unknown signal")
+                }
             }
-        }, "execute-signal-$signal-thread").start()
+        }, "execute-signal-$signal-thread").start()*/
+        return when (signal) {
+            SIG_SHUTDOWN -> {
+                if (device.isRooted) {
+                    Timber.i("[OS] --  Shutting Down...")
+                    runAsRoot("reboot -p")
+                    Result(success = true)
+                } else Result(success = false, message = "Can't shutdown. Device needs to be rooted.")
+            }
+            else -> {
+                Timber.e("Unknown signal")
+                Result(success = false, message = "Unknown signal...")
+            }
+        }
     }
 
     companion object Signals {

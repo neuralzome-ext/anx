@@ -270,16 +270,21 @@ class UsbSerial : BaseAsset() {
                     socket = ctx.createSocket(SocketType.SUB)
                     socket.connect(address)
                     socket.subscribe("")
+                    val poller = ctx.createPoller(1)
+                    poller.register(socket)
                     while (!interrupt.get()) {
                         try {
-                            val recvBytes = socket.recv(ZMQ.DONTWAIT) ?: continue
-                            val rawData = GsonUtils.getGson().fromJson<Raw>(
-                                String(recvBytes, ZMQ.CHARSET),
-                                Raw.type
-                            )
+                            poller.poll(100)
+                            if (poller.pollin(0)) {
+                                val recvBytes = socket.recv(0)
+                                val rawData = GsonUtils.getGson().fromJson<Raw>(
+                                    String(recvBytes, ZMQ.CHARSET),
+                                    Raw.type
+                                )
 //                            Timber.d("[USB-Serial] : Data sending to usb_serial asset-> $rawData")
-                            val bytes = "${rawData.data}\n".toByteArray(ZMQ.CHARSET)
-                            usbSerialDevice?.write(bytes)
+                                val bytes = "${rawData.data}\n".toByteArray(ZMQ.CHARSET)
+                                usbSerialDevice?.write(bytes)
+                            }
                         } catch (e: Exception) {
                             Timber.e(e)
                             return
