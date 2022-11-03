@@ -2,16 +2,11 @@ package com.flomobility.hermes.assets.types.camera
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.content.res.Configuration
-import android.graphics.ImageFormat
-import android.graphics.YuvImage
 import android.hardware.camera2.CameraMetadata
 import android.hardware.camera2.CaptureRequest
 import android.os.Handler
 import android.os.Looper
 import android.os.Message
-import android.util.Range
-import android.util.Size
 import androidx.camera.camera2.internal.compat.CameraCharacteristicsCompat
 import androidx.camera.camera2.internal.compat.quirk.CamcorderProfileResolutionQuirk
 import androidx.camera.camera2.interop.Camera2CameraControl
@@ -25,8 +20,10 @@ import com.flomobility.hermes.assets.AssetState
 import com.flomobility.hermes.assets.AssetType
 import com.flomobility.hermes.assets.BaseAssetConfig
 import com.flomobility.hermes.common.Result
-import com.flomobility.hermes.other.*
+import com.flomobility.hermes.other.Constants
 import com.flomobility.hermes.other.Constants.SOCKET_BIND_DELAY_IN_MS
+import com.flomobility.hermes.other.handleExceptions
+import com.flomobility.hermes.other.toJpeg
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -39,8 +36,6 @@ import java.nio.ByteBuffer
 import java.util.concurrent.Executors
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlin.Exception
-import kotlin.system.measureTimeMillis
 
 @SuppressLint("RestrictedApi", "UnsafeOptInUsageError", "VisibleForTests")
 @Singleton
@@ -52,8 +47,6 @@ class PhoneBackCamera @Inject constructor(
 
     private val _config = Config()
 
-    private var _state = AssetState.IDLE
-
     override val id: String
         get() = _id
 
@@ -62,9 +55,6 @@ class PhoneBackCamera @Inject constructor(
 
     override val config: BaseAssetConfig
         get() = _config
-
-    override val state: AssetState
-        get() = _state
 
     private var streamingThread: StreamingThread? = null
 
@@ -144,10 +134,10 @@ class PhoneBackCamera @Inject constructor(
     @SuppressLint("UnsafeOptInUsageError")
     override fun start(): Result {
         handleExceptions(catchBlock = { e ->
-            _state = AssetState.IDLE
+            updateState(AssetState.IDLE)
             Result(success = false, message = e.message ?: Constants.UNKNOWN_ERROR_MSG)
         }) {
-            _state = AssetState.STREAMING
+            updateState(AssetState.STREAMING)
             streamingThread = StreamingThread()
             streamingThread?.start()
             streamingThread?.updateAddress()
@@ -230,10 +220,10 @@ class PhoneBackCamera @Inject constructor(
 
     override fun stop(): Result {
         handleExceptions(catchBlock = { e ->
-            _state = AssetState.STREAMING
+            updateState(AssetState.STREAMING)
             Result(success = false, message = e.message ?: Constants.UNKNOWN_ERROR_MSG)
         }) {
-            _state = AssetState.IDLE
+            updateState(AssetState.IDLE)
             GlobalScope.launch(Dispatchers.Main) {
                 cameraProvider.unbindAll()
             }
