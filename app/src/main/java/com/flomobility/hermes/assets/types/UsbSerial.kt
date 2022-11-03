@@ -26,7 +26,7 @@ import zmq.ZError
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.locks.ReentrantLock
 
-class UsbSerial : BaseAsset {
+class UsbSerial : BaseAsset() {
 
     private var _id: String = ""
 
@@ -88,9 +88,6 @@ class UsbSerial : BaseAsset {
     override val config: BaseAssetConfig
         get() = _config
 
-    override val state: AssetState
-        get() = _state
-
     override fun updateConfig(config: BaseAssetConfig): Result {
         if (config !is UsbSerial.Config) {
             return Result(success = false, message = "unknown config type")
@@ -116,9 +113,11 @@ class UsbSerial : BaseAsset {
     override fun start(): Result {
         // close usb serial and open it with new baud rate
         handleExceptions(catchBlock = { e ->
+            updateState(AssetState.IDLE)
             return Result(success = false, message = e.message ?: Constants.UNKNOWN_ERROR_MSG)
         }) {
 
+            updateState(AssetState.STREAMING)
             usbDeviceConnection = usbManager?.openDevice(usbDevice)
             if (usbDeviceConnection == null) {
                 return Result(success = true, message = "Couldn't open usb device $id")
@@ -134,8 +133,10 @@ class UsbSerial : BaseAsset {
 
     override fun stop(): Result {
         handleExceptions(catchBlock = { e ->
+            updateState(AssetState.STREAMING)
             return Result(success = false, message = e.message ?: Constants.UNKNOWN_ERROR_MSG)
         }) {
+            updateState(AssetState.IDLE)
             writerThread?.interrupt?.set(true)
 
             usbHandlerThread?.close()

@@ -28,7 +28,7 @@ import javax.inject.Singleton
 @Singleton
 class PhoneImu @Inject constructor(
     @ApplicationContext private val context: Context
-) : BaseAsset {
+) : BaseAsset() {
 
     private val sensorManager by lazy {
         context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
@@ -81,8 +81,6 @@ class PhoneImu @Inject constructor(
 
     private val _config = Config()
 
-    private var _state = AssetState.IDLE
-
     private var publisherThread: Thread? = null
 
     override val id: String
@@ -94,8 +92,6 @@ class PhoneImu @Inject constructor(
     override val config: BaseAssetConfig
         get() = _config
 
-    override val state: AssetState
-        get() = _state
 
     override fun updateConfig(config: BaseAssetConfig): Result {
         if (config !is PhoneImu.Config) {
@@ -122,7 +118,7 @@ class PhoneImu @Inject constructor(
         handleExceptions(catchBlock = { e ->
             return Result(success = false, message = e.message ?: Constants.UNKNOWN_ERROR_MSG)
         }) {
-            _state = AssetState.STREAMING
+            updateState(AssetState.STREAMING)
             registerImu(Rate(hz = _config.fps.value as Int))
             publisherThread = Thread(Publisher(_config), "$type-$id-publisher-thread")
             publisherThread?.start()
@@ -135,7 +131,7 @@ class PhoneImu @Inject constructor(
         handleExceptions(catchBlock = { e ->
             return Result(success = false, message = e.message ?: Constants.UNKNOWN_ERROR_MSG)
         }) {
-            _state = AssetState.IDLE
+            updateState(AssetState.IDLE)
             publisherThread?.interrupt()
             publisherThread = null
             unregisterImu()
