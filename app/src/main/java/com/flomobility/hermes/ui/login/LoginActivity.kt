@@ -97,7 +97,7 @@ class LoginActivity : ComponentActivity() {
                 }
             }
             .addOnFailureListener {
-                Timber.e("Phone Number Hint failed")
+                Timber.e("Phone Number Hint failed : ${it.message}")
             }
     }
 

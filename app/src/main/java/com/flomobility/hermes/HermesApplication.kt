@@ -19,7 +19,7 @@ class HermesApplication: Application() {
         PRDownloader.initialize(applicationContext,config)
         Timber.plant(
             when (BuildConfig.BUILD_TYPE) {
-                BuildType.DEBUG -> {
+                BuildType.DEV -> {
                     Timber.DebugTree()
                 }
                 else -> {
@@ -30,7 +30,7 @@ class HermesApplication: Application() {
     }
 
     object BuildType {
-        const val DEBUG = "debug"
+        const val DEV = "dev"
         const val STAGING = "staging"
         const val RELEASE = "release"
     }
