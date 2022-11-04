@@ -370,6 +370,10 @@
     <color name="red">#FF0000</color>
 
     <!--    Colors for UI-->
+    <color name="floGreen">#67BD4A</color>
+    <color name="floGreenLight">#3E5337</color>
+    <color name="floGreenDark">#4D8C37</color>
+    <color name="greyBackground">@color/grey_1000</color>
     <color name="textColor">@color/black</color>
     <color name="textColor2">@color/black</color>
     <color name="loginHintTextColor">@color/overlay_dark_60</color>
@@ -380,7 +384,8 @@
     <color name="progressPausedColor">#FFDD00</color>
     <color name="validityColor">#67BD4A</color>
 
-    <color name="background">#313131</color>
+    <color name="background">@color/greyBackground</color>
+    <color name="navigationBackground">#313131</color>
     <color name="btnBackground">@color/themeBlue</color>
     <color name="cardBackground">#E4E3E5</color>
     <color name="textBorder">#868686</color>
