@@ -27,7 +27,7 @@ object Constants {
     const val ON_BOOT = "onBoot"
 
     val BASE_URL: String = when (BUILD_TYPE) {
-        HermesApplication.BuildType.DEBUG -> FLO_DEVELOPMENT_URL
+        HermesApplication.BuildType.DEV -> FLO_DEVELOPMENT_URL
         HermesApplication.BuildType.STAGING -> FLO_STAGING_URL
         HermesApplication.BuildType.RELEASE -> FLO_PRODUCTION_URL
         else -> FLO_DEVELOPMENT_URL
