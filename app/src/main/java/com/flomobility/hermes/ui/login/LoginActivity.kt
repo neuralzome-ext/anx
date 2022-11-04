@@ -93,11 +93,11 @@ class LoginActivity : ComponentActivity() {
                         IntentSenderRequest.Builder(it.intentSender).setFillInIntent(fillIn).build()
                     phoneNumberHintIntentResultLauncher.launch(senderRequest)
                 } catch (e: Exception) {
-                    Timber.e("Launching the PendingIntent failed")
+                    Timber.e(e, "Launching the PendingIntent failed")
                 }
             }
             .addOnFailureListener {
-                Timber.e("Phone Number Hint failed")
+                Timber.e(it, "Phone Number Hint failed")
             }
     }
 

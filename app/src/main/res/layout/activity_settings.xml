@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="@color/background"
     tools:context=".ui.settings.SettingsActivity">
 
@@ -104,7 +105,7 @@
         android:layout_toEndOf="@id/licenceTxt"
         android:fontFamily="@font/metropolis_regular_webfont"
         android:text="0 Days Left"
-        android:textColor="#67BD4A"
+        android:textColor="@color/validityColor"
         android:textSize="16sp" />
 
     <View
@@ -145,6 +146,7 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/actionsTxt"
         android:layout_alignParentEnd="true"
+        app:thumbTint="@color/progressColor"
         android:layout_marginTop="6dp"
         android:layout_marginEnd="20dp" />
 

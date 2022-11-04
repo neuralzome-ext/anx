@@ -1,4 +1,4 @@
-package com.flomobility.hermes.ui.dashboard
+package com.flomobility.hermes.ui.home
 
 import android.content.Context
 import android.content.Intent
@@ -25,17 +25,17 @@ import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class DashboardActivity : AppCompatActivity() {
+class HomeActivity : AppCompatActivity() {
 
     companion object {
         fun navigateToDashboard(context: Context) {
-            context.startActivity(Intent(context, DashboardActivity::class.java))
+            context.startActivity(Intent(context, HomeActivity::class.java))
         }
     }
 
     private var binding: ActivityDashboardBinding? = null
     private val bind get() = binding!!
-    private lateinit var viewModel: DashboardViewModel
+    private lateinit var viewModel: HomeViewModel
 
     @Inject
     lateinit var sharedPreferences: SharedPreferences
@@ -43,7 +43,7 @@ class DashboardActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityDashboardBinding.inflate(layoutInflater)
-        viewModel = ViewModelProvider(this@DashboardActivity)[DashboardViewModel::class.java]
+        viewModel = ViewModelProvider(this@HomeActivity)[HomeViewModel::class.java]
         setContentView(binding?.root)
         if (sharedPreferences.getDeviceID() == null) {
             showSnack("Login Again")
@@ -68,19 +68,20 @@ class DashboardActivity : AppCompatActivity() {
                     yesListener = {
                         PRDownloader.cancelAll()
                         sharedPreferences.clear()
-                        LoginActivity.navigateToLogin(this@DashboardActivity)
+                        LoginActivity.navigateToLogin(this@HomeActivity)
                         finish()
                     }
                 ).show(supportFragmentManager, AlertDialog.TAG)
             }
             settings.setOnClickListener {
-                SettingsActivity.navigateToSetting(this@DashboardActivity)
+                SettingsActivity.navigateToSetting(this@HomeActivity)
+                finish()
             }
         }
     }
 
     private fun subscribeToObservers() {
-        viewModel.info.observe(this@DashboardActivity) {
+        viewModel.info.observe(this@HomeActivity) {
             when (it.getContentIfNotHandled()) {
                 is Resource.Loading -> {
 
@@ -123,16 +124,16 @@ class DashboardActivity : AppCompatActivity() {
 
     private fun logout() {
         sharedPreferences.clear()
-        LoginActivity.navigateToLogin(this@DashboardActivity)
+        LoginActivity.navigateToLogin(this@HomeActivity)
         finish()
     }
 
     private fun setupRecyclers() {
-        bind.ipRecycler.layoutManager = LinearLayoutManager(this@DashboardActivity)
-        bind.ipRecycler.adapter = IpAdapter(this@DashboardActivity, getIPAddressList(true))
-        bind.sensorRecycler.layoutManager = GridLayoutManager(this@DashboardActivity, 4)
+        bind.ipRecycler.layoutManager = LinearLayoutManager(this@HomeActivity)
+        bind.ipRecycler.adapter = IpAdapter(this@HomeActivity, getIPAddressList(true))
+        bind.sensorRecycler.layoutManager = GridLayoutManager(this@HomeActivity, 4)
         bind.sensorRecycler.adapter = SensorAdapter(
-            this@DashboardActivity,
+            this@HomeActivity,
             arrayListOf(
                 SensorModel(
                     R.drawable.ic_imu, "IMU", arrayListOf(

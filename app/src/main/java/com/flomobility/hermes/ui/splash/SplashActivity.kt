@@ -13,8 +13,8 @@ import com.flomobility.hermes.other.checkToken
 import com.flomobility.hermes.other.getDeviceID
 import com.flomobility.hermes.other.getIsInstalled
 import com.flomobility.hermes.other.viewutils.AlertDialog
-import com.flomobility.hermes.ui.dashboard.DashboardActivity
 import com.flomobility.hermes.ui.download.DownloadActivity
+import com.flomobility.hermes.ui.home.HomeActivity
 import com.flomobility.hermes.ui.login.LoginActivity
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
@@ -26,6 +26,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import java.io.File
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -203,8 +204,8 @@ class SplashActivity : AppCompatActivity() {
         CoroutineScope(Dispatchers.Main).launch {
             delay(2000)
             runOnUiThread {
-                if (sharedPreferences.getIsInstalled()) {
-                    DashboardActivity.navigateToDashboard(this@SplashActivity)
+                if (File("$FILE_PATH/$FILE_NAME").exists() && sharedPreferences.getIsInstalled()) {
+                    HomeActivity.navigateToDashboard(this@SplashActivity)
                 } else if (sharedPreferences.checkToken() && sharedPreferences.getDeviceID() != null) {
                     DownloadActivity.navigateToDownload(this@SplashActivity)
                 } else {

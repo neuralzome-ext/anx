@@ -138,6 +138,7 @@ dependencies {
     implementation "com.squareup.okhttp3:logging-interceptor:$okhttp_version"
 
     implementation "com.mindorks.android:prdownloader:0.6.0"
+    implementation "com.airbnb.android:lottie:5.2.0"
 
     // usb camera utils
     implementation("com.serenegiant:common:${commonLibVersion}") {

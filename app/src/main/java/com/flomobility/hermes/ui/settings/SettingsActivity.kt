@@ -5,10 +5,11 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import com.flomobility.hermes.R
 import com.flomobility.hermes.databinding.ActivitySettingsBinding
 import com.flomobility.hermes.other.*
 import com.flomobility.hermes.other.viewutils.AlertDialog
-import com.flomobility.hermes.ui.dashboard.DashboardActivity
+import com.flomobility.hermes.ui.home.HomeActivity
 import com.flomobility.hermes.ui.login.LoginActivity
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
@@ -88,7 +89,16 @@ class SettingsActivity : AppCompatActivity() {
         )
         val now = Date()
 //        Timber.d("Ayustark Date $expiry ${(expiry.time - now.time)/86400000}")
-        bind.validityTxt.text = "${(expiry.time - now.time) / 86400000} days left"
+        val validity = ((expiry.time - now.time) / 86400000).toInt()
+
+        bind.validityTxt.setTextColor(
+            when (true) {
+                validity == 0 -> R.color.red
+                validity < 7 -> R.color.orange
+                else -> R.color.validityColor
+            }
+        )
+        bind.validityTxt.text = "${validity} days left"
     }
 
     private fun logout() {
@@ -105,7 +115,7 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
-        DashboardActivity.navigateToDashboard(this@SettingsActivity)
+        HomeActivity.navigateToDashboard(this@SettingsActivity)
         finish()
         super.onBackPressed()
     }

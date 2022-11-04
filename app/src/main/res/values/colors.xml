@@ -378,6 +378,7 @@
 
     <color name="progressColor">#67BD4A</color>
     <color name="progressPausedColor">#FFDD00</color>
+    <color name="validityColor">#67BD4A</color>
 
     <color name="background">#313131</color>
     <color name="btnBackground">@color/themeBlue</color>

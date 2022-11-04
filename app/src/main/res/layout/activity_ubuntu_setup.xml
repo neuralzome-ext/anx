@@ -86,6 +86,22 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
+        <!--
+                <com.airbnb.lottie.LottieAnimationView
+                    android:id="@+id/checkAnim"
+                    android:layout_width="300dp"
+                    android:layout_height="300dp"
+                    app:lottie_autoPlay="true"
+                    android:layout_marginBottom="100dp"
+                    android:visibility="visible"
+                    app:lottie_rawRes=""
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:lottie_loop="true"/>
+        -->
+
         <TextView
             android:id="@+id/progressPercent"
             android:layout_width="wrap_content"

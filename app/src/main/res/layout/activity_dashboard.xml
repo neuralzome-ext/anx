@@ -58,7 +58,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="20dp"
-            android:fontFamily="@font/metropolis_extrabold_webfont"
+            android:fontFamily="@font/metropolis_semibold_webfont"
             android:text="SSH Into Device"
             android:textColor="@color/white"
             android:textSize="32sp"/>

@@ -16,8 +16,9 @@ import com.downloader.Status.*
 import com.flomobility.hermes.R
 import com.flomobility.hermes.databinding.ActivityUbuntuSetupBinding
 import com.flomobility.hermes.other.clear
+import com.flomobility.hermes.other.setIsInstalled
 import com.flomobility.hermes.other.viewutils.AlertDialog
-import com.flomobility.hermes.ui.dashboard.DashboardActivity
+import com.flomobility.hermes.ui.home.HomeActivity
 import com.flomobility.hermes.ui.login.LoginActivity
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
@@ -82,7 +83,7 @@ class DownloadActivity : AppCompatActivity() {
                         PRDownloader.pause(downloadId)
                     }
                     COMPLETED -> {
-                        DashboardActivity.navigateToDashboard(this@DownloadActivity)
+                        HomeActivity.navigateToDashboard(this@DownloadActivity)
                     }
                     CANCELLED -> {
                         startDownload()
@@ -166,8 +167,9 @@ class DownloadActivity : AppCompatActivity() {
         bind.progressPercent.text = ""
         CoroutineScope(Dispatchers.Main).launch {
             delay(2000)
+            sharedPreferences.setIsInstalled(true)
             runOnUiThread {
-                DashboardActivity.navigateToDashboard(this@DownloadActivity)
+                HomeActivity.navigateToDashboard(this@DownloadActivity)
                 finish()
             }
         }
