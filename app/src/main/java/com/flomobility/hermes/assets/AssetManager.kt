@@ -3,6 +3,8 @@ package com.flomobility.hermes.assets
 import android.os.Handler
 import android.os.Looper
 import android.os.Message
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import com.flomobility.hermes.assets.types.PhoneGNSS
 import com.flomobility.hermes.assets.types.Phone
 import com.flomobility.hermes.assets.types.PhoneImu
@@ -36,6 +38,8 @@ class AssetManager @Inject constructor(
 
     private val _assets = mutableListOf<BaseAsset>()
     val assets: List<BaseAsset> = _assets
+
+    private val _assetsLiveData = MutableLiveData<List<BaseAsset>>()
 
     private val assetsStatePublisherContext = ZContext()
 
@@ -79,6 +83,7 @@ class AssetManager @Inject constructor(
     }
 
     fun publishAssetState() {
+        _assetsLiveData.postValue(this.assets)
         if (!sessionManager.connected) return
         assetsStatePublisherThread?.publishAssetState(getAssets())
     }
@@ -124,6 +129,10 @@ class AssetManager @Inject constructor(
             return Result(success = true)
         }
         return Result(success = false, message = Constants.UNKNOWN_ERROR_MSG)
+    }
+
+    fun getAssetsLiveData(): LiveData<List<BaseAsset>> {
+        return this._assetsLiveData
     }
 
     inner class AssetsStatePublisher : Thread() {
