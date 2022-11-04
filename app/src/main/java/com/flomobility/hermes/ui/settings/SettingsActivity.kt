@@ -5,6 +5,7 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.content.res.AppCompatResources
 import com.flomobility.hermes.R
 import com.flomobility.hermes.databinding.ActivitySettingsBinding
 import com.flomobility.hermes.other.*
@@ -92,11 +93,14 @@ class SettingsActivity : AppCompatActivity() {
         val validity = ((expiry.time - now.time) / 86400000).toInt()
 
         bind.validityTxt.setTextColor(
-            when (true) {
-                validity == 0 -> R.color.red
-                validity < 7 -> R.color.orange
-                else -> R.color.validityColor
-            }
+            AppCompatResources.getColorStateList(
+                this@SettingsActivity,
+                when (true) {
+                    validity <= 1 -> R.color.red
+                    validity < 7 -> R.color.orange
+                    else -> R.color.validityColor
+                }
+            )
         )
         bind.validityTxt.text = "${validity} days left"
     }
@@ -115,7 +119,7 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
-        HomeActivity.navigateToDashboard(this@SettingsActivity)
+        HomeActivity.navigateToHome(this@SettingsActivity)
         finish()
         super.onBackPressed()
     }
