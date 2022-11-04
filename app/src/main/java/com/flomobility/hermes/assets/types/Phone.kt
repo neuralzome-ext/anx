@@ -27,13 +27,11 @@ class Phone @Inject constructor(
     @ApplicationContext private val context: Context,
     private val phoneManager: PhoneManager,
     private val gson: Gson
-) : BaseAsset {
+) : BaseAsset() {
 
     private val _id = "0"
 
     private val _config = Config()
-
-    private var _state = AssetState.IDLE
 
     private var publisherThread: PublisherThread? = null
 
@@ -45,9 +43,6 @@ class Phone @Inject constructor(
 
     override val config: BaseAssetConfig
         get() = _config
-
-    override val state: AssetState
-        get() = _state
 
     override fun updateConfig(config: BaseAssetConfig): Result {
         if (config !is Config) {
@@ -66,7 +61,7 @@ class Phone @Inject constructor(
         handleExceptions(catchBlock = { e ->
             return Result(success = false, message = e.message ?: Constants.UNKNOWN_ERROR_MSG)
         }) {
-            _state = AssetState.STREAMING
+            updateState(AssetState.STREAMING)
             publisherThread = PublisherThread()
             publisherThread?.start()
             return Result(success = true)
@@ -78,7 +73,7 @@ class Phone @Inject constructor(
         handleExceptions(catchBlock = { e ->
             return Result(success = false, message = e.message ?: Constants.UNKNOWN_ERROR_MSG)
         }) {
-            _state = AssetState.IDLE
+            updateState(AssetState.IDLE)
             publisherThread?.interrupt()
             publisherThread = null
             return Result(success = true)
@@ -115,7 +110,8 @@ class Phone @Inject constructor(
                                 cpuRamUsage = cpuRam,
                                 cpuTemp = cpuTemp,
                                 cpuUsage = cpuUsage,
-                                gpuUsage = gpuUsage
+                                gpuUsage = gpuUsage,
+                                gpuVramUsage = -1.0
                             )
                             socket.send(gson.toJson(phoneState).toByteArray(ZMQ.CHARSET), 0)
                             sleep(1000L / _config.fps.value)

@@ -44,8 +44,8 @@ import com.serenegiant.encoder.MediaSurfaceEncoder;
 import com.serenegiant.encoder.MediaVideoBufferEncoder;
 import com.serenegiant.encoder.MediaVideoEncoder;
 import com.serenegiant.usb.IFrameCallback;
-import com.serenegiant.usb.USBMonitor;
 import com.serenegiant.usb.UVCCamera;
+import com.serenegiant.usb.UsbControlBlock;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -130,7 +130,7 @@ abstract class AbstractUVCCameraHandler extends Handler {
         }
     }
 
-    public void open(final USBMonitor.UsbControlBlock ctrlBlock) {
+    public void open(final UsbControlBlock ctrlBlock) {
         checkReleased();
         sendMessage(obtainMessage(MSG_OPEN, ctrlBlock));
     }
@@ -160,7 +160,7 @@ abstract class AbstractUVCCameraHandler extends Handler {
     public void stopPreview() {
         if (DEBUG) Log.v(TAG, "stopPreview:");
         removeMessages(MSG_PREVIEW_START);
-        stopRecording();
+//        stopRecording();
         if (isPreviewing()) {
             final CameraThread thread = mWeakThread.get();
             if (thread == null) return;
@@ -286,7 +286,7 @@ abstract class AbstractUVCCameraHandler extends Handler {
         if (thread == null) return;
         switch (msg.what) {
             case MSG_OPEN:
-                thread.handleOpen((USBMonitor.UsbControlBlock) msg.obj);
+                thread.handleOpen((UsbControlBlock) msg.obj);
                 break;
             case MSG_CLOSE:
                 thread.handleClose();
@@ -373,8 +373,8 @@ abstract class AbstractUVCCameraHandler extends Handler {
 //			loadShutterSound(parent);
         }
 
-        CameraThread(final Class<? extends AbstractUVCCameraHandler> clazz, final int encoderType) {
-            super("CameraThread");
+        CameraThread(final Class<? extends AbstractUVCCameraHandler> clazz, final int encoderType, final int id) {
+            super("t_usbcam-"+id);
             mHandlerClass = clazz;
             mWeakParent = new WeakReference<Activity>(null);
             mEncoderType = encoderType;
@@ -443,7 +443,7 @@ abstract class AbstractUVCCameraHandler extends Handler {
             return (mUVCCamera != null) && (mUVCCamera.getDevice() != null) && mUVCCamera.getDevice().equals(device);
         }
 
-        public void handleOpen(final USBMonitor.UsbControlBlock ctrlBlock) {
+        public void handleOpen(final UsbControlBlock ctrlBlock) {
             if (DEBUG) Log.v(TAG_THREAD, "handleOpen:");
             handleClose();
             try {

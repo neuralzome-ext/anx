@@ -48,16 +48,13 @@ class SignalRpcHandler @Inject constructor(
                                 msgStr,
                                 SignalRequest.type
                             )
-                            val response = if (device.isRooted)
-                                StandardResponse(success = true)
-                            else
-                                StandardResponse(
-                                    success = false,
-                                    message = "Can't shutdown as system isn't rooted"
-                                )
+                            val result = phoneManager.invokeSignal(signalReq.signal)
+                            val response = StandardResponse(
+                                success = result.success,
+                                message = result.message
+                            )
                             socket.send(gson.toJson(response).toByteArray(ZMQ.CHARSET), 0)
 
-                            phoneManager.invokeSignal(signalReq.signal)
                         }
                     } catch (e: Exception) {
                         Timber.e("Error in GetIdentityHandler : $e")

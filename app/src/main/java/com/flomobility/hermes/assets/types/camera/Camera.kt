@@ -8,7 +8,7 @@ import com.google.gson.reflect.TypeToken
 import com.serenegiant.usb.UVCCamera
 import org.json.JSONObject
 
-abstract class Camera : BaseAsset {
+abstract class Camera : BaseAsset() {
 
     class Config : BaseAssetConfig() {
 
