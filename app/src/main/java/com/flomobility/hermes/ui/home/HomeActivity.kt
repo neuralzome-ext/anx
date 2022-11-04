@@ -28,7 +28,7 @@ import javax.inject.Inject
 class HomeActivity : AppCompatActivity() {
 
     companion object {
-        fun navigateToDashboard(context: Context) {
+        fun navigateToHome(context: Context) {
             context.startActivity(Intent(context, HomeActivity::class.java))
         }
     }

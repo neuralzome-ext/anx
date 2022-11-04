@@ -10,6 +10,7 @@ import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import com.downloader.OnDownloadListener
 import com.downloader.PRDownloader
 import com.downloader.Status.*
@@ -22,8 +23,6 @@ import com.flomobility.hermes.ui.home.HomeActivity
 import com.flomobility.hermes.ui.login.LoginActivity
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -83,7 +82,7 @@ class DownloadActivity : AppCompatActivity() {
                         PRDownloader.pause(downloadId)
                     }
                     COMPLETED -> {
-                        HomeActivity.navigateToDashboard(this@DownloadActivity)
+                        HomeActivity.navigateToHome(this@DownloadActivity)
                     }
                     CANCELLED -> {
                         startDownload()
@@ -165,13 +164,15 @@ class DownloadActivity : AppCompatActivity() {
         bind.progress.visibility = View.INVISIBLE
         bind.progressIndeterminate.visibility = View.VISIBLE
         bind.progressPercent.text = ""
-        CoroutineScope(Dispatchers.Main).launch {
+        lifecycleScope.launch {
             delay(2000)
             sharedPreferences.setIsInstalled(true)
-            runOnUiThread {
-                HomeActivity.navigateToDashboard(this@DownloadActivity)
-                finish()
-            }
+            bind.progressIndeterminate.visibility = View.GONE
+            bind.downloading1.text = "YOU'RE ALL SET!"
+            bind.checkAnim.visibility = View.VISIBLE
+            delay(2000)
+            HomeActivity.navigateToHome(this@DownloadActivity)
+            finish()
         }
     }
 

@@ -14,6 +14,7 @@ import com.flomobility.hermes.databinding.ActivityLoginBinding
 import com.flomobility.hermes.network.requests.LoginRequest
 import com.flomobility.hermes.other.*
 import com.flomobility.hermes.ui.download.DownloadActivity
+import com.flomobility.hermes.ui.home.HomeActivity
 import com.github.ybq.android.spinkit.style.ThreeBounce
 import com.google.android.gms.auth.api.identity.GetPhoneNumberHintIntentRequest
 import com.google.android.gms.auth.api.identity.Identity
@@ -58,28 +59,19 @@ class LoginActivity : ComponentActivity() {
         binding = ActivityLoginBinding.inflate(layoutInflater)
         viewModel = ViewModelProvider(this@LoginActivity)[LoginViewModel::class.java]
         setContentView(binding?.root)
-        if (sharedPreferences.getDeviceID() != null){
+        if (sharedPreferences.getDeviceID() != null) {
             bind.deviceId.text = "DEVICE ID: ${sharedPreferences.getDeviceID()}"
-        }else{
+        } else {
             requestPhoneNumber()
         }
         bind.spinKitLogin.setIndeterminateDrawable(ThreeBounce())
-        checkLoginStatus()
+        setEventListeners()
+        subscribeToObservers()
     }
 
     /**
      * Checks current status whether a user has already login or not
      **/
-    private fun checkLoginStatus() {
-        Timber.d(sharedPreferences.getIsInstalled().toString())
-        if (sharedPreferences.checkToken()) {
-            DownloadActivity.navigateToDownload(this@LoginActivity)
-            finish()
-            return
-        }
-        setEventListeners()
-        subscribeToObservers()
-    }
 
     private fun requestPhoneNumber() {
         val request: GetPhoneNumberHintIntentRequest =
@@ -117,7 +109,14 @@ class LoginActivity : ComponentActivity() {
                     }
                     sharedPreferences.putToken(it.peekContent().data?.token)
                     sharedPreferences.putDeviceExpiry(it.peekContent().data?.robot?.expiry)
-                    DownloadActivity.navigateToDownload(this@LoginActivity)
+                    when (true) {
+                        sharedPreferences.getIsInstalled() -> HomeActivity.navigateToHome(
+                            this@LoginActivity
+                        )
+                        else -> DownloadActivity.navigateToDownload(
+                            this@LoginActivity
+                        )
+                    }
                     finish()
                 }
                 is Resource.Error -> {

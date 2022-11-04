@@ -7,10 +7,10 @@ import android.content.pm.PackageManager
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.lifecycle.lifecycleScope
 import com.flomobility.hermes.MainActivity
 import com.flomobility.hermes.databinding.ActivitySplashBinding
 import com.flomobility.hermes.other.checkToken
-import com.flomobility.hermes.other.getDeviceID
 import com.flomobility.hermes.other.getIsInstalled
 import com.flomobility.hermes.other.viewutils.AlertDialog
 import com.flomobility.hermes.ui.download.DownloadActivity
@@ -21,8 +21,6 @@ import com.google.android.gms.location.*
 import com.google.android.gms.tasks.Task
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -201,18 +199,18 @@ class SplashActivity : AppCompatActivity() {
     }
 
     private fun checkConditions() {
-        CoroutineScope(Dispatchers.Main).launch {
+        lifecycleScope.launch {
             delay(2000)
-            runOnUiThread {
-                if (File("$FILE_PATH/$FILE_NAME").exists() && sharedPreferences.getIsInstalled()) {
-                    HomeActivity.navigateToDashboard(this@SplashActivity)
-                } else if (sharedPreferences.checkToken() && sharedPreferences.getDeviceID() != null) {
-                    DownloadActivity.navigateToDownload(this@SplashActivity)
-                } else {
-                    LoginActivity.navigateToLogin(this@SplashActivity)
-                }
-                finish()
+            when (true) {
+                !sharedPreferences.checkToken() -> LoginActivity.navigateToLogin(this@SplashActivity)
+                File("$FILE_PATH/$FILE_NAME").exists() && sharedPreferences.getIsInstalled() -> HomeActivity.navigateToHome(
+                    this@SplashActivity
+                )
+                else -> DownloadActivity.navigateToDownload(
+                    this@SplashActivity
+                )
             }
+            finish()
         }
     }
 }

@@ -6,6 +6,7 @@ import android.content.SharedPreferences
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.appcompat.content.res.AppCompatResources
 import com.flomobility.hermes.R
 import com.flomobility.hermes.databinding.ActivitySettingsBinding
 import com.flomobility.hermes.other.*
@@ -119,7 +120,7 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
-        HomeActivity.navigateToDashboard(this@SettingsActivity)
+        HomeActivity.navigateToHome(this@SettingsActivity)
         finish()
         super.onBackPressed()
     }
