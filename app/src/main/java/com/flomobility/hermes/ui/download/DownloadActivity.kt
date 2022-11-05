@@ -47,7 +47,10 @@ class DownloadActivity : AppCompatActivity() {
 
     companion object {
         fun navigateToDownload(context: Context) {
-            context.startActivity(Intent(context, DownloadActivity::class.java))
+            context.startActivity(
+                Intent(context, DownloadActivity::class.java)//,
+//                ActivityOptions.makeSceneTransitionAnimation(context as Activity).toBundle()
+            )
         }
     }
 
@@ -82,7 +85,7 @@ class DownloadActivity : AppCompatActivity() {
                         PRDownloader.pause(downloadId)
                     }
                     COMPLETED -> {
-                        HomeActivity.navigateToHome(this@DownloadActivity)
+                        checkDownload()
                     }
                     CANCELLED -> {
                         startDownload()
@@ -97,9 +100,6 @@ class DownloadActivity : AppCompatActivity() {
                         startDownload()
                     }
                 }
-//                Timber.d("downloadStatus ${PRDownloader.getStatus(downloadId)}")
-//                PRDownloader.pause(downloadId)
-//                PRDownloader.pause(0)
             }
             exit.setOnClickListener {
                 AlertDialog.getInstance(
@@ -114,25 +114,6 @@ class DownloadActivity : AppCompatActivity() {
                         finish()
                     }
                 ).show(supportFragmentManager, AlertDialog.TAG)
-/*
-                AlertDialog.Builder(this@DownloadActivity, R.style.AlertDialogTheme).apply {
-                    setTitle("Confirm Logout")
-                    setMessage("Logging out will delete the current download progress")
-                    setIcon(R.drawable.ic_warning)
-                    setCancelable(false)
-                    setPositiveButton("Logout") { _, _ ->
-                        PRDownloader.cancelAll()
-                        sharedPreferences.clear()
-                        LoginActivity.navigateToLogin(this@DownloadActivity)
-                        finish()
-                    }
-                    setNegativeButton("Cancel") { _, _ ->
-                        //Do Nothing
-                    }
-                        .create()
-                        .show()
-                }
-*/
             }
         }
     }

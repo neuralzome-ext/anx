@@ -14,6 +14,7 @@ import com.flomobility.hermes.assets.AssetType
 import com.flomobility.hermes.assets.types.UsbSerial
 import com.flomobility.hermes.assets.types.camera.Camera
 import com.flomobility.hermes.assets.types.camera.UsbCamera
+import com.flomobility.hermes.other.ThreadStatus
 import com.flomobility.hermes.usb.camera.UsbCamManager
 import com.flomobility.hermes.usb.serial.UsbSerialManager
 import com.serenegiant.usb.UsbControlBlock
@@ -41,6 +42,9 @@ class UsbPortManager @Inject constructor(
 
     private var mPermissionIntent: PendingIntent? = null
 
+    var threadStatus = ThreadStatus.IDLE
+        private set
+
     private val usbReceiver: BroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(arg0: Context, intent: Intent) {
             if (intent.action == ACTION_USB_PERMISSION) {
@@ -49,7 +53,8 @@ class UsbPortManager @Inject constructor(
                     val device: UsbDevice? = intent.getParcelableExtra(UsbManager.EXTRA_DEVICE)
                     if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
                         if (device != null) {
-                            unAuthorizedDevices[device.deviceId]?.state = SecureUsbDevice.State.PERMISSION_GRANTED
+                            unAuthorizedDevices[device.deviceId]?.state =
+                                SecureUsbDevice.State.PERMISSION_GRANTED
                             registerUsbDevice(device)
                         }
                     } else {
@@ -180,6 +185,7 @@ class UsbPortManager @Inject constructor(
     }
 
     fun init() {
+        threadStatus = ThreadStatus.ACTIVE
         mPermissionIntent =
             PendingIntent.getBroadcast(context, 0, Intent(ACTION_USB_PERMISSION), 0);
         val filter = IntentFilter(ACTION_USB_PERMISSION)

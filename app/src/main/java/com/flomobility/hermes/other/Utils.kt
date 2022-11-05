@@ -40,6 +40,12 @@ inline fun <T> handleExceptions(
     }
 }
 
+enum class ThreadStatus {
+    IDLE,
+    ACTIVE,
+    DISPOSED
+}
+
 /**
  * converts a [ByteBuffer] object to a byte array.
  *

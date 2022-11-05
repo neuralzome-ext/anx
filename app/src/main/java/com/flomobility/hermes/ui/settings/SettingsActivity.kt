@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
+import android.view.Window
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.content.res.AppCompatResources
 import com.flomobility.hermes.R
@@ -23,7 +24,10 @@ class SettingsActivity : AppCompatActivity() {
 
     companion object {
         fun navigateToSetting(context: Context) {
-            context.startActivity(Intent(context, SettingsActivity::class.java))
+            context.startActivity(
+                Intent(context, SettingsActivity::class.java)//,
+//                ActivityOptions.makeSceneTransitionAnimation(context as Activity).toBundle()
+            )
         }
     }
 
@@ -36,6 +40,16 @@ class SettingsActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivitySettingsBinding.inflate(layoutInflater)
+
+        with(window) {
+            requestFeature(Window.FEATURE_ACTIVITY_TRANSITIONS)
+
+            // set an exit transition
+            allowEnterTransitionOverlap = true
+//            enterTransition = Slide(Gravity.START)
+//            exitTransition = Slide(Gravity.END)
+        }
+
         setContentView(binding?.root)
         if (isExpired(sharedPreferences.getDeviceExpiry())) {
             showSnack("Your access has been revoked")

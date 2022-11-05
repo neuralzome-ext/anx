@@ -28,7 +28,7 @@ class FloRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getInfo(infoRequest: InfoRequest) = handleApiResponse {
-                val authToken = "Bearer ${sharedPreferences.getToken()}"
+        val authToken = "Bearer ${sharedPreferences.getToken()}"
         floApi.getInfo(authToken, infoRequest)
     }
 

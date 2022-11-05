@@ -12,9 +12,8 @@ import com.downloader.PRDownloader
 import com.flomobility.flobtops.adapters.IpAdapter
 import com.flomobility.hermes.adapter.AssetAdapter
 import com.flomobility.hermes.assets.AssetManager
-import com.flomobility.hermes.assets.BaseAsset
+import com.flomobility.hermes.daemon.EndlessService
 import com.flomobility.hermes.databinding.ActivityHomeBinding
-import com.flomobility.hermes.model.AssetsModel
 import com.flomobility.hermes.network.requests.InfoRequest
 import com.flomobility.hermes.other.*
 import com.flomobility.hermes.other.viewutils.AlertDialog
@@ -29,7 +28,10 @@ class HomeActivity : AppCompatActivity() {
 
     companion object {
         fun navigateToHome(context: Context) {
-            context.startActivity(Intent(context, HomeActivity::class.java))
+            context.startActivity(
+                Intent(context, HomeActivity::class.java)//,
+//                ActivityOptions.makeSceneTransitionAnimation(context as Activity).toBundle()
+            )
         }
     }
 
@@ -96,7 +98,10 @@ class HomeActivity : AppCompatActivity() {
                         return@observe
                     }
                     sharedPreferences.putDeviceExpiry(it.peekContent().data?.expiry)
-
+                    sendCommandToService(
+                        Constants.ACTION_START_OR_RESUME_SERVICE,
+                        EndlessService::class.java
+                    )
                 }
                 is Resource.Error -> {
                     when (it.peekContent().errorData?.code) {
@@ -124,9 +129,10 @@ class HomeActivity : AppCompatActivity() {
             }
         }
         assetManager.getAssetsLiveData().observe(this@HomeActivity) {
-            (bind.assetRecycler.adapter as AssetAdapter).clearAssetList()
-            for (i in it)
+            (bind.assetRecycler.adapter as AssetAdapter).resetAssetList()
+            for (i in it) {
                 (bind.assetRecycler.adapter as AssetAdapter).addAssetState(i)
+            }
         }
     }
 
@@ -138,7 +144,16 @@ class HomeActivity : AppCompatActivity() {
             this@HomeActivity,
             this@HomeActivity
         )
-        (bind.assetRecycler.adapter as AssetAdapter).clearAssetList()
+        (bind.assetRecycler.adapter as AssetAdapter).setAssetList()
+    }
+
+    private fun sendCommandToService(action: String, serviceClass: Class<*>) {
+        handleExceptions {
+            Intent(this, serviceClass).also {
+                it.action = action
+                startService(it)
+            }
+        }
     }
 
     private fun showSnack(msg: String?) {
@@ -157,13 +172,4 @@ class HomeActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
     }
-}
-
-private fun ArrayList<AssetsModel>.has(asset: BaseAsset): AssetsModel? {
-    for (i in this) {
-        if (i.sensorName == asset.type.alias) {
-            return i
-        }
-    }
-    return null
 }

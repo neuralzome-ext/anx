@@ -5,7 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import com.flomobility.hermes.other.getIsOnBoot
-import com.flomobility.hermes.ui.login.LoginActivity
+import com.flomobility.hermes.ui.splash.SplashActivity
 import javax.inject.Inject
 
 
@@ -17,7 +17,7 @@ class StartAppOnBootReceiver() : BroadcastReceiver() {
     override fun onReceive(context: Context?, intent: Intent?) {
         if (sharedPreferences.getIsOnBoot())
             if (Intent.ACTION_BOOT_COMPLETED == intent?.action) {
-                val i = Intent(context, LoginActivity::class.java)
+                val i = Intent(context, SplashActivity::class.java)
                 i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 context?.startActivity(i)
 //            runAsRoot(cmd = "am start com.flomobility.hermes/com.flomobility.hermes.MainActivity")

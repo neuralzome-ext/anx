@@ -20,6 +20,7 @@ import com.flomobility.hermes.other.Constants.ACTION_STOP_SERVICE
 import com.flomobility.hermes.other.Constants.NOTIFICATION_CHANNEL_ID
 import com.flomobility.hermes.other.Constants.NOTIFICATION_CHANNEL_NAME
 import com.flomobility.hermes.other.Constants.NOTIFICATION_ID
+import com.flomobility.hermes.other.ThreadStatus
 import com.flomobility.hermes.usb.UsbPortManager
 import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
@@ -51,7 +52,7 @@ class EndlessService : LifecycleService() {
             when (it.action) {
                 ACTION_START_OR_RESUME_SERVICE -> {
                     startEndlessService()
-                    Timber.d("Stated service")
+                    Timber.d("Started service")
                 }
                 ACTION_STOP_SERVICE -> {
                     killService()
@@ -84,21 +85,23 @@ class EndlessService : LifecycleService() {
         startForeground(NOTIFICATION_ID, currentNotificationBuilder.build())
 
         // init
-        socketManager.init()
-        socketManager.doOnSubscribed { subscribed ->
-            Handler(Looper.getMainLooper()).postDelayed({
-                currentNotificationBuilder.setContentText(
-                    if (subscribed) {
-                        "Active session <-> ${sessionManager.connectedDeviceIp}"
-                    } else {
-                        "No active session."
-                    }
-                )
-                notificationManager.notify(NOTIFICATION_ID, currentNotificationBuilder.build())
-            }, 10L)
+        if (socketManager.threadStatus != ThreadStatus.ACTIVE) {
+            socketManager.init()
+            socketManager.doOnSubscribed { subscribed ->
+                Handler(Looper.getMainLooper()).postDelayed({
+                    currentNotificationBuilder.setContentText(
+                        if (subscribed) {
+                            "Active session <-> ${sessionManager.connectedDeviceIp}"
+                        } else {
+                            "No active session."
+                        }
+                    )
+                    notificationManager.notify(NOTIFICATION_ID, currentNotificationBuilder.build())
+                }, 10L)
+            }
         }
-        usbPortManager.init()
-        assetManager.init()
+        if (usbPortManager.threadStatus != ThreadStatus.ACTIVE) usbPortManager.init()
+        if (assetManager.threadStatus != ThreadStatus.ACTIVE) assetManager.init()
     }
 
     private fun killService() {

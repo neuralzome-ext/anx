@@ -5,8 +5,8 @@ import android.os.Looper
 import android.os.Message
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import com.flomobility.hermes.assets.types.PhoneGNSS
 import com.flomobility.hermes.assets.types.Phone
+import com.flomobility.hermes.assets.types.PhoneGNSS
 import com.flomobility.hermes.assets.types.PhoneImu
 import com.flomobility.hermes.assets.types.Speaker
 import com.flomobility.hermes.assets.types.camera.PhoneBackCamera
@@ -15,14 +15,15 @@ import com.flomobility.hermes.common.Result
 import com.flomobility.hermes.comms.SessionManager
 import com.flomobility.hermes.other.Constants
 import com.flomobility.hermes.other.Constants.SOCKET_BIND_DELAY_IN_MS
+import com.flomobility.hermes.other.ThreadStatus
 import com.flomobility.hermes.other.handleExceptions
-import javax.inject.Inject
-import javax.inject.Singleton
 import com.google.gson.Gson
 import org.zeromq.SocketType
 import org.zeromq.ZContext
 import org.zeromq.ZMQ
 import timber.log.Timber
+import javax.inject.Inject
+import javax.inject.Singleton
 
 @Singleton
 class AssetManager @Inject constructor(
@@ -45,7 +46,11 @@ class AssetManager @Inject constructor(
 
     private var assetsStatePublisherThread: AssetsStatePublisher? = null
 
+    var threadStatus = ThreadStatus.IDLE
+        private set
+
     fun init() {
+        threadStatus = ThreadStatus.ACTIVE
         assetsStatePublisherThread = AssetsStatePublisher()
         assetsStatePublisherThread?.start()
 

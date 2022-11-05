@@ -29,7 +29,10 @@ class LoginActivity : ComponentActivity() {
 
     companion object {
         fun navigateToLogin(context: Context) {
-            context.startActivity(Intent(context, LoginActivity::class.java))
+            context.startActivity(
+                Intent(context, LoginActivity::class.java)//,
+//                ActivityOptions.makeSceneTransitionAnimation(context as Activity).toBundle()
+            )
         }
     }
 
@@ -110,9 +113,11 @@ class LoginActivity : ComponentActivity() {
                     sharedPreferences.putToken(it.peekContent().data?.token)
                     sharedPreferences.putDeviceExpiry(it.peekContent().data?.robot?.expiry)
                     when (true) {
-                        sharedPreferences.getIsInstalled() -> HomeActivity.navigateToHome(
-                            this@LoginActivity
-                        )
+                        sharedPreferences.getIsInstalled() -> {
+                            HomeActivity.navigateToHome(
+                                this@LoginActivity
+                            )
+                        }
                         else -> DownloadActivity.navigateToDownload(
                             this@LoginActivity
                         )

@@ -13,6 +13,7 @@ import com.flomobility.hermes.databinding.ActivitySplashBinding
 import com.flomobility.hermes.other.checkToken
 import com.flomobility.hermes.other.getIsInstalled
 import com.flomobility.hermes.other.viewutils.AlertDialog
+import com.flomobility.hermes.phone.Device
 import com.flomobility.hermes.ui.download.DownloadActivity
 import com.flomobility.hermes.ui.home.HomeActivity
 import com.flomobility.hermes.ui.login.LoginActivity
@@ -40,12 +41,23 @@ class SplashActivity : AppCompatActivity() {
     @Inject
     lateinit var sharedPreferences: SharedPreferences
 
+    @Inject
+    lateinit var device: Device
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivitySplashBinding.inflate(layoutInflater)
+//        with(window) {
+//            requestFeature(Window.FEATURE_ACTIVITY_TRANSITIONS)
+//
+//            // set an exit transition
+//            enterTransition = Slide(Gravity.START)
+//            exitTransition = Slide(Gravity.END)
+//        }
         setContentView(binding?.root)
         FILE_PATH = filesDir.absolutePath + "/termux"
         checkPermissions()
+        device.checkIsRooted()
     }
 
     private fun checkPermissions() {
@@ -97,7 +109,6 @@ class SplashActivity : AppCompatActivity() {
         Timber.d("All permissions granted")
         createLocationRequest()
         checkConditions()
-//        sendCommandToService(Constants.ACTION_START_OR_RESUME_SERVICE, EndlessService::class.java)
     }
 
     override fun onRequestPermissionsResult(
@@ -203,9 +214,11 @@ class SplashActivity : AppCompatActivity() {
             delay(2000)
             when (true) {
                 !sharedPreferences.checkToken() -> LoginActivity.navigateToLogin(this@SplashActivity)
-                File("$FILE_PATH/$FILE_NAME").exists() && sharedPreferences.getIsInstalled() -> HomeActivity.navigateToHome(
-                    this@SplashActivity
-                )
+                File("$FILE_PATH/$FILE_NAME").exists() && sharedPreferences.getIsInstalled() -> {
+                    HomeActivity.navigateToHome(
+                        this@SplashActivity
+                    )
+                }
                 else -> DownloadActivity.navigateToDownload(
                     this@SplashActivity
                 )
