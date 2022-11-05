@@ -13,7 +13,7 @@ import com.flomobility.flobtops.adapters.IpAdapter
 import com.flomobility.hermes.adapter.AssetAdapter
 import com.flomobility.hermes.assets.AssetManager
 import com.flomobility.hermes.assets.BaseAsset
-import com.flomobility.hermes.databinding.ActivityDashboardBinding
+import com.flomobility.hermes.databinding.ActivityHomeBinding
 import com.flomobility.hermes.model.AssetsModel
 import com.flomobility.hermes.network.requests.InfoRequest
 import com.flomobility.hermes.other.*
@@ -33,7 +33,7 @@ class HomeActivity : AppCompatActivity() {
         }
     }
 
-    private var binding: ActivityDashboardBinding? = null
+    private var binding: ActivityHomeBinding? = null
     private val bind get() = binding!!
     private lateinit var viewModel: HomeViewModel
 
@@ -45,7 +45,7 @@ class HomeActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityDashboardBinding.inflate(layoutInflater)
+        binding = ActivityHomeBinding.inflate(layoutInflater)
         viewModel = ViewModelProvider(this@HomeActivity)[HomeViewModel::class.java]
         setContentView(binding?.root)
         if (sharedPreferences.getDeviceID() == null) {

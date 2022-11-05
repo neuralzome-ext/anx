@@ -117,7 +117,7 @@
         android:textSize="20sp" />
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/sensor_recycler"
+        android:id="@+id/asset_recycler"
         android:theme="@style/Theme.Flo.RecyclerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
