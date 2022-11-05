@@ -34,17 +34,6 @@ class PhoneImu @Inject constructor(
         context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
     }
 
-    init {
-        val sensors = sensorManager.getSensorList(Sensor.TYPE_ALL).filter { sensor ->
-            sensor.type == Sensor.TYPE_GYROSCOPE
-                || sensor.type == Sensor.TYPE_LINEAR_ACCELERATION
-                || sensor.type == Sensor.TYPE_ROTATION_VECTOR
-        }
-        if(sensors.size < 3) {
-            this.canRegister = false
-        }
-    }
-
     private val sensorEventListeners = object : SensorEventListener {
         override fun onSensorChanged(event: SensorEvent?) {
             if (event == null) {
@@ -114,6 +103,13 @@ class PhoneImu @Inject constructor(
             portSub = config.portSub
         }
         return Result(success = true)
+    }
+
+    override fun canRegister(): Boolean {
+        if(sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE) == null) return false
+        if(sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION) == null) return false
+        if(sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR) == null) return false
+        return true
     }
 
     override fun getDesc(): Map<String, Any> {

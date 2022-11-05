@@ -13,8 +13,6 @@ abstract class BaseAsset {
 
     abstract val config: BaseAssetConfig
 
-    var canRegister = true
-
     val name: String
         get() = "${type.alias}-$id"
 
@@ -39,6 +37,10 @@ abstract class BaseAsset {
             map[field.name] = field.range
         }
         return map
+    }
+
+    open fun canRegister(): Boolean {
+        return true
     }
 
     abstract fun start(): Result

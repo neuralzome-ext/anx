@@ -87,11 +87,7 @@ class PhoneFrontCamera @Inject constructor(
 
     init {
         GlobalScope.launch(Dispatchers.Main) {
-            if(!cameraProvider.hasCamera(cameraSelector)) {
-                Timber.e("Front camera not present")
-                this@PhoneFrontCamera.canRegister = false
-                return@launch
-            }
+            if(!canRegister()) return@launch
             camera = cameraProvider.bindToLifecycle(
                 ProcessLifecycleOwner.get(),
                 cameraSelector
@@ -139,6 +135,14 @@ class PhoneFrontCamera @Inject constructor(
         shouldCompress =
             (this._config.stream.value as Config.Stream).pixelFormat == Config.Stream.PixelFormat.MJPEG
         return Result(success = true)
+    }
+
+    override fun canRegister(): Boolean {
+        if(!cameraProvider.hasCamera(cameraSelector)) {
+            Timber.e("Front camera not present")
+            return false
+        }
+        return true
     }
 
     @SuppressLint("UnsafeOptInUsageError")

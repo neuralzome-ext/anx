@@ -62,12 +62,6 @@ class PhoneGNSS @Inject constructor(
     override val config: BaseAssetConfig
         get() = _config
 
-    init {
-        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-            this.canRegister = false
-        }
-    }
-
     override fun updateConfig(config: BaseAssetConfig): Result {
         if (config !is Config) {
             return Result(success = false, message = "Unknown config type")
@@ -78,6 +72,13 @@ class PhoneGNSS @Inject constructor(
         }
 
         return Result(success = true)
+    }
+
+    override fun canRegister(): Boolean {
+        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+            return false
+        }
+        return true
     }
 
     override fun start(): Result {
