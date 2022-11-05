@@ -28,8 +28,8 @@ android {
 
     defaultConfig {
         applicationId "com.flomobility.hermes"
-        minSdk 23
-        targetSdk 27
+        minSdk 28
+        targetSdk 32
         versionCode 5
         versionName "0.6.3"
 

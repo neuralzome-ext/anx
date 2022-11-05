@@ -1,8 +1,8 @@
 package com.flomobility.hermes.model
 
-data class SensorModel(
+data class AssetsModel(
     val sensorImage: Int,
     val sensorName: String,
-    val sensorStatuses: ArrayList<SensorStatusModel>? = null,
+    val sensorStatuses: ArrayList<AssetsStatusModel> = arrayListOf(),
     val isAvailable: Boolean = true
 )

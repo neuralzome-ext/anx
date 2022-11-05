@@ -10,11 +10,11 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.downloader.PRDownloader
 import com.flomobility.flobtops.adapters.IpAdapter
-import com.flomobility.hermes.R
-import com.flomobility.hermes.adapter.SensorAdapter
+import com.flomobility.hermes.adapter.AssetAdapter
+import com.flomobility.hermes.assets.AssetManager
+import com.flomobility.hermes.assets.BaseAsset
 import com.flomobility.hermes.databinding.ActivityDashboardBinding
-import com.flomobility.hermes.model.SensorModel
-import com.flomobility.hermes.model.SensorStatusModel
+import com.flomobility.hermes.model.AssetsModel
 import com.flomobility.hermes.network.requests.InfoRequest
 import com.flomobility.hermes.other.*
 import com.flomobility.hermes.other.viewutils.AlertDialog
@@ -39,6 +39,9 @@ class HomeActivity : AppCompatActivity() {
 
     @Inject
     lateinit var sharedPreferences: SharedPreferences
+
+    @Inject
+    lateinit var assetManager: AssetManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -120,60 +123,22 @@ class HomeActivity : AppCompatActivity() {
                 null -> TODO()
             }
         }
-    }
-
-    private fun logout() {
-        sharedPreferences.clear()
-        LoginActivity.navigateToLogin(this@HomeActivity)
-        finish()
+        assetManager.getAssetsLiveData().observe(this@HomeActivity) {
+            (bind.assetRecycler.adapter as AssetAdapter).clearAssetList()
+            for (i in it)
+                (bind.assetRecycler.adapter as AssetAdapter).addAssetState(i)
+        }
     }
 
     private fun setupRecyclers() {
         bind.ipRecycler.layoutManager = LinearLayoutManager(this@HomeActivity)
         bind.ipRecycler.adapter = IpAdapter(this@HomeActivity, getIPAddressList(true))
-        bind.sensorRecycler.layoutManager = GridLayoutManager(this@HomeActivity, 4)
-        bind.sensorRecycler.adapter = SensorAdapter(
+        bind.assetRecycler.layoutManager = GridLayoutManager(this@HomeActivity, 4)
+        bind.assetRecycler.adapter = AssetAdapter(
             this@HomeActivity,
-            arrayListOf(
-                SensorModel(
-                    R.drawable.ic_imu, "IMU", arrayListOf(
-                        SensorStatusModel(true)
-                    )
-                ),
-                SensorModel(
-                    R.drawable.ic_gps, "GNSS", arrayListOf(
-                        SensorStatusModel(true)
-                    )
-                ),
-                SensorModel(
-                    R.drawable.ic_video, "CAMERA", arrayListOf(
-                        SensorStatusModel(true),
-                        SensorStatusModel(true),
-                        SensorStatusModel(true)
-                    )
-                ),
-                SensorModel(R.drawable.ic_mic, "MIC", isAvailable = false),
-                SensorModel(
-                    R.drawable.ic_usb_serial, "USB SERIAL", arrayListOf(
-                        SensorStatusModel(true),
-                        SensorStatusModel(true),
-                        SensorStatusModel(true)
-                    )
-                ),
-                SensorModel(
-                    R.drawable.ic_speaker, "SPEAKER", arrayListOf(
-                        SensorStatusModel(true)
-                    )
-                ),
-                SensorModel(R.drawable.ic_bluetooth, "CLASSIC BT", isAvailable = false),
-                SensorModel(R.drawable.ic_bluetooth, "BLE", isAvailable = false),
-                SensorModel(
-                    R.drawable.ic_phone, "PHONE", arrayListOf(
-                        SensorStatusModel(true)
-                    )
-                )
-            )
+            this@HomeActivity
         )
+        (bind.assetRecycler.adapter as AssetAdapter).clearAssetList()
     }
 
     private fun showSnack(msg: String?) {
@@ -183,7 +148,22 @@ class HomeActivity : AppCompatActivity() {
         }
     }
 
+    private fun logout() {
+        sharedPreferences.clear()
+        LoginActivity.navigateToLogin(this@HomeActivity)
+        finish()
+    }
+
     override fun onDestroy() {
         super.onDestroy()
     }
+}
+
+private fun ArrayList<AssetsModel>.has(asset: BaseAsset): AssetsModel? {
+    for (i in this) {
+        if (i.sensorName == asset.type.alias) {
+            return i
+        }
+    }
+    return null
 }
