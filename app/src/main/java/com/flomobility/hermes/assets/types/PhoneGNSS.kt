@@ -40,7 +40,7 @@ class PhoneGNSS @Inject constructor(
     @ApplicationContext private val context: Context,
     private val phoneGnssManager: PhoneGNSSManager,
     private val gson: Gson
-) : BaseAsset, OnNmeaMessageListener {
+) : BaseAsset(), OnNmeaMessageListener {
 
     companion object {
         const val TAG = "PhoneGNSS"
@@ -53,8 +53,6 @@ class PhoneGNSS @Inject constructor(
 
     private val _config = Config()
 
-    private var _state = AssetState.IDLE
-
     lateinit var socket: ZMQ.Socket
 
     override val id: String
@@ -63,8 +61,12 @@ class PhoneGNSS @Inject constructor(
         get() = AssetType.GNSS
     override val config: BaseAssetConfig
         get() = _config
-    override val state: AssetState
-        get() = AssetState.IDLE
+
+    init {
+        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+            this.canRegister = false
+        }
+    }
 
     override fun updateConfig(config: BaseAssetConfig): Result {
         if (config !is Config) {
@@ -80,10 +82,11 @@ class PhoneGNSS @Inject constructor(
 
     override fun start(): Result {
         handleExceptions(catchBlock = { e ->
+            updateState(AssetState.IDLE)
             return Result(success = false, message = e.message ?: Constants.UNKNOWN_ERROR_MSG)
         }) {
             try {
-                _state = AssetState.STREAMING
+                updateState(AssetState.STREAMING)
                 GlobalScope.launch(Dispatchers.Main) {
                     phoneGnssManager.init(this@PhoneGNSS)
                 }
@@ -102,9 +105,10 @@ class PhoneGNSS @Inject constructor(
 
     override fun stop(): Result {
         handleExceptions(catchBlock = { e ->
+            updateState(AssetState.STREAMING)
             return Result(success = false, message = e.message ?: Constants.UNKNOWN_ERROR_MSG)
         }) {
-            _state = AssetState.IDLE
+            updateState(AssetState.IDLE)
             GlobalScope.launch(Dispatchers.Main) {
                 phoneGnssManager.stop(this@PhoneGNSS)
             }

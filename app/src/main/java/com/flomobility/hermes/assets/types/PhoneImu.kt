@@ -28,10 +28,21 @@ import javax.inject.Singleton
 @Singleton
 class PhoneImu @Inject constructor(
     @ApplicationContext private val context: Context
-) : BaseAsset {
+) : BaseAsset() {
 
     private val sensorManager by lazy {
         context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
+    }
+
+    init {
+        val sensors = sensorManager.getSensorList(Sensor.TYPE_ALL).filter { sensor ->
+            sensor.type == Sensor.TYPE_GYROSCOPE
+                || sensor.type == Sensor.TYPE_LINEAR_ACCELERATION
+                || sensor.type == Sensor.TYPE_ROTATION_VECTOR
+        }
+        if(sensors.size < 3) {
+            this.canRegister = false
+        }
     }
 
     private val sensorEventListeners = object : SensorEventListener {
@@ -81,21 +92,16 @@ class PhoneImu @Inject constructor(
 
     private val _config = Config()
 
-    private var _state = AssetState.IDLE
-
     private var publisherThread: Thread? = null
 
     override val id: String
-        get() = "in72e"
+        get() = "0"
 
     override val type: AssetType
         get() = AssetType.IMU
 
     override val config: BaseAssetConfig
         get() = _config
-
-    override val state: AssetState
-        get() = _state
 
     override fun updateConfig(config: BaseAssetConfig): Result {
         if (config !is PhoneImu.Config) {
@@ -120,9 +126,10 @@ class PhoneImu @Inject constructor(
 
     override fun start(): Result {
         handleExceptions(catchBlock = { e ->
+            updateState(AssetState.IDLE)
             return Result(success = false, message = e.message ?: Constants.UNKNOWN_ERROR_MSG)
         }) {
-            _state = AssetState.STREAMING
+            updateState(AssetState.STREAMING)
             registerImu(Rate(hz = _config.fps.value as Int))
             publisherThread = Thread(Publisher(_config), "$type-$id-publisher-thread")
             publisherThread?.start()
@@ -133,9 +140,10 @@ class PhoneImu @Inject constructor(
 
     override fun stop(): Result {
         handleExceptions(catchBlock = { e ->
+            updateState(AssetState.STREAMING)
             return Result(success = false, message = e.message ?: Constants.UNKNOWN_ERROR_MSG)
         }) {
-            _state = AssetState.IDLE
+            updateState(AssetState.IDLE)
             publisherThread?.interrupt()
             publisherThread = null
             unregisterImu()
@@ -214,8 +222,7 @@ class PhoneImu @Inject constructor(
                         Timber.i("Publisher closed")
                         socket.unbind(address)
                         socket.close()
-                    }
-                    catch (e: Exception) {
+                    } catch (e: Exception) {
                         Timber.e(e)
                         return
                     }
