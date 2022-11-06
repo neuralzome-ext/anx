@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="com.termux"
+    package="com.flomobility.anx"
     android:installLocation="internalOnly"
     android:sharedUserId="${TERMUX_PACKAGE_NAME}"
     android:sharedUserLabel="@string/shared_user_label">
@@ -90,12 +90,12 @@
         </activity>
 
         <service
-            android:name="com.termux.hermes.daemon.EndlessService"
+            android:name="com.flomobility.anx.hermes.daemon.EndlessService"
             android:foregroundServiceType="dataSync"
             android:exported="true"/>
 
         <receiver
-            android:name="com.termux.hermes.receivers.StartAppOnBootReceiver"
+            android:name="com.flomobility.anx.hermes.receivers.StartAppOnBootReceiver"
             android:enabled="true"
             android:exported="true"
             android:permission="android.permission.RECEIVE_BOOT_COMPLETED">

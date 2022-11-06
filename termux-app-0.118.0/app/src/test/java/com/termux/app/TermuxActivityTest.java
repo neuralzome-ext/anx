@@ -1,6 +1,6 @@
-package com.termux.app;
+package com.flomobility.anx.app;
 
-import com.termux.shared.data.UrlUtils;
+import com.flomobility.anx.shared.data.UrlUtils;
 
 import org.junit.Assert;
 import org.junit.Test;

@@ -1,4 +1,4 @@
-package com.termux.filepicker;
+package com.flomobility.anx.filepicker;
 
 import org.junit.Assert;
 import org.junit.Test;

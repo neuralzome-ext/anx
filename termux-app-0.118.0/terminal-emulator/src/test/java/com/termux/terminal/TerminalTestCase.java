@@ -1,4 +1,4 @@
-package com.termux.terminal;
+package com.flomobility.anx.terminal;
 
 import junit.framework.AssertionFailedError;
 import junit.framework.TestCase;
