@@ -50,6 +50,10 @@
         <item name="buttonBarNegativeButtonStyle">@style/NegativeButtonStyle</item>
     </style>
 
+    <style name="Theme.Flo.RecyclerView">
+        <item name="colorPrimary">@android:color/transparent</item>
+    </style>
+
     <style name="NegativeButtonStyle" parent="Widget.MaterialComponents.Button.TextButton.Dialog">
         <item name="android:textColor">@color/progressColor</item>
     </style>
