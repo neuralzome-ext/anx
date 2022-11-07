@@ -52,8 +52,6 @@ class PhoneBackCamera @Inject constructor(
 
     private val _config = Config()
 
-    private var _state = AssetState.IDLE
-
     override val id: String
         get() = _id
 
@@ -62,9 +60,6 @@ class PhoneBackCamera @Inject constructor(
 
     override val config: BaseAssetConfig
         get() = _config
-
-    override val state: AssetState
-        get() = _state
 
     private var streamingThread: StreamingThread? = null
 
@@ -92,6 +87,7 @@ class PhoneBackCamera @Inject constructor(
 
     init {
         GlobalScope.launch(Dispatchers.Main) {
+            if(!canRegister()) return@launch
             camera = cameraProvider.bindToLifecycle(
                 ProcessLifecycleOwner.get(),
                 cameraSelector
@@ -141,13 +137,21 @@ class PhoneBackCamera @Inject constructor(
         return Result(success = true)
     }
 
+    override fun canRegister(): Boolean {
+        if (!cameraProvider.hasCamera(cameraSelector)) {
+            Timber.e("Back camera not present")
+            return false
+        }
+        return true
+    }
+
     @SuppressLint("UnsafeOptInUsageError")
     override fun start(): Result {
         handleExceptions(catchBlock = { e ->
-            _state = AssetState.IDLE
+            updateState(AssetState.IDLE)
             Result(success = false, message = e.message ?: Constants.UNKNOWN_ERROR_MSG)
         }) {
-            _state = AssetState.STREAMING
+            updateState(AssetState.STREAMING)
             streamingThread = StreamingThread()
             streamingThread?.start()
             streamingThread?.updateAddress()
@@ -230,10 +234,10 @@ class PhoneBackCamera @Inject constructor(
 
     override fun stop(): Result {
         handleExceptions(catchBlock = { e ->
-            _state = AssetState.STREAMING
+            updateState(AssetState.STREAMING)
             Result(success = false, message = e.message ?: Constants.UNKNOWN_ERROR_MSG)
         }) {
-            _state = AssetState.IDLE
+            updateState(AssetState.IDLE)
             GlobalScope.launch(Dispatchers.Main) {
                 cameraProvider.unbindAll()
             }

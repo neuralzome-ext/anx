@@ -49,11 +49,13 @@ class UsbPortManager @Inject constructor(
                     val device: UsbDevice? = intent.getParcelableExtra(UsbManager.EXTRA_DEVICE)
                     if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
                         if (device != null) {
-                            unAuthorizedDevices[device.deviceId]?.state = SecureUsbDevice.State.PERMISSION_GRANTED
+                            unAuthorizedDevices[device.deviceId]?.state =
+                                SecureUsbDevice.State.PERMISSION_GRANTED
                             registerUsbDevice(device)
                         }
                     } else {
-                        unAuthorizedDevices[device?.deviceId]?.state = SecureUsbDevice.State.PERMISSION_DENIED
+                        unAuthorizedDevices[device?.deviceId]?.state =
+                            SecureUsbDevice.State.PERMISSION_DENIED
                         Timber.w("Permission not granted for $device")
                     }
                 }
@@ -66,7 +68,8 @@ class UsbPortManager @Inject constructor(
                     return
                 }
 
-                unAuthorizedDevices[usbDevice.deviceId] = SecureUsbDevice(usbDevice, isConnected = true)
+                unAuthorizedDevices[usbDevice.deviceId] =
+                    SecureUsbDevice(usbDevice, isConnected = true)
 
             } else if (intent.action == ACTION_USB_DETACHED) {
                 val usbDevice = intent.getParcelableExtra<UsbDevice>(UsbManager.EXTRA_DEVICE)
@@ -76,7 +79,7 @@ class UsbPortManager @Inject constructor(
                 }
 
                 val secureUsbDevice = unAuthorizedDevices[usbDevice.deviceId]
-                if(secureUsbDevice != null) {
+                if (secureUsbDevice != null) {
                     secureUsbDevice.isConnected = false
                     unAuthorizedDevices.remove(usbDevice.deviceId)
                     Timber.d("$usbDevice is disconnected")
@@ -179,6 +182,14 @@ class UsbPortManager @Inject constructor(
         return result
     }
 
+    private fun attachDevices() {
+        Timber.i("Looking for devices")
+        val devices = usbManager.deviceList ?: return
+        devices.values.sortedBy { it.deviceId }.forEach { usbDevice ->
+            unAuthorizedDevices[usbDevice.deviceId] = SecureUsbDevice(usbDevice, isConnected = true)
+        }
+    }
+
     fun init() {
         mPermissionIntent =
             PendingIntent.getBroadcast(context, 0, Intent(ACTION_USB_PERMISSION), 0);
@@ -186,6 +197,8 @@ class UsbPortManager @Inject constructor(
         filter.addAction(ACTION_USB_DETACHED)
         filter.addAction(ACTION_USB_ATTACHED)
         context.registerReceiver(usbReceiver, filter)
+
+        attachDevices()
 
         usbChecker = UsbCheckerThread()
         usbChecker?.start()
@@ -209,21 +222,15 @@ class UsbPortManager @Inject constructor(
                             unAuthorizedDevices.remove(key)
                             continue
                         }
-
-                        requestPermission(secureDevice.usbDevice)
-/*                        while (!secureDevice.isConnected) {
-                            if (!secureDevice.isAuth) {
-                                // Wait till permission is granted
-                                continue
-                            } else {
-                                unAuthorizedDevices.remove(key)
-                                Timber.i("Permission granted for $secureDevice")
-                                break
-                            }
+                        /*if (!usbManager.hasPermission(secureDevice.usbDevice)) {
+                            requestPermission(secureDevice.usbDevice)
+                        } else {
+                            secureDevice.state = SecureUsbDevice.State.PERMISSION_GRANTED
                         }*/
+                        requestPermission(secureDevice.usbDevice)
 
                         while (secureDevice.isConnected) {
-                            when(secureDevice.state) {
+                            when (secureDevice.state) {
                                 SecureUsbDevice.State.PERMISSION_WAITING -> continue
                                 SecureUsbDevice.State.PERMISSION_GRANTED -> {
                                     unAuthorizedDevices.remove(key)

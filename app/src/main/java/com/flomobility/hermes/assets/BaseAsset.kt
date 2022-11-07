@@ -1,24 +1,37 @@
 package com.flomobility.hermes.assets
 
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import com.flomobility.hermes.common.Result
 
 
-interface BaseAsset {
+abstract class BaseAsset {
 
-    val id: String
+    abstract val id: String
 
-    val type: AssetType
+    abstract val type: AssetType
 
-    val config: BaseAssetConfig
-
-    val state: AssetState
+    abstract val config: BaseAssetConfig
 
     val name: String
         get() = "${type.alias}-$id"
 
-    fun updateConfig(config: BaseAssetConfig): Result
+    private var _state = MutableLiveData(AssetState.IDLE)
 
-    fun getDesc(): Map<String, Any> {
+    val state: AssetState
+        get() = _state.value!!
+
+    fun updateState(state: AssetState) {
+        this._state.postValue(state)
+    }
+
+    fun getStateLiveData(): LiveData<AssetState> {
+        return _state
+    }
+
+    abstract fun updateConfig(config: BaseAssetConfig): Result
+
+    open fun getDesc(): Map<String, Any> {
         val map = hashMapOf<String, Any>("id" to id)
         config.getFields().forEach { field ->
             map[field.name] = field.range
@@ -26,10 +39,14 @@ interface BaseAsset {
         return map
     }
 
-    fun start(): Result
+    open fun canRegister(): Boolean {
+        return true
+    }
 
-    fun stop(): Result
+    abstract fun start(): Result
 
-    fun destroy()
+    abstract fun stop(): Result
+
+    abstract fun destroy()
 
 }

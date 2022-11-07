@@ -55,6 +55,13 @@ class AssetManager @Inject constructor(
     }
 
     fun addAsset(asset: BaseAsset): Result {
+        if(!asset.canRegister()) {
+            Timber.e("Asset ${asset.name} isn't available to use on device")
+            return Result(
+                success = false,
+                message = "Asset isn't available to use on device"
+            )
+        }
         if (assets.find { it.id == asset.id && it.type == asset.type } != null) {
             return Result(
                 success = false,
