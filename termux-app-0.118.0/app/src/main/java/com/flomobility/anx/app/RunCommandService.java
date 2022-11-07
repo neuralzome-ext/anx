@@ -180,6 +180,7 @@ public class RunCommandService extends Service {
         // coreutils/busybox instead and command would fail. Broken symlinks would already have been
         // validated so it should be fine to use it.
         executableExtra = TermuxFileUtils.getExpandedTermuxPath(executableExtra);
+
         if (FileUtils.getFileType(executableExtra, false) == FileType.SYMLINK) {
             Logger.logVerbose(LOG_TAG, "The executableExtra path \"" + executableExtra + "\" is a symlink so using it instead of the canonical path \"" + executionCommand.executable + "\"");
             executionCommand.executable = executableExtra;

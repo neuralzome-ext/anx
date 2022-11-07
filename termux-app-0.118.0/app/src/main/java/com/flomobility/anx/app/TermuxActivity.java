@@ -4,6 +4,7 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.PendingIntent;
 import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -16,7 +17,9 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
+import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Gravity;
@@ -34,8 +37,11 @@ import android.widget.Toast;
 
 import com.flomobility.anx.R;
 import com.flomobility.anx.app.terminal.TermuxActivityRootView;
+import com.flomobility.anx.filepicker.TermuxFileReceiverActivity;
 import com.flomobility.anx.hermes.daemon.EndlessService;
 import com.flomobility.anx.shared.activities.ReportActivity;
+import com.flomobility.anx.shared.data.DataUtils;
+import com.flomobility.anx.shared.models.ExecutionCommand;
 import com.flomobility.anx.shared.packages.PermissionUtils;
 import com.flomobility.anx.shared.termux.TermuxConstants;
 import com.flomobility.anx.shared.termux.TermuxConstants.TERMUX_APP.TERMUX_ACTIVITY;
@@ -253,6 +259,34 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
         sendCommandToService("ACTION_START_OR_RESUME_SERVICE", EndlessService.class);
 
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+
+                // Example executing termux command, termux service is required to execute any termux task.
+                // TermuxCommandExecutor will bind to termux service if it's not already binded.
+                // All the termux command must execute after termux service is connected
+
+                // note: this can be optimize later if required as per requirement.
+
+                TermuxCommandExecutor termuxCommandExecutor = TermuxCommandExecutor.getInstance(TermuxActivity.this);
+                termuxCommandExecutor.startTermuxCommandExecutor(new TermuxCommandExecutor.ITermuxCommandExecutor() {
+                    @Override
+                    public void onTermuxServiceConnected() {
+                        int COMMAND_LS_EXECUTION_ID = 1000;
+                        termuxCommandExecutor.executeTermuxCommand(TermuxActivity.this, "ls", new String[]{"-la"}, COMMAND_LS_EXECUTION_ID);
+                    }
+
+                    @Override
+                    public void onTermuxServiceDisconnected() {
+
+                    }
+                });
+
+            }
+        }, 10*1000);
+
+
     }
 
     /**
@@ -407,6 +441,8 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
         // Update the {@link TerminalSession} and {@link TerminalEmulator} clients.
         mTermuxService.setTermuxTerminalSessionClient(mTermuxTerminalSessionClient);
+
+
     }
 
     @Override

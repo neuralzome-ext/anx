@@ -465,6 +465,8 @@ public final class TermuxService extends Service implements TermuxTask.TermuxTas
                 if (executionCommand != null && executionCommand.isPluginExecutionCommand)
                     PluginUtils.processPluginExecutionCommandResult(this, LOG_TAG, executionCommand);
 
+                Logger.logVerbose(LOG_TAG, "The onTermuxTaskExited() result callback : " + executionCommand.resultData.exitCode);
+
                 mTermuxTasks.remove(termuxTask);
             }
 
