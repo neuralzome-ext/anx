@@ -31,7 +31,7 @@ public class TermuxCommandExecutor implements ServiceConnection {
             Intent serviceIntent = new Intent(context, TermuxService.class);
             // Attempt to bind to the service, this will call the {@link #onServiceConnected(ComponentName, IBinder)}
             // callback if it succeeds.
-            if (!context.bindService(serviceIntent, this, 0)) {
+            if (!context.bindService(serviceIntent, this, Context.BIND_AUTO_CREATE)) {
                 throw new RuntimeException("bindService() failed");
             }
         }
