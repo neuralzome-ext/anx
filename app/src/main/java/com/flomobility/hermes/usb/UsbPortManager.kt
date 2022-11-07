@@ -198,6 +198,8 @@ class UsbPortManager @Inject constructor(
         filter.addAction(ACTION_USB_ATTACHED)
         context.registerReceiver(usbReceiver, filter)
 
+        attachDevices()
+
         usbChecker = UsbCheckerThread()
         usbChecker?.start()
     }
