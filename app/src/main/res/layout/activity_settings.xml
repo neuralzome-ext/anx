@@ -37,6 +37,9 @@
 
     <TextView
         android:id="@+id/termsTxt"
+        android:clickable="true"
+        android:focusable="true"
+        android:foreground="?attr/selectableItemBackground"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/aboutTxt"
@@ -49,6 +52,9 @@
 
     <TextView
         android:id="@+id/privacyTxt"
+        android:clickable="true"
+        android:focusable="true"
+        android:foreground="?attr/selectableItemBackground"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/termsTxt"
@@ -61,6 +67,9 @@
 
     <TextView
         android:id="@+id/docsTxt"
+        android:clickable="true"
+        android:focusable="true"
+        android:foreground="?attr/selectableItemBackground"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/privacyTxt"

@@ -31,10 +31,12 @@
             android:layout_marginTop="10dp"
             android:layout_marginEnd="16dp"
             android:layout_toStartOf="@+id/exit"
+            android:foreground="?attr/selectableItemBackground"
             android:src="@drawable/ic_settings" />
 
         <ImageView
             android:id="@+id/exit"
+            android:foreground="?attr/selectableItemBackground"
             android:layout_width="32dp"
             android:layout_height="32dp"
             android:layout_alignParentEnd="true"
@@ -51,8 +53,8 @@
         android:layout_margin="20dp"
         android:background="@drawable/square_rounded_1"
         android:orientation="vertical"
-        android:paddingHorizontal="10dp"
-        android:paddingVertical="20dp">
+        android:paddingHorizontal="8dp"
+        android:paddingVertical="12dp">
 
         <TextView
             android:layout_width="match_parent"
@@ -75,6 +77,7 @@
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/ipRecycler"
+            android:theme="@style/Theme.Flo.RecyclerView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="50dp"
@@ -87,7 +90,7 @@
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="20dp"
             android:layout_marginTop="10dp"
-            android:fontFamily="@font/metropolis_regular_webfont"
+            android:fontFamily="@font/metropolis_semibold_webfont"
             android:text="On your PC"
             android:textColor="@color/white"
             android:textSize="20sp" />
@@ -95,8 +98,8 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginHorizontal="20dp"
-            android:layout_marginTop="10dp"
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginVertical="12dp"
             android:background="@drawable/square_rounded_2"
             android:fontFamily="@font/metropolis_regular_webfont"
             android:padding="10dp"
