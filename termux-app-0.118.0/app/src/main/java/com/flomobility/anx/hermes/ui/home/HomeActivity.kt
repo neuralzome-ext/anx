@@ -179,7 +179,7 @@ class HomeActivity : AppCompatActivity() {
             TermuxCommandExecutor.getInstance(this@HomeActivity)
         termuxCommandExecutor.startTermuxCommandExecutor(object :
             TermuxCommandExecutor.ITermuxCommandExecutor {
-            override fun onTermuxServiceConnected() {
+            override fun onEndlessServiceConnected() {
                 termuxCommandExecutor.executeTermuxCommand(
                     this@HomeActivity,
                     "bash",
@@ -188,7 +188,7 @@ class HomeActivity : AppCompatActivity() {
                 )
             }
 
-            override fun onTermuxServiceDisconnected() {}
+            override fun onEndlessServiceDisconnected() {}
         })
     }
 

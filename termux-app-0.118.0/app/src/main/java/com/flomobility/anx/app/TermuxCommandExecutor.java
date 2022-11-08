@@ -11,6 +11,7 @@ import android.os.IBinder;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.flomobility.anx.hermes.daemon.EndlessService;
 import com.flomobility.anx.shared.logger.Logger;
 import com.flomobility.anx.shared.models.ExecutionCommand;
 import com.flomobility.anx.shared.termux.TermuxConstants;
@@ -18,17 +19,17 @@ import com.flomobility.anx.shared.termux.TermuxConstants;
 public class TermuxCommandExecutor implements ServiceConnection {
 
     private static final String BIN_PATH = "/data/data/com.flomobility.anx/files/usr/bin/";
-    private TermuxService mTermuxService;
+    private EndlessService mEndlessService;
     private Context context;
-    private  boolean isTermuxServiceBinded;
+    private  boolean isEndlessServiceBinded;
     private static TermuxCommandExecutor termuxCommandExecutor;
     private static final String LOG_TAG = TermuxCommandExecutor.class.getSimpleName();
     private ITermuxCommandExecutor iTermuxCommandExecutor;
 
     private TermuxCommandExecutor(Context context) {
         this.context = context;
-        if(mTermuxService == null) {
-            Intent serviceIntent = new Intent(context, TermuxService.class);
+        if(mEndlessService == null) {
+            Intent serviceIntent = new Intent(context, EndlessService.class);
             // Attempt to bind to the service, this will call the {@link #onServiceConnected(ComponentName, IBinder)}
             // callback if it succeeds.
             if (!context.bindService(serviceIntent, this, Context.BIND_AUTO_CREATE)) {
@@ -50,12 +51,12 @@ public class TermuxCommandExecutor implements ServiceConnection {
             return -1;
         }
 
-        if(mTermuxService == null) {
+        if(mEndlessService == null) {
             Log.e(LOG_TAG, "Termux service not connected, can not proceed further.");
             return -1;
         }
 
-        if(!isTermuxServiceBinded) {
+        if(!isEndlessServiceBinded) {
             Log.e(LOG_TAG, "Termux service not binded yet!");
             return -1;
         }
@@ -69,26 +70,26 @@ public class TermuxCommandExecutor implements ServiceConnection {
         executionCommand.arguments = arguments;
         executionCommand.resultConfig.resultPendingIntent = PendingIntent.getService(context, executionId, pluginResultsServiceIntent, PendingIntent.FLAG_ONE_SHOT);
         executionCommand.executableUri = new Uri.Builder().scheme(TermuxConstants.TERMUX_APP.TERMUX_SERVICE.URI_SCHEME_SERVICE_EXECUTE).path(executionCommand.executable).build();
-        mTermuxService.createTermuxTask(executionCommand);
+        mEndlessService.createTermuxTask(executionCommand);
         return 0;
     }
 
     @Override
     public void onServiceConnected(ComponentName componentName, IBinder service) {
         Logger.logDebug(LOG_TAG, "onServiceConnected");
-        mTermuxService = ((TermuxService.LocalBinder) service).service;
-        isTermuxServiceBinded = true;
+        mEndlessService = ((EndlessService.LocalBinder) service).getService();
+        isEndlessServiceBinded = true;
         if(iTermuxCommandExecutor != null) {
-            iTermuxCommandExecutor.onTermuxServiceConnected();
+            iTermuxCommandExecutor.onEndlessServiceConnected();
         }
     }
 
     @Override
     public void onServiceDisconnected(ComponentName componentName) {
-        isTermuxServiceBinded = false;
-        mTermuxService = null;
+        isEndlessServiceBinded = false;
+        mEndlessService = null;
         if(iTermuxCommandExecutor != null) {
-            iTermuxCommandExecutor.onTermuxServiceDisconnected();
+            iTermuxCommandExecutor.onEndlessServiceDisconnected();
         }
     }
 
@@ -102,14 +103,14 @@ public class TermuxCommandExecutor implements ServiceConnection {
 
     public void startTermuxCommandExecutor(ITermuxCommandExecutor iTermuxCommandExecutor) {
         this.iTermuxCommandExecutor = iTermuxCommandExecutor;
-        if(isTermuxServiceBinded) {
-            iTermuxCommandExecutor.onTermuxServiceConnected();
+        if(isEndlessServiceBinded) {
+            iTermuxCommandExecutor.onEndlessServiceConnected();
         }
     }
 
     public interface ITermuxCommandExecutor {
-        void onTermuxServiceConnected();
-        void onTermuxServiceDisconnected();
+        void onEndlessServiceConnected();
+        void onEndlessServiceDisconnected();
     }
 
 }

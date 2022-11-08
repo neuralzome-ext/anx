@@ -276,7 +276,7 @@ public final class TermuxConstants {
      */
 
     /** Termux app name */
-    public static final String TERMUX_APP_NAME = "Termux"; // Default: "Termux"
+    public static final String TERMUX_APP_NAME = "ANX"; // Default: "Termux"
     /** Termux package name */
     public static final String TERMUX_PACKAGE_NAME = "com.flomobility.anx"; // Default: "com.termux"
     /** Termux Github repo name */
@@ -749,11 +749,11 @@ public final class TermuxConstants {
      */
 
     /** Termux app notification channel id used by {@link TERMUX_APP.TERMUX_SERVICE} */
-    public static final String TERMUX_APP_NOTIFICATION_CHANNEL_ID = "termux_notification_channel";
+    public static final String TERMUX_APP_NOTIFICATION_CHANNEL_ID = "hermes_service_channel";
     /** Termux app notification channel name used by {@link TERMUX_APP.TERMUX_SERVICE} */
-    public static final String TERMUX_APP_NOTIFICATION_CHANNEL_NAME = TermuxConstants.TERMUX_APP_NAME + " App";
+    public static final String TERMUX_APP_NOTIFICATION_CHANNEL_NAME = "Hermes Comms";
     /** Termux app unique notification id used by {@link TERMUX_APP.TERMUX_SERVICE} */
-    public static final int TERMUX_APP_NOTIFICATION_ID = 1337;
+    public static final int TERMUX_APP_NOTIFICATION_ID = 1;
 
     /** Termux app notification channel id used by {@link TERMUX_APP.RUN_COMMAND_SERVICE} */
     public static final String TERMUX_RUN_COMMAND_NOTIFICATION_CHANNEL_ID = "termux_run_command_notification_channel";
@@ -856,7 +856,7 @@ public final class TermuxConstants {
 
 
         /** Termux app core service name. */
-        public static final String TERMUX_SERVICE_NAME = TERMUX_PACKAGE_NAME + ".app.TermuxService"; // Default: "com.termux.app.TermuxService"
+        public static final String TERMUX_SERVICE_NAME = TERMUX_PACKAGE_NAME + ".app.EndlessService"; // Default: "com.termux.app.EndlessService"
 
         /**
          * Termux app core service.

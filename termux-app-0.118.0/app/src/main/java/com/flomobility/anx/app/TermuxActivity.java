@@ -83,11 +83,11 @@ import androidx.viewpager.widget.ViewPager;
 public final class TermuxActivity extends Activity implements ServiceConnection {
 
     /**
-     * The connection to the {@link TermuxService}. Requested in {@link #onCreate(Bundle)} with a call to
+     * The connection to the {@link EndlessService}. Requested in {@link #onCreate(Bundle)} with a call to
      * {@link #bindService(Intent, ServiceConnection, int)}, and obtained and stored in
      * {@link #onServiceConnected(ComponentName, IBinder)}.
      */
-    TermuxService mTermuxService;
+    EndlessService mEndlessService;
 
     /**
      * The {@link TerminalView} shown in  {@link TermuxActivity} that displays the terminal.
@@ -244,8 +244,8 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
         registerForContextMenu(mTerminalView);
 
-        // Start the {@link TermuxService} and make it run regardless of who is bound to it
-        Intent serviceIntent = new Intent(this, TermuxService.class);
+        // Start the {@link EndlessService} and make it run regardless of who is bound to it
+        Intent serviceIntent = new Intent(this, EndlessService.class);
         startService(serviceIntent);
 
         // Attempt to bind to the service, this will call the {@link #onServiceConnected(ComponentName, IBinder)}
@@ -272,13 +272,13 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
                 TermuxCommandExecutor termuxCommandExecutor = TermuxCommandExecutor.getInstance(TermuxActivity.this);
                 termuxCommandExecutor.startTermuxCommandExecutor(new TermuxCommandExecutor.ITermuxCommandExecutor() {
                     @Override
-                    public void onTermuxServiceConnected() {
+                    public void onEndlessServiceConnected() {
                         int COMMAND_LS_EXECUTION_ID = 1000;
                         termuxCommandExecutor.executeTermuxCommand(TermuxActivity.this, "ls", new String[]{"-la"}, COMMAND_LS_EXECUTION_ID);
                     }
 
                     @Override
-                    public void onTermuxServiceDisconnected() {
+                    public void onEndlessServiceDisconnected() {
 
                     }
                 });
@@ -372,10 +372,10 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
         if (mIsInvalidState) return;
 
-        if (mTermuxService != null) {
+        if (mEndlessService != null) {
             // Do not leave service and session clients with references to activity.
-            mTermuxService.unsetTermuxTerminalSessionClient();
-            mTermuxService = null;
+            mEndlessService.unsetTermuxTerminalSessionClient();
+            mEndlessService = null;
         }
 
         try {
@@ -405,14 +405,14 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
         Logger.logDebug(LOG_TAG, "onServiceConnected");
 
-        mTermuxService = ((TermuxService.LocalBinder) service).service;
+        mEndlessService = ((EndlessService.LocalBinder) service).getService();
 
         setTermuxSessionsListView();
 
-        if (mTermuxService.isTermuxSessionsEmpty()) {
+        if (mEndlessService.isTermuxSessionsEmpty()) {
             if (mIsVisible) {
                 TermuxInstaller.setupBootstrapIfNeeded(TermuxActivity.this, () -> {
-                    if (mTermuxService == null) return; // Activity might have been destroyed.
+                    if (mEndlessService == null) return; // Activity might have been destroyed.
                     try {
                         Bundle bundle = getIntent().getExtras();
                         boolean launchFailsafe = false;
@@ -440,7 +440,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         }
 
         // Update the {@link TerminalSession} and {@link TerminalEmulator} clients.
-        mTermuxService.setTermuxTerminalSessionClient(mTermuxTerminalSessionClient);
+        mEndlessService.setTermuxTerminalSessionClient(mTermuxTerminalSessionClient);
 
 
     }
@@ -450,7 +450,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
         Logger.logDebug(LOG_TAG, "onServiceDisconnected");
 
-        // Respect being stopped from the {@link TermuxService} notification action.
+        // Respect being stopped from the {@link EndlessService} notification action.
         finishActivityIfNotFinishing();
     }
 
@@ -512,7 +512,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
     private void setTermuxSessionsListView() {
         ListView termuxSessionsListView = findViewById(R.id.terminal_sessions_list);
-        mTermuxSessionListViewController = new TermuxSessionsListViewController(this, mTermuxService.getTermuxSessions());
+        mTermuxSessionListViewController = new TermuxSessionsListViewController(this, mEndlessService.getTermuxSessions());
         termuxSessionsListView.setAdapter(mTermuxSessionListViewController);
         termuxSessionsListView.setOnItemClickListener(mTermuxSessionListViewController);
         termuxSessionsListView.setOnItemLongClickListener(mTermuxSessionListViewController);
@@ -842,8 +842,8 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
 
 
-    public TermuxService getTermuxService() {
-        return mTermuxService;
+    public EndlessService getEndlessService() {
+        return mEndlessService;
     }
 
     public TerminalView getTerminalView() {
@@ -948,8 +948,8 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         if (mTermuxTerminalViewClient != null)
             mTermuxTerminalViewClient.onReload();
 
-        if (mTermuxService != null)
-            mTermuxService.setTerminalTranscriptRows();
+        if (mEndlessService != null)
+            mEndlessService.setTerminalTranscriptRows();
 
         // To change the activity and drawer theme, activity needs to be recreated.
         // But this will destroy the activity, and will call the onCreate() again.

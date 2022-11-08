@@ -282,7 +282,7 @@ echo "done"
                 TermuxCommandExecutor.getInstance(this@DownloadActivity)
             termuxCommandExecutor.startTermuxCommandExecutor(object :
                 ITermuxCommandExecutor {
-                override fun onTermuxServiceConnected() {
+                override fun onEndlessServiceConnected() {
                     termuxCommandExecutor.executeTermuxCommand(
                         this@DownloadActivity,
                         "bash",
@@ -291,7 +291,7 @@ echo "done"
                     )
                 }
 
-                override fun onTermuxServiceDisconnected() {}
+                override fun onEndlessServiceDisconnected() {}
             })
         }
     }

@@ -106,7 +106,8 @@ public class TermuxInstaller {
             Logger.logInfo(LOG_TAG, "The termux prefix directory \"" + TERMUX_PREFIX_DIR_PATH + "\" does not exist but another file exists at its destination.");
         }
 
-        final ProgressDialog progress = ProgressDialog.show(activity, null, activity.getString(R.string.bootstrap_installer_body), true, false);
+  //      final ProgressDialog progress = ProgressDialog.show(activity, null, activity.getString(R.string.bootstrap_installer_body), true, false);
+
         new Thread() {
             @Override
             public void run() {
@@ -215,13 +216,13 @@ public class TermuxInstaller {
                     showBootstrapErrorDialog(activity, whenDone, Logger.getStackTracesMarkdownString(null, Logger.getStackTracesStringArray(e)));
 
                 } finally {
-                    activity.runOnUiThread(() -> {
+                    /*activity.runOnUiThread(() -> {
                         try {
-                            progress.dismiss();
+                            //progress.dismiss();
                         } catch (RuntimeException e) {
                             // Activity already dismissed - ignore.
                         }
-                    });
+                    });*/
                 }
             }
         }.start();

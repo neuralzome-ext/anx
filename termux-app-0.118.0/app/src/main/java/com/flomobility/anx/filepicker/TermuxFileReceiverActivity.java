@@ -8,13 +8,13 @@ import android.provider.OpenableColumns;
 import android.util.Patterns;
 
 import com.flomobility.anx.R;
+import com.flomobility.anx.hermes.daemon.EndlessService;
 import com.flomobility.anx.shared.data.DataUtils;
 import com.flomobility.anx.shared.data.IntentUtils;
 import com.flomobility.anx.shared.interact.MessageDialogUtils;
 import com.flomobility.anx.shared.interact.TextInputDialogUtils;
 import com.flomobility.anx.shared.termux.TermuxConstants;
 import com.flomobility.anx.shared.termux.TermuxConstants.TERMUX_APP.TERMUX_SERVICE;
-import com.flomobility.anx.app.TermuxService;
 import com.flomobility.anx.shared.logger.Logger;
 
 import java.io.ByteArrayInputStream;
@@ -162,7 +162,7 @@ public class TermuxFileReceiverActivity extends Activity {
             final Uri scriptUri = new Uri.Builder().scheme("file").path(EDITOR_PROGRAM).build();
 
             Intent executeIntent = new Intent(TERMUX_SERVICE.ACTION_SERVICE_EXECUTE, scriptUri);
-            executeIntent.setClass(TermuxFileReceiverActivity.this, TermuxService.class);
+            executeIntent.setClass(TermuxFileReceiverActivity.this, EndlessService.class);
             executeIntent.putExtra(TERMUX_SERVICE.EXTRA_ARGUMENTS, new String[]{outFile.getAbsolutePath()});
             startService(executeIntent);
             finish();
@@ -172,7 +172,7 @@ public class TermuxFileReceiverActivity extends Activity {
 
                 Intent executeIntent = new Intent(TERMUX_SERVICE.ACTION_SERVICE_EXECUTE);
                 executeIntent.putExtra(TERMUX_SERVICE.EXTRA_WORKDIR, TERMUX_RECEIVEDIR);
-                executeIntent.setClass(TermuxFileReceiverActivity.this, TermuxService.class);
+                executeIntent.setClass(TermuxFileReceiverActivity.this, EndlessService.class);
                 startService(executeIntent);
                 finish();
             },
@@ -226,7 +226,7 @@ public class TermuxFileReceiverActivity extends Activity {
         final Uri urlOpenerProgramUri = new Uri.Builder().scheme("file").path(URL_OPENER_PROGRAM).build();
 
         Intent executeIntent = new Intent(TERMUX_SERVICE.ACTION_SERVICE_EXECUTE, urlOpenerProgramUri);
-        executeIntent.setClass(TermuxFileReceiverActivity.this, TermuxService.class);
+        executeIntent.setClass(TermuxFileReceiverActivity.this, EndlessService.class);
         executeIntent.putExtra(TERMUX_SERVICE.EXTRA_ARGUMENTS, new String[]{url});
         startService(executeIntent);
         finish();
