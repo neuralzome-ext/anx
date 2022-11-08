@@ -16,6 +16,7 @@ import com.flomobility.hermes.assets.AssetManager
 import com.flomobility.hermes.comms.SessionManager
 import com.flomobility.hermes.comms.SocketManager
 import com.flomobility.hermes.other.Constants.ACTION_START_OR_RESUME_SERVICE
+import com.flomobility.hermes.other.Constants.ACTION_STOP_AND_EXIT
 import com.flomobility.hermes.other.Constants.ACTION_STOP_SERVICE
 import com.flomobility.hermes.other.Constants.NOTIFICATION_CHANNEL_ID
 import com.flomobility.hermes.other.Constants.NOTIFICATION_CHANNEL_NAME
@@ -29,6 +30,8 @@ import kotlin.system.exitProcess
 
 @AndroidEntryPoint
 class EndlessService : LifecycleService() {
+
+    private var isRunning = false
 
     @Inject
     lateinit var baseNotificationBuilder: NotificationCompat.Builder
@@ -51,12 +54,19 @@ class EndlessService : LifecycleService() {
         intent?.let {
             when (it.action) {
                 ACTION_START_OR_RESUME_SERVICE -> {
-                    startEndlessService()
-                    Timber.d("Started service")
+                    if(!isRunning) {
+                        startEndlessService()
+                        Timber.d("Started service")
+                    }
                 }
                 ACTION_STOP_SERVICE -> {
                     killService()
                     Timber.d("Stopped service")
+                }
+                ACTION_STOP_AND_EXIT -> {
+                    killService()
+                    Timber.d("Stopped service")
+                    exitProcess(0)
                 }
                 else -> { /*NO-OP*/
                 }
@@ -76,12 +86,12 @@ class EndlessService : LifecycleService() {
                 this,
                 1,
                 Intent(this, EndlessService::class.java).apply {
-                    action = ACTION_STOP_SERVICE
+                    action = ACTION_STOP_AND_EXIT
                 },
                 if (Build.VERSION.SDK_INT >= 31) PendingIntent.FLAG_IMMUTABLE else PendingIntent.FLAG_UPDATE_CURRENT
             )
-        currentNotificationBuilder =
-            baseNotificationBuilder.addAction(R.drawable.ic_stop, "Exit", pendingIntent)
+        currentNotificationBuilder = baseNotificationBuilder
+        currentNotificationBuilder = currentNotificationBuilder.addAction(R.drawable.ic_stop, "Exit", pendingIntent)
         startForeground(NOTIFICATION_ID, currentNotificationBuilder.build())
 
         // init
@@ -102,6 +112,7 @@ class EndlessService : LifecycleService() {
         }
         if (usbPortManager.threadStatus != ThreadStatus.ACTIVE) usbPortManager.init()
         if (assetManager.threadStatus != ThreadStatus.ACTIVE) assetManager.init()
+        isRunning = true
     }
 
     private fun killService() {
@@ -109,7 +120,7 @@ class EndlessService : LifecycleService() {
         assetManager.stopAllAssets()
         stopForeground(true)
         stopSelf()
-        exitProcess(0)
+        currentNotificationBuilder.clearActions()
     }
 
     @RequiresApi(Build.VERSION_CODES.O)

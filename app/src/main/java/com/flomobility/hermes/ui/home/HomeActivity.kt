@@ -68,14 +68,12 @@ class HomeActivity : AppCompatActivity() {
             exit.setOnClickListener {
                 AlertDialog.getInstance(
                     "Confirm Logout",
-                    "",
+                    "Are you sure you want to logout?",
                     "Logout",
                     "Cancel",
                     yesListener = {
                         PRDownloader.cancelAll()
-                        sharedPreferences.clear()
-                        LoginActivity.navigateToLogin(this@HomeActivity)
-                        finish()
+                        logout()
                     }
                 ).show(supportFragmentManager, AlertDialog.TAG)
             }
@@ -174,6 +172,7 @@ class HomeActivity : AppCompatActivity() {
 
     private fun logout() {
         sharedPreferences.clear()
+        sendCommandToService(Constants.ACTION_STOP_SERVICE, EndlessService::class.java)
         LoginActivity.navigateToLogin(this@HomeActivity)
         finish()
     }

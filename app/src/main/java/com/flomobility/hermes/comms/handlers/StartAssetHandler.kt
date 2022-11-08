@@ -6,9 +6,6 @@ import com.flomobility.hermes.api.StandardResponse
 import com.flomobility.hermes.assets.AssetManager
 import com.flomobility.hermes.assets.getAssetTypeFromAlias
 import com.flomobility.hermes.comms.SessionManager
-import com.flomobility.hermes.assets.types.PhoneImu
-import com.flomobility.hermes.assets.types.UsbSerial
-import com.flomobility.hermes.assets.types.camera.Camera
 import com.flomobility.hermes.comms.SocketManager
 import com.flomobility.hermes.other.Constants
 import com.google.gson.Gson
@@ -17,6 +14,7 @@ import org.zeromq.SocketType
 import org.zeromq.ZContext
 import org.zeromq.ZMQ
 import timber.log.Timber
+import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -28,23 +26,34 @@ class StartAssetHandler @Inject constructor(
     private val sessionManager: SessionManager
 ) : Runnable {
 
+    val interrupt = AtomicBoolean(false)
+
     lateinit var socket: ZMQ.Socket
 
     override fun run() {
         try {
             ZContext().use { ctx ->
+                interrupt.set(false)
+
                 socket = ctx.createSocket(SocketType.REP)
                 socket.bind(SocketManager.START_ASSET_SOCKET_ADDR)
                 Timber.i("Start asset handler running on ${SocketManager.START_ASSET_SOCKET_ADDR}")
-                while (!Thread.currentThread().isInterrupted) {
+
+                val poller = ctx.createPoller(1)
+                poller.register(socket)
+
+                while (!interrupt.get()) {
                     try {
-                        socket.recv(0)?.let { bytes ->
-                            val msgStr = String(bytes, ZMQ.CHARSET)
-                            Timber.d("[Start-Asset] -- Request : $msgStr")
-                            if (!sessionManager.connected) {
-                                throw IllegalStateException("Cannot start asset without being subscribed! Subscribe first")
+                        poller.poll(100)
+                        if (poller.pollin(0)) {
+                            socket.recv(0)?.let { bytes ->
+                                val msgStr = String(bytes, ZMQ.CHARSET)
+                                Timber.d("[Start-Asset] -- Request : $msgStr")
+                                if (!sessionManager.connected) {
+                                    throw IllegalStateException("Cannot start asset without being subscribed! Subscribe first")
+                                }
+                                handleStartAssetRequest(msgStr)
                             }
-                            handleStartAssetRequest(msgStr)
                         }
                     } catch (e: Exception) {
                         Timber.e("Error in start asset handler : $e")
@@ -59,16 +68,11 @@ class StartAssetHandler @Inject constructor(
                     }
                 }
             }
+            Timber.i("Closing start asset handler running on ${SocketManager.START_ASSET_SOCKET_ADDR}")
+        } catch (e: InterruptedException) {
+            Timber.i("Successfully stopped start asset handler")
         } catch (e: Exception) {
             Timber.e("Error in start asset handler : $e")
-            socket.send(
-                gson.toJson(
-                    StandardResponse(
-                        success = false,
-                        message = e.message ?: Constants.UNKNOWN_ERROR_MSG
-                    )
-                ).toByteArray(ZMQ.CHARSET), 0
-            )
         }
     }
 
@@ -127,7 +131,7 @@ class StartAssetHandler @Inject constructor(
         }
 
         val updateAssetConfig = assetManager.updateAssetConfig(id, assetType, config)
-        if(!updateAssetConfig.success) {
+        if (!updateAssetConfig.success) {
             val resp = StandardResponse(success = false, updateAssetConfig.message)
             socket.send(gson.toJson(resp).toByteArray(ZMQ.CHARSET), 0)
             return
