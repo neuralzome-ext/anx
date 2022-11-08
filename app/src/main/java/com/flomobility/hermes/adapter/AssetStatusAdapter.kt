@@ -5,13 +5,15 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.LiveData
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.flomobility.hermes.R
 import com.flomobility.hermes.assets.AssetState
+import com.flomobility.hermes.assets.BaseAsset
 import com.flomobility.hermes.databinding.SensorStatusSingleItemBinding
-import com.flomobility.hermes.model.AssetsStatusModel
+import timber.log.Timber
 
 class AssetStatusAdapter(
     private val context: Context,
@@ -19,25 +21,25 @@ class AssetStatusAdapter(
 ) :
     RecyclerView.Adapter<AssetStatusAdapter.SensorStatusViewHolder>() {
 
-    private val diffCallback = object : DiffUtil.ItemCallback<AssetsStatusModel>() {
+    private val diffCallback = object : DiffUtil.ItemCallback<BaseAsset>() {
         override fun areItemsTheSame(
-            oldItem: AssetsStatusModel,
-            newItem: AssetsStatusModel
+            oldItem: BaseAsset,
+            newItem: BaseAsset
         ): Boolean {
             return oldItem == newItem
         }
 
         override fun areContentsTheSame(
-            oldItem: AssetsStatusModel,
-            newItem: AssetsStatusModel
+            oldItem: BaseAsset,
+            newItem: BaseAsset
         ): Boolean {
-            return false
+            return oldItem.hashCode() == newItem.hashCode()
         }
     }
 
     private val differ = AsyncListDiffer(this, diffCallback)
 
-    var assetStatusList: List<AssetsStatusModel>
+    var assets: List<BaseAsset>
         set(value) = differ.submitList(value)
         get() = differ.currentList
 
@@ -56,30 +58,29 @@ class AssetStatusAdapter(
 
     override fun onBindViewHolder(holder: SensorStatusViewHolder, position: Int) {
         val bind = holder.bind
-        val sensorStatus = assetStatusList[position]
-        observeStatus(sensorStatus)
-        bind.status.setImageDrawable(
-            AppCompatResources.getDrawable(
-                context,
-                if (sensorStatus.active) R.drawable.ic_circle_green else R.drawable.ic_circle_red
+        val asset = assets[position]
+        observeStatus(bind, asset.getStateLiveData())
+    }
+
+    private fun observeStatus(
+        bind: SensorStatusSingleItemBinding,
+        stateLiveData: LiveData<AssetState>,
+    ) {
+        stateLiveData.observe(lifecycleOwner) { state ->
+            bind.status.setImageDrawable(
+                AppCompatResources.getDrawable(
+                    context,
+                    if (state == AssetState.STREAMING) R.drawable.ic_circle_green else R.drawable.ic_circle_red
+                )
             )
-        )
+        }
     }
 
-    fun setAssetStatusList(list: ArrayList<AssetsStatusModel>) {
-        assetStatusList = list
-    }
-
-    private fun observeStatus(sensorStatus: AssetsStatusModel) {
-        if (!sensorStatus.stateLiveData.hasActiveObservers())
-            sensorStatus.stateLiveData.observe(context as LifecycleOwner) {
-                sensorStatus.active = it == AssetState.STREAMING
-//            notifyItemChanged(sensorStatusList.indexOf(sensorStatus))
-                assetStatusList = assetStatusList
-            }
+    fun updateAssetsList(list: List<BaseAsset>) {
+        assets = list
     }
 
     override fun getItemCount(): Int {
-        return assetStatusList.size
+        return assets.size
     }
 }

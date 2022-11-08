@@ -1,18 +1,16 @@
 package com.flomobility.hermes.assets
 
-import com.flomobility.hermes.R
-
-enum class AssetType(val alias: String, val image: Int) {
-    IMU("imu", R.drawable.ic_imu),
-    GNSS("gnss", R.drawable.ic_gps),
-    USB_SERIAL("usb_serial", R.drawable.ic_usb_serial),
-    CAM("camera", R.drawable.ic_video),
-    CLASSIC_BT("classic_bt", R.drawable.ic_bluetooth),
-    MIC("mic", R.drawable.ic_mic),
-    BLE("ble", R.drawable.ic_bluetooth),
-    SPEAKER("speaker", R.drawable.ic_speaker),
-    PHONE("phone", R.drawable.ic_phone),
-    UNK("unknown", R.drawable.anx_logo)
+enum class AssetType(val alias: String) {
+    IMU("imu"),
+    GNSS("gnss"),
+    USB_SERIAL("usb_serial"),
+    CAM("camera"),
+    CLASSIC_BT("classic_bt"),
+    MIC("mic"),
+    BLE("ble"),
+    SPEAKER("speaker"),
+    PHONE("phone"),
+    UNK("unknown")
 }
 
 fun getAssetTypeFromAlias(alias: String) = when (alias) {

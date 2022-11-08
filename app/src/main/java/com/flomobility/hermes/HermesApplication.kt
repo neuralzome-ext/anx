@@ -20,16 +20,6 @@ class HermesApplication: Application() {
             .setConnectTimeout(30000)
             .build()
         PRDownloader.initialize(applicationContext,config)
-        Timber.plant(
-            when (BuildConfig.BUILD_TYPE) {
-                BuildType.DEV -> {
-                    Timber.DebugTree()
-                }
-                else -> {
-                    Timber.DebugTree()
-                }
-            }
-        )
     }
 
     object BuildType {

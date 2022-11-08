@@ -128,11 +128,8 @@ class HomeActivity : AppCompatActivity() {
                 null -> TODO()
             }
         }
-        assetManager.getAssetsLiveData().observe(this@HomeActivity) {
-            (bind.assetRecycler.adapter as AssetAdapter).resetAssetList()
-            for (i in it) {
-                (bind.assetRecycler.adapter as AssetAdapter).addAssetState(i)
-            }
+        assetManager.getAssetsLiveData().observe(this@HomeActivity) { assets ->
+            (bind.assetRecycler.adapter as AssetAdapter).refreshAssets(assets)
         }
     }
 
@@ -144,7 +141,7 @@ class HomeActivity : AppCompatActivity() {
             this@HomeActivity,
             this@HomeActivity
         )
-        (bind.assetRecycler.adapter as AssetAdapter).setAssetList()
+        (bind.assetRecycler.adapter as AssetAdapter).setupAssetsList()
     }
 
     private fun sendCommandToService(action: String, serviceClass: Class<*>) {

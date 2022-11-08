@@ -10,12 +10,11 @@ import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.flomobility.hermes.assets.AssetState
+import com.flomobility.hermes.R
 import com.flomobility.hermes.assets.AssetType
 import com.flomobility.hermes.assets.BaseAsset
 import com.flomobility.hermes.databinding.SensorSingleItemBinding
-import com.flomobility.hermes.model.AssetsModel
-import com.flomobility.hermes.model.AssetsStatusModel
+import com.flomobility.hermes.model.AssetUI
 
 class AssetAdapter(
     private val context: Context,
@@ -23,19 +22,19 @@ class AssetAdapter(
 ) :
     RecyclerView.Adapter<AssetAdapter.AssetViewHolder>() {
 
-    private val diffCallback = object : DiffUtil.ItemCallback<AssetsModel>() {
-        override fun areItemsTheSame(oldItem: AssetsModel, newItem: AssetsModel): Boolean {
-            return false//oldItem == newItem
+    private val diffCallback = object : DiffUtil.ItemCallback<AssetUI>() {
+        override fun areItemsTheSame(oldItem: AssetUI, newItem: AssetUI): Boolean {
+            return oldItem == newItem
         }
 
-        override fun areContentsTheSame(oldItem: AssetsModel, newItem: AssetsModel): Boolean {
-            return false//oldItem.assetStatuses.hashCode() == newItem.assetStatuses.hashCode()
+        override fun areContentsTheSame(oldItem: AssetUI, newItem: AssetUI): Boolean {
+            return oldItem.assets.hashCode() == newItem.assets.hashCode()
         }
     }
 
     private val differ = AsyncListDiffer(this, diffCallback)
 
-    private var assetList: List<AssetsModel>
+    private var assetList: List<AssetUI>
         set(value) = differ.submitList(value)
         get() = differ.currentList
 
@@ -54,21 +53,21 @@ class AssetAdapter(
 
     override fun onBindViewHolder(holder: AssetViewHolder, position: Int) {
         val bind = holder.bind
-        val asset = assetList[position]
+        val assetUI = assetList[position]
         bind.sensorImage.setImageDrawable(
             AppCompatResources.getDrawable(
                 context,
-                asset.assetImage
+                assetUI.assetImage
             )
         )
         bind.sensorAvailability.visibility = View.GONE
         bind.assetStatusRecycler.visibility = View.GONE
-        bind.sensorName.text = asset.assetName
-        if (asset.isAvailable) {
+        bind.sensorName.text = assetUI.assetType.alias
+        if (assetUI.isAvailable) {
             bind.assetStatusRecycler.visibility = View.VISIBLE
             bind.assetStatusRecycler.adapter =
                 AssetStatusAdapter(context, lifecycleOwner)
-            (bind.assetStatusRecycler.adapter as AssetStatusAdapter).setAssetStatusList(asset.assetStatuses)
+            (bind.assetStatusRecycler.adapter as AssetStatusAdapter).updateAssetsList(assetUI.assets)
             bind.assetStatusRecycler.layoutManager =
                 LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
         } else {
@@ -76,45 +75,29 @@ class AssetAdapter(
         }
     }
 
-    fun addAssetState(asset: BaseAsset) {
-        assetList.single {
-            it.assetName == asset.type.alias
-        }.apply {
-            this.assetStatuses.add(
-                AssetsStatusModel(
-                    asset.state == AssetState.STREAMING,
-                    asset.getStateLiveData()
-                )
-            )
-        }
-        assetList = assetList
-    }
-
-    fun setAssetList() {
+    fun setupAssetsList() {
         assetList = arrayListOf(
-            AssetsModel(AssetType.IMU.image, AssetType.IMU.alias, arrayListOf()),
-            AssetsModel(AssetType.GNSS.image, AssetType.GNSS.alias, arrayListOf()),
-            AssetsModel(AssetType.CAM.image, AssetType.CAM.alias, arrayListOf()),
-            AssetsModel(AssetType.MIC.image, AssetType.MIC.alias, isAvailable = false),
-            AssetsModel(AssetType.USB_SERIAL.image, AssetType.USB_SERIAL.alias, arrayListOf()),
-            AssetsModel(AssetType.SPEAKER.image, AssetType.SPEAKER.alias, arrayListOf()),
-            AssetsModel(
-                AssetType.CLASSIC_BT.image,
-                AssetType.CLASSIC_BT.alias,
-                isAvailable = false
-            ),
-            AssetsModel(AssetType.BLE.image, AssetType.BLE.alias, isAvailable = false),
-            AssetsModel(AssetType.PHONE.image, AssetType.PHONE.alias, arrayListOf())
+            AssetUI(R.drawable.ic_imu, AssetType.IMU, arrayListOf()),
+            AssetUI(R.drawable.ic_gps, AssetType.GNSS, arrayListOf()),
+            AssetUI(R.drawable.ic_video, AssetType.CAM, arrayListOf()),
+            AssetUI(R.drawable.ic_mic, AssetType.MIC, isAvailable = false),
+            AssetUI(R.drawable.ic_usb_serial, AssetType.USB_SERIAL, arrayListOf()),
+            AssetUI(R.drawable.ic_speaker, AssetType.SPEAKER, arrayListOf()),
+            AssetUI(R.drawable.ic_bluetooth, AssetType.CLASSIC_BT, isAvailable = false),
+            AssetUI(R.drawable.ic_bluetooth, AssetType.BLE, isAvailable = false),
+            AssetUI(R.drawable.ic_phone, AssetType.PHONE, arrayListOf())
         ).toList()
-    }
-
-    fun resetAssetList() {
-        assetList.forEach {
-            it.assetStatuses = arrayListOf()
-        }
     }
 
     override fun getItemCount(): Int {
         return assetList.size
+    }
+
+    fun refreshAssets(assets: List<BaseAsset>) {
+        assetList.forEach { assetUI ->
+            val filteredAssets = assets.filter { it.type == assetUI.assetType }
+            assetUI.assets = filteredAssets
+        }
+        this.notifyDataSetChanged()
     }
 }
