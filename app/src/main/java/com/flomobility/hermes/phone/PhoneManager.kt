@@ -3,12 +3,13 @@ package com.flomobility.hermes.phone
 import android.annotation.SuppressLint
 import android.app.ActivityManager
 import android.content.Context
+import android.content.SharedPreferences
 import android.os.BatteryManager
 import android.os.Build
 import android.telephony.TelephonyManager
 import androidx.annotation.RequiresApi
-import androidx.appcompat.app.AppCompatActivity
 import com.flomobility.hermes.common.Result
+import com.flomobility.hermes.other.getDeviceID
 import com.flomobility.hermes.other.getRootOutput
 import com.flomobility.hermes.other.runAsRoot
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -22,7 +23,8 @@ import javax.inject.Singleton
 @RequiresApi(Build.VERSION_CODES.O)
 @Singleton
 class PhoneManager @Inject constructor(
-    @ApplicationContext private val context: Context
+    @ApplicationContext private val context: Context,
+    private val sharedPreferences: SharedPreferences
 ) {
 
     @Inject
@@ -42,12 +44,13 @@ class PhoneManager @Inject constructor(
 
     @SuppressLint("MissingPermission")
     fun getIdentity(): String {
-        val telemamanger =
-            context.getSystemService(AppCompatActivity.TELEPHONY_SERVICE) as TelephonyManager
-        val getSimNumber = telemamanger.line1Number
+//        val telemamanger =
+//            context.getSystemService(AppCompatActivity.TELEPHONY_SERVICE) as TelephonyManager
+//        val getSimNumber = telemamanger.line1Number
+        val getSimNumber = sharedPreferences.getDeviceID()
 
         Timber.d("FLOID $getSimNumber")
-        return getSimNumber
+        return getSimNumber!!
 //        return "${telephony.getImei(0)}:${telephony.getImei(1)}"
     }
 

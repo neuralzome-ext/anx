@@ -73,7 +73,6 @@ class Speaker @Inject constructor(
     override fun start(): Result {
         handleExceptions(catchBlock = { e ->
             updateState(AssetState.IDLE)
-            Timber.e(e)
             return Result(success = false, message = e.message ?: Constants.UNKNOWN_ERROR_MSG)
         }) {
             updateState(AssetState.STREAMING)

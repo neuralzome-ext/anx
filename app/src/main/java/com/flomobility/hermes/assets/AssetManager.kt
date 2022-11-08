@@ -3,8 +3,10 @@ package com.flomobility.hermes.assets
 import android.os.Handler
 import android.os.Looper
 import android.os.Message
-import com.flomobility.hermes.assets.types.PhoneGNSS
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import com.flomobility.hermes.assets.types.Phone
+import com.flomobility.hermes.assets.types.PhoneGNSS
 import com.flomobility.hermes.assets.types.PhoneImu
 import com.flomobility.hermes.assets.types.Speaker
 import com.flomobility.hermes.assets.types.camera.PhoneBackCamera
@@ -13,14 +15,15 @@ import com.flomobility.hermes.common.Result
 import com.flomobility.hermes.comms.SessionManager
 import com.flomobility.hermes.other.Constants
 import com.flomobility.hermes.other.Constants.SOCKET_BIND_DELAY_IN_MS
+import com.flomobility.hermes.other.ThreadStatus
 import com.flomobility.hermes.other.handleExceptions
-import javax.inject.Inject
-import javax.inject.Singleton
 import com.google.gson.Gson
 import org.zeromq.SocketType
 import org.zeromq.ZContext
 import org.zeromq.ZMQ
 import timber.log.Timber
+import javax.inject.Inject
+import javax.inject.Singleton
 
 @Singleton
 class AssetManager @Inject constructor(
@@ -37,11 +40,17 @@ class AssetManager @Inject constructor(
     private val _assets = mutableListOf<BaseAsset>()
     val assets: List<BaseAsset> = _assets
 
+    private val _assetsLiveData = MutableLiveData<List<BaseAsset>>()
+
     private val assetsStatePublisherContext = ZContext()
 
     private var assetsStatePublisherThread: AssetsStatePublisher? = null
 
+    var threadStatus = ThreadStatus.IDLE
+        private set
+
     fun init() {
+        threadStatus = ThreadStatus.ACTIVE
         assetsStatePublisherThread = AssetsStatePublisher()
         assetsStatePublisherThread?.start()
 
@@ -86,6 +95,7 @@ class AssetManager @Inject constructor(
     }
 
     fun publishAssetState() {
+        _assetsLiveData.postValue(this.assets)
         if (!sessionManager.connected) return
         assetsStatePublisherThread?.publishAssetState(getAssets())
     }
@@ -131,6 +141,10 @@ class AssetManager @Inject constructor(
             return Result(success = true)
         }
         return Result(success = false, message = Constants.UNKNOWN_ERROR_MSG)
+    }
+
+    fun getAssetsLiveData(): LiveData<List<BaseAsset>> {
+        return this._assetsLiveData
     }
 
     inner class AssetsStatePublisher : Thread() {

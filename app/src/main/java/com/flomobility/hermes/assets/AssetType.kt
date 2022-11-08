@@ -6,6 +6,7 @@ enum class AssetType(val alias: String) {
     USB_SERIAL("usb_serial"),
     CAM("camera"),
     CLASSIC_BT("classic_bt"),
+    MIC("mic"),
     BLE("ble"),
     SPEAKER("speaker"),
     PHONE("phone"),
