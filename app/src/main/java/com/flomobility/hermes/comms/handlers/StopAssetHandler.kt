@@ -12,6 +12,7 @@ import org.zeromq.SocketType
 import org.zeromq.ZContext
 import org.zeromq.ZMQ
 import timber.log.Timber
+import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -21,22 +22,34 @@ class StopAssetHandler @Inject constructor(
     private val sessionManager: SessionManager,
     private val gson: Gson
 ): Runnable {
+
+    val interrupt = AtomicBoolean(false)
+
     lateinit var socket: ZMQ.Socket
 
     override fun run() {
         try {
             ZContext().use { ctx ->
+                interrupt.set(false)
+
                 socket = ctx.createSocket(SocketType.REP)
                 socket.bind(SocketManager.STOP_ASSET_SOCKET_ADDR)
                 Timber.i("Stop asset handler running on ${SocketManager.STOP_ASSET_SOCKET_ADDR}")
-                while (!Thread.currentThread().isInterrupted) {
+
+                val poller = ctx.createPoller(1)
+                poller.register(socket)
+
+                while (!interrupt.get()) {
                     try {
-                        socket.recv(0)?.let { bytes ->
-                            val msgStr = String(bytes, ZMQ.CHARSET)
-                            if (!sessionManager.connected) {
-                                throw IllegalStateException("Cannot start asset without being subscribed! Subscribe first.")
+                        poller.poll(100)
+                        if (poller.pollin(0)) {
+                            socket.recv(0)?.let { bytes ->
+                                val msgStr = String(bytes, ZMQ.CHARSET)
+                                if (!sessionManager.connected) {
+                                    throw IllegalStateException("Cannot start asset without being subscribed! Subscribe first.")
+                                }
+                                handleStopAssetReq(msgStr)
                             }
-                            handleStopAssetReq(msgStr)
                         }
                     } catch (e: Exception) {
                         Timber.e("Error in stop asset handler : $e")
@@ -51,16 +64,11 @@ class StopAssetHandler @Inject constructor(
                     }
                 }
             }
+            Timber.i("Closing stop asset handler running on ${SocketManager.STOP_ASSET_SOCKET_ADDR}")
+        } catch (e: InterruptedException) {
+            Timber.i("Successfully stopped stop asset handler")
         } catch (e: Exception) {
             Timber.e("Error in stop asset handler : $e")
-            socket.send(
-                gson.toJson(
-                    StandardResponse(
-                        success = false,
-                        message = e.message ?: Constants.UNKNOWN_ERROR_MSG
-                    )
-                ).toByteArray(ZMQ.CHARSET), 0
-            )
         }
     }
 

@@ -10,6 +10,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.browser.customtabs.CustomTabsIntent
 import com.flomobility.hermes.R
+import com.flomobility.hermes.daemon.EndlessService
 import com.flomobility.hermes.databinding.ActivitySettingsBinding
 import com.flomobility.hermes.other.*
 import com.flomobility.hermes.other.viewutils.AlertDialog
@@ -132,8 +133,18 @@ class SettingsActivity : AppCompatActivity() {
         bind.validityTxt.text = "${validity} days left"
     }
 
+    private fun sendCommandToService(action: String, serviceClass: Class<*>) {
+        handleExceptions {
+            Intent(this, serviceClass).also {
+                it.action = action
+                startService(it)
+            }
+        }
+    }
+
     private fun logout() {
         sharedPreferences.clear()
+        sendCommandToService(Constants.ACTION_STOP_SERVICE, EndlessService::class.java)
         LoginActivity.navigateToLogin(this@SettingsActivity)
         finish()
     }
