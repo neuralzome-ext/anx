@@ -14,6 +14,7 @@ import com.flomobility.hermes.assets.AssetType
 import com.flomobility.hermes.assets.types.UsbSerial
 import com.flomobility.hermes.assets.types.camera.Camera
 import com.flomobility.hermes.assets.types.camera.UsbCamera
+import com.flomobility.hermes.other.ThreadStatus
 import com.flomobility.hermes.usb.camera.UsbCamManager
 import com.flomobility.hermes.usb.serial.UsbSerialManager
 import com.serenegiant.usb.UsbControlBlock
@@ -40,6 +41,9 @@ class UsbPortManager @Inject constructor(
     private var usbChecker: UsbCheckerThread? = null
 
     private var mPermissionIntent: PendingIntent? = null
+
+    var threadStatus = ThreadStatus.IDLE
+        private set
 
     private val usbReceiver: BroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(arg0: Context, intent: Intent) {
@@ -191,6 +195,7 @@ class UsbPortManager @Inject constructor(
     }
 
     fun init() {
+        threadStatus = ThreadStatus.ACTIVE
         mPermissionIntent =
             PendingIntent.getBroadcast(context, 0, Intent(ACTION_USB_PERMISSION), 0);
         val filter = IntentFilter(ACTION_USB_PERMISSION)

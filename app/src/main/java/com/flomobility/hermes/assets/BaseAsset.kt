@@ -42,7 +42,6 @@ abstract class BaseAsset {
     open fun canRegister(): Boolean {
         return true
     }
-
     abstract fun start(): Result
 
     abstract fun stop(): Result

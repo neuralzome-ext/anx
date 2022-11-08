@@ -1,6 +1,7 @@
 package com.flomobility.hermes.comms
 
 import com.flomobility.hermes.comms.handlers.*
+import com.flomobility.hermes.other.ThreadStatus
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -13,7 +14,11 @@ class SocketManager @Inject constructor(
     private val signalRpcHandler: SignalRpcHandler
 ) {
 
+    var threadStatus = ThreadStatus.IDLE
+        private set
+
     fun init() {
+        threadStatus = ThreadStatus.ACTIVE
         // create standard sockets
         Thread(subscribeAssetHandler, "subscribe-asset-thread").start()
         Thread(startAssetHandler, "start-asset-socket-thread").start()
@@ -27,6 +32,7 @@ class SocketManager @Inject constructor(
     }
 
     fun destroy() {
+        threadStatus = ThreadStatus.DISPOSED
         // TODO : interrupt all threads here
     }
 

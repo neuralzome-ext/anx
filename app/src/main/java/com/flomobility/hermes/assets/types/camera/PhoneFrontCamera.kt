@@ -2,16 +2,11 @@ package com.flomobility.hermes.assets.types.camera
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.content.res.Configuration
-import android.graphics.ImageFormat
-import android.graphics.YuvImage
 import android.hardware.camera2.CameraMetadata
 import android.hardware.camera2.CaptureRequest
 import android.os.Handler
 import android.os.Looper
 import android.os.Message
-import android.util.Range
-import android.util.Size
 import androidx.camera.camera2.internal.compat.CameraCharacteristicsCompat
 import androidx.camera.camera2.internal.compat.quirk.CamcorderProfileResolutionQuirk
 import androidx.camera.camera2.interop.Camera2CameraControl
@@ -25,8 +20,10 @@ import com.flomobility.hermes.assets.AssetState
 import com.flomobility.hermes.assets.AssetType
 import com.flomobility.hermes.assets.BaseAssetConfig
 import com.flomobility.hermes.common.Result
-import com.flomobility.hermes.other.*
+import com.flomobility.hermes.other.Constants
 import com.flomobility.hermes.other.Constants.SOCKET_BIND_DELAY_IN_MS
+import com.flomobility.hermes.other.handleExceptions
+import com.flomobility.hermes.other.toJpeg
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -39,8 +36,6 @@ import java.nio.ByteBuffer
 import java.util.concurrent.Executors
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlin.Exception
-import kotlin.system.measureTimeMillis
 
 @SuppressLint("RestrictedApi", "UnsafeOptInUsageError", "VisibleForTests")
 @Singleton
@@ -98,11 +93,13 @@ class PhoneFrontCamera @Inject constructor(
             val previewSizes = CamcorderProfileResolutionQuirk(characteristics).supportedResolutions
 //            Timber.d("Preview sizes : $previewSizes")
             val streams = mutableListOf<Config.Stream>()
-            streams.add(Config.Stream(
-                fps = 30,
-                width = 640,
-                height = 480,
-                pixelFormat = Config.Stream.PixelFormat.MJPEG)
+            streams.add(
+                Config.Stream(
+                    fps = 30,
+                    width = 640,
+                    height = 480,
+                    pixelFormat = Config.Stream.PixelFormat.MJPEG
+                )
             )
 /*            listOf(1, 2, 5, 10, 15, 30).forEach { fps ->
                 previewSizes.forEach { size ->
@@ -303,7 +300,7 @@ class PhoneFrontCamera @Inject constructor(
                 when (msg.what) {
                     MSG_STREAM_FRAME -> {
 //                        val elapsed = measureTimeMillis {
-                            socket.sendByteBuffer(msg.obj as ByteBuffer, 0)
+                        socket.sendByteBuffer(msg.obj as ByteBuffer, 0)
 //                        }
 //                        Timber.d("$elapsed")
                     }
@@ -327,7 +324,6 @@ class PhoneFrontCamera @Inject constructor(
         private const val MSG_STREAM_FRAME = 9
         private const val MSG_STREAM_FRAME_BYTE_ARRAY = 10
     }
-
 
 
 }
