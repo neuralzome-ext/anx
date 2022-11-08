@@ -1,4 +1,4 @@
-package com.flomobility.flobtops.adapters
+package com.flomobility.hermes.adapter
 
 import android.content.Context
 import android.view.LayoutInflater
@@ -9,7 +9,7 @@ import com.flomobility.hermes.other.handleExceptions
 
 class IpAdapter(
     private val context: Context,
-    private val ipList: ArrayList<String>,
+    private var ipList: List<String>,
 ) :
     RecyclerView.Adapter<IpAdapter.IpViewHolder>() {
     inner class IpViewHolder(val bind: IpSingleItemBinding) : RecyclerView.ViewHolder(bind.root)
@@ -36,5 +36,10 @@ class IpAdapter(
 
     override fun getItemCount(): Int {
         return ipList.size
+    }
+
+    fun updateIpList(ipList: List<String>) {
+        this.ipList = ipList
+        this.notifyDataSetChanged()
     }
 }

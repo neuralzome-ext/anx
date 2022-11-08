@@ -83,7 +83,21 @@
             android:layout_marginStart="50dp"
             android:layout_marginEnd="20dp"
             tools:itemCount="3"
+            android:visibility="visible"
             tools:listitem="@layout/ip_single_item" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/connect_to_network_error"
+            android:text="Connect to a network"
+            android:fontFamily="@font/metropolis_semibold_webfont"
+            android:textSize="18sp"
+            android:layout_marginTop="8dp"
+            android:textColor="@color/white"
+            android:visibility="gone"
+            android:layout_gravity="center_horizontal"/>
+
 
         <TextView
             android:layout_width="match_parent"

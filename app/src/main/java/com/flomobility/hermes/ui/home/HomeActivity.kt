@@ -5,11 +5,12 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.isVisible
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.downloader.PRDownloader
-import com.flomobility.flobtops.adapters.IpAdapter
+import com.flomobility.hermes.adapter.IpAdapter
 import com.flomobility.hermes.adapter.AssetAdapter
 import com.flomobility.hermes.assets.AssetManager
 import com.flomobility.hermes.daemon.EndlessService
@@ -130,6 +131,17 @@ class HomeActivity : AppCompatActivity() {
         }
         assetManager.getAssetsLiveData().observe(this@HomeActivity) { assets ->
             (bind.assetRecycler.adapter as AssetAdapter).refreshAssets(assets)
+        }
+
+        InternetConnectionCheck(this).observe(this) { isConnected ->
+            if(isConnected) {
+                bind.ipRecycler.isVisible = true
+                bind.connectToNetworkError.isVisible = false
+                (bind.ipRecycler.adapter as IpAdapter).updateIpList(getIPAddressList(true))
+            } else {
+                bind.ipRecycler.isVisible = false
+                bind.connectToNetworkError.isVisible = true
+            }
         }
     }
 
