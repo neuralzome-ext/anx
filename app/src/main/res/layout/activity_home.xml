@@ -99,11 +99,12 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="16dp"
-            android:layout_marginVertical="12dp"
+            android:layout_marginTop="12dp"
+            android:layout_marginBottom="8dp"
             android:background="@drawable/square_rounded_2"
             android:fontFamily="@font/metropolis_regular_webfont"
             android:padding="10dp"
-            android:text="ssh root@&lt;ip_address&gt;:8044"
+            android:text="ssh root@&lt;ip_address&gt; -p 2222"
             android:textColor="@color/white"
             android:textSize="18sp" />
     </LinearLayout>
