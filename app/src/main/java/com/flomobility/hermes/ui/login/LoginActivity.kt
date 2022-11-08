@@ -112,16 +112,16 @@ class LoginActivity : ComponentActivity() {
                     }
                     sharedPreferences.putToken(it.peekContent().data?.token)
                     sharedPreferences.putDeviceExpiry(it.peekContent().data?.robot?.expiry)
-                    when (true) {
-                        sharedPreferences.getIsInstalled() -> {
+//                    when (true) {
+//                        sharedPreferences.getIsInstalled() -> {
                             HomeActivity.navigateToHome(
                                 this@LoginActivity
                             )
-                        }
-                        else -> DownloadActivity.navigateToDownload(
+//                        }
+                        /*else -> DownloadActivity.navigateToDownload(
                             this@LoginActivity
-                        )
-                    }
+                        )*/
+//                    }
                     finish()
                 }
                 is Resource.Error -> {
