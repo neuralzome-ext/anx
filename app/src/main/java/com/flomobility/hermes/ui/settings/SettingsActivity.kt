@@ -3,10 +3,12 @@ package com.flomobility.hermes.ui.settings
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.net.Uri
 import android.os.Bundle
 import android.view.Window
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.content.res.AppCompatResources
+import androidx.browser.customtabs.CustomTabsIntent
 import com.flomobility.hermes.R
 import com.flomobility.hermes.databinding.ActivitySettingsBinding
 import com.flomobility.hermes.other.*
@@ -15,9 +17,11 @@ import com.flomobility.hermes.ui.home.HomeActivity
 import com.flomobility.hermes.ui.login.LoginActivity
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
+import timber.log.Timber
 import java.text.SimpleDateFormat
 import java.util.*
 import javax.inject.Inject
+
 
 @AndroidEntryPoint
 class SettingsActivity : AppCompatActivity() {
@@ -66,17 +70,14 @@ class SettingsActivity : AppCompatActivity() {
             backBtn.setOnClickListener {
                 onBackPressed()
             }
-            thirdPartyTxt.setOnClickListener {
-
-            }
             termsTxt.setOnClickListener {
-
+                openWebsite("https://github.com/flomobility/anx_docs/blob/master/eula.md")
             }
             privacyTxt.setOnClickListener {
-
+                openWebsite("https://github.com/flomobility/anx_docs/blob/master/privacy.md")
             }
-            userTxt.setOnClickListener {
-
+            docsTxt.setOnClickListener {
+                openWebsite("https://github.com/flomobility/anx_docs")
             }
             onBootSwitch.setOnCheckedChangeListener { _, checked ->
                 sharedPreferences.setIsOnBoot(checked)
@@ -92,6 +93,18 @@ class SettingsActivity : AppCompatActivity() {
                     }
                 ).show(supportFragmentManager, AlertDialog.TAG)
             }
+        }
+    }
+
+    private fun openWebsite(url: String) {
+        try {
+            val builder = CustomTabsIntent.Builder()
+            val customTabsIntent = builder.build()
+            customTabsIntent.intent.setPackage("com.android.chrome")
+            customTabsIntent.intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+            customTabsIntent.launchUrl(this, Uri.parse(url))
+        } catch (e: Exception) {
+            Timber.e("Failed to open $url -> $e")
         }
     }
 

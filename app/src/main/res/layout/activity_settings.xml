@@ -36,26 +36,14 @@
         android:textSize="14sp" />
 
     <TextView
-        android:id="@+id/thirdPartyTxt"
+        android:id="@+id/termsTxt"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/aboutTxt"
         android:layout_marginStart="40dp"
         android:layout_marginTop="20dp"
         android:fontFamily="@font/metropolis_regular_webfont"
-        android:text="Third Party Software"
-        android:textColor="@color/white"
-        android:textSize="16sp" />
-
-    <TextView
-        android:id="@+id/termsTxt"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/thirdPartyTxt"
-        android:layout_marginStart="40dp"
-        android:layout_marginTop="20dp"
-        android:fontFamily="@font/metropolis_regular_webfont"
-        android:text="Terms and Conditions"
+        android:text="@string/terms_and_conditions"
         android:textColor="@color/white"
         android:textSize="16sp" />
 
@@ -67,19 +55,19 @@
         android:layout_marginStart="40dp"
         android:layout_marginTop="20dp"
         android:fontFamily="@font/metropolis_regular_webfont"
-        android:text="Privacy Policy"
+        android:text="@string/privacy_policy"
         android:textColor="@color/white"
         android:textSize="16sp" />
 
     <TextView
-        android:id="@+id/userTxt"
+        android:id="@+id/docsTxt"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/privacyTxt"
         android:layout_marginStart="40dp"
         android:layout_marginTop="20dp"
         android:fontFamily="@font/metropolis_regular_webfont"
-        android:text="User Manual"
+        android:text="@string/docs"
         android:textColor="@color/white"
         android:textSize="16sp" />
 
@@ -87,11 +75,11 @@
         android:id="@+id/licenceTxt"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/userTxt"
+        android:layout_below="@id/docsTxt"
         android:layout_marginStart="40dp"
         android:layout_marginTop="20dp"
         android:fontFamily="@font/metropolis_regular_webfont"
-        android:text="Licence Validity: "
+        android:text="@string/licence_validity"
         android:textColor="@color/white"
         android:textSize="16sp" />
 
@@ -99,7 +87,7 @@
         android:id="@+id/validityTxt"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/userTxt"
+        android:layout_below="@id/docsTxt"
         android:layout_marginStart="5dp"
         android:layout_marginTop="20dp"
         android:layout_toEndOf="@id/licenceTxt"
@@ -124,7 +112,7 @@
         android:layout_marginStart="40dp"
         android:layout_marginTop="10dp"
         android:fontFamily="@font/metropolis_thin_webfont"
-        android:text="Actions"
+        android:text="@string/actions"
         android:textColor="#FEFEFE"
         android:textSize="14sp" />
 
@@ -136,7 +124,7 @@
         android:layout_marginStart="40dp"
         android:layout_marginTop="20dp"
         android:fontFamily="@font/metropolis_regular_webfont"
-        android:text="Start on boot"
+        android:text="@string/start_on_boot"
         android:textColor="@color/white"
         android:textSize="16sp" />
 
@@ -158,7 +146,7 @@
         android:layout_marginStart="40dp"
         android:layout_marginTop="30dp"
         android:fontFamily="@font/metropolis_regular_webfont"
-        android:text="Logout"
+        android:text="@string/logout"
         android:textColor="@color/white"
         android:textSize="16sp" />
 
