@@ -3,6 +3,7 @@ package com.flomobility.hermes.ui.settings
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.view.Window
@@ -63,6 +64,16 @@ class SettingsActivity : AppCompatActivity() {
         }
         setupEventListeners()
         setExpiry()
+        setupVersionInfo()
+    }
+
+    private fun setupVersionInfo() {
+        this.packageManager.getPackageInfo(
+            this.packageName,
+            PackageManager.GET_ACTIVITIES
+        ).apply {
+            bind.tvFloVersion.text = "v$versionName"
+        }
     }
 
     private fun setupEventListeners() {
