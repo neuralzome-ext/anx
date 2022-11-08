@@ -28,10 +28,10 @@ android {
 
     defaultConfig {
         applicationId "com.flomobility.hermes"
-        minSdk 21
+        minSdk 23
         targetSdk 27
-        versionCode 6
-        versionName "0.6.4"
+        versionCode 7
+        versionName "0.7.0"
 
         Properties properties = new Properties()
         properties.load(project.rootProject.file('local.properties').newDataInputStream())
