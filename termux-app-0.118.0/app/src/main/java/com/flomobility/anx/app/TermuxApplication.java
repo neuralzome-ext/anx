@@ -6,10 +6,8 @@ import com.flomobility.anx.shared.crash.TermuxCrashUtils;
 import com.flomobility.anx.shared.settings.preferences.TermuxAppSharedPreferences;
 import com.flomobility.anx.shared.logger.Logger;
 
-import dagger.hilt.android.HiltAndroidApp;
 import timber.log.Timber;
 
-@HiltAndroidApp
 public class TermuxApplication extends Application {
     public void onCreate() {
         super.onCreate();

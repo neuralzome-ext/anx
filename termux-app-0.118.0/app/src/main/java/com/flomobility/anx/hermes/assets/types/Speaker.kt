@@ -23,13 +23,11 @@ import javax.inject.Singleton
 @Singleton
 class Speaker @Inject constructor(
     @ApplicationContext private val context: Context
-) : BaseAsset, TextToSpeech.OnInitListener {
+) : BaseAsset(), TextToSpeech.OnInitListener {
 
     private val _id: String = "0"
 
-    private val _state = AssetState.IDLE
-
-    private val _config = Speaker.Config()
+    private val _config = Config()
 
     private var speakerThread: SpeakerThread? = null
 
@@ -56,14 +54,11 @@ class Speaker @Inject constructor(
     override val config: BaseAssetConfig
         get() = _config
 
-    override val state: AssetState
-        get() = _state
-
     override fun updateConfig(config: BaseAssetConfig): Result {
-        if (config !is Speaker.Config) {
+        if (config !is Config) {
             return Result(
                 success = false,
-                message = "Need config of type ${Speaker.Config::class.simpleName}, received ${config::class.simpleName}"
+                message = "Need config of type ${Config::class.simpleName}, received ${config::class.simpleName}"
             )
         }
 
@@ -77,9 +72,10 @@ class Speaker @Inject constructor(
 
     override fun start(): Result {
         handleExceptions(catchBlock = { e ->
-            Timber.e(e)
+            updateState(AssetState.IDLE)
             return Result(success = false, message = e.message ?: Constants.UNKNOWN_ERROR_MSG)
         }) {
+            updateState(AssetState.STREAMING)
             t2s.voice = t2s.voices.find { it.locale.language == _config.language.value}
             speakerThread = SpeakerThread()
             speakerThread?.start()
@@ -90,8 +86,10 @@ class Speaker @Inject constructor(
 
     override fun stop(): Result {
         handleExceptions(catchBlock = { e ->
+            updateState(AssetState.STREAMING)
             return Result(success = false, message = e.message ?: Constants.UNKNOWN_ERROR_MSG)
         }) {
+            updateState(AssetState.IDLE)
             speakerThread?.interrupt?.set(true)
             speakerThread = null
             return Result(success = true)
@@ -121,14 +119,20 @@ class Speaker @Inject constructor(
                     socket = ctx.createSocket(SocketType.SUB)
                     socket.connect(address)
                     socket.subscribe("")
+
+                    val poller = ctx.createPoller(1)
+                    poller.register(socket)
                     while (!interrupt.get()) {
                         try {
-                            val recvBytes = socket.recv(ZMQ.DONTWAIT) ?: continue
-                            val rawData = GsonUtils.getGson().fromJson<Raw>(
-                                String(recvBytes, ZMQ.CHARSET),
-                                Raw.type
-                            )
-                            speak(rawData.data)
+                            poller.poll(100)
+                            if (poller.pollin(0)) {
+                                val recvBytes = socket.recv(0)
+                                val rawData = GsonUtils.getGson().fromJson<Raw>(
+                                    String(recvBytes, ZMQ.CHARSET),
+                                    Raw.type
+                                )
+                                speak(rawData.data)
+                            }
                         } catch (e: Exception) {
                             Timber.e(e)
                             return

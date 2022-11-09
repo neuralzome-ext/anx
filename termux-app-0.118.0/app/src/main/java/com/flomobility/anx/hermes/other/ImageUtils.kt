@@ -35,7 +35,7 @@ fun Array<Image.Plane>.toNV21(width: Int, height: Int): ByteBuffer {
     val imageSize = width * height
     val out = ByteArray(imageSize + 2 * (imageSize / 4))
 
-    if (BufferUtils.areUVPlanesNV21(this, width, height)) {
+    if (com.flomobility.anx.hermes.other.BufferUtils.areUVPlanesNV21(this, width, height)) {
         // Copy the Y values.
         this[0].buffer.get(out, 0, imageSize)
         val uBuffer: ByteBuffer = this[1].buffer
@@ -47,11 +47,25 @@ fun Array<Image.Plane>.toNV21(width: Int, height: Int): ByteBuffer {
     } else {
         // Fallback to copying the UV values one by one, which is slower but also works.
         // Unpack Y.
-        BufferUtils.unpackPlane(this[0], width, height, out, 0, 1)
+        com.flomobility.anx.hermes.other.BufferUtils.unpackPlane(this[0], width, height, out, 0, 1)
         // Unpack U.
-        BufferUtils.unpackPlane(this[1], width, height, out, imageSize + 1, 2)
+        com.flomobility.anx.hermes.other.BufferUtils.unpackPlane(
+            this[1],
+            width,
+            height,
+            out,
+            imageSize + 1,
+            2
+        )
         // Unpack V.
-        BufferUtils.unpackPlane(this[2], width, height, out, imageSize, 2)
+        com.flomobility.anx.hermes.other.BufferUtils.unpackPlane(
+            this[2],
+            width,
+            height,
+            out,
+            imageSize,
+            2
+        )
     }
 
     return ByteBuffer.wrap(out)

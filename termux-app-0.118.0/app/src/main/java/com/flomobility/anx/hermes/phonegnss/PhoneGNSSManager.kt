@@ -9,7 +9,6 @@ import android.location.OnNmeaMessageListener
 import android.os.Build
 import android.os.Bundle
 import androidx.annotation.RequiresApi
-import com.flomobility.anx.hermes.assets.types.PhoneGNSS
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject

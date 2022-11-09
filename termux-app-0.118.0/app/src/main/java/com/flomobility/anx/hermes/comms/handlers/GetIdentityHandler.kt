@@ -3,7 +3,6 @@ package com.flomobility.anx.hermes.comms.handlers
 import android.os.Build
 import androidx.annotation.RequiresApi
 import com.flomobility.anx.hermes.api.GetIdentityResponse
-import com.flomobility.anx.hermes.api.StandardResponse
 import com.flomobility.anx.hermes.comms.SessionManager
 import com.flomobility.anx.hermes.comms.SocketManager
 import com.flomobility.anx.hermes.comms.SocketManager.Companion.GET_IDENTITY_SOCKET_ADDR
@@ -15,6 +14,7 @@ import org.zeromq.SocketType
 import org.zeromq.ZContext
 import org.zeromq.ZMQ
 import timber.log.Timber
+import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -28,42 +28,64 @@ class GetIdentityHandler @Inject constructor(
 
     lateinit var socket: ZMQ.Socket
 
+    val interrupt = AtomicBoolean(false)
+
     override fun run() {
         try {
             ZContext().use { ctx ->
+                interrupt.set(false)
+
                 socket = ctx.createSocket(SocketType.REP)
                 socket.bind(GET_IDENTITY_SOCKET_ADDR)
                 Timber.i("Get Identity handler running on ${SocketManager.GET_IDENTITY_SOCKET_ADDR}")
-                while (!Thread.currentThread().isInterrupted) {
+
+                val poller = ctx.createPoller(1)
+                poller.register(socket)
+
+                while (!interrupt.get()) {
                     try {
-                        socket.recv(0)?.let { bytes ->
-                            val data = String(bytes, ZMQ.CHARSET)
-                            if (!sessionManager.connected) {
-                                throw IllegalStateException("Cannot start asset without being subscribed!")
-                            }
-                            Timber.d("[Get Identity] -- Requested : $data")
-                            if (JSONObject(data).length() == 0) {
-                                // valid request
-                                val result = phoneManager.getIdentity()
-                                val imeiResponse = GetIdentityResponse(imei = result)
-                                socket.send(gson.toJson(imeiResponse).toByteArray(ZMQ.CHARSET), 0)
+                        poller.poll(100)
+                        if (poller.pollin(0)) {
+                            socket.recv(0)?.let { bytes ->
+                                val data = String(bytes, ZMQ.CHARSET)
+                                if (!sessionManager.connected) {
+                                    throw IllegalStateException("Cannot start asset without being subscribed!")
+                                }
+                                Timber.d("[Get Identity] -- Requested : $data")
+                                if (JSONObject(data).length() == 0) {
+                                    // valid request
+                                    val result = phoneManager.getIdentity()
+                                    val identityResponse =
+                                        GetIdentityResponse(imei = result, success = true)
+                                    socket.send(
+                                        gson.toJson(identityResponse).toByteArray(ZMQ.CHARSET),
+                                        0
+                                    )
+                                }
                             }
                         }
                     } catch (e: SecurityException) {
                         Timber.e("Error in GetIdentityHandler : $e")
-                        val response = StandardResponse(success = false, message = "Unable to provide identity -> Insufficient permissions to access IMEI. ${e.message}")
+                        val response = GetIdentityResponse(
+                            success = false,
+                            message = "Unable to provide identity -> Insufficient permissions to access IMEI. ${e.message}"
+                        )
                         socket.send(gson.toJson(response).toByteArray(ZMQ.CHARSET), 0)
                     } catch (e: Exception) {
                         Timber.e("Error in GetIdentityHandler : $e")
-                        val response = StandardResponse(success = false, message = (e.message ?: Constants.UNKNOWN_ERROR_MSG))
+                        val response = GetIdentityResponse(
+                            success = false,
+                            message = (e.message ?: Constants.UNKNOWN_ERROR_MSG)
+                        )
                         socket.send(gson.toJson(response).toByteArray(ZMQ.CHARSET), 0)
                     }
                 }
             }
+            Timber.i("Closing GetIdentityHandler running on ${SocketManager.GET_IDENTITY_SOCKET_ADDR}")
+        } catch (e: InterruptedException) {
+            Timber.i("Successfully stopped GetIdentityHandler")
         } catch (e: Exception) {
             Timber.e("Error in GetIdentityHandler : $e")
-            val response = StandardResponse(success = false, message = (e.message ?: Constants.UNKNOWN_ERROR_MSG))
-            socket.send(gson.toJson(response).toByteArray(ZMQ.CHARSET), 0)
         }
     }
 }

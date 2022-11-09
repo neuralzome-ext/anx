@@ -13,6 +13,7 @@ dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
         google()
+        jcenter()
         mavenCentral()
         maven { url "https://jitpack.io" }
         maven { url 'https://raw.githubusercontent.com/saki4510t/libcommon/master/repository/' }
@@ -21,7 +22,6 @@ dependencyResolutionManagement {
         }
     }
 }
-
 include ':app', ':termux-shared', ':terminal-emulator', ':terminal-view'
 include ':libuvccamera'
 include ':usbCameraCommon'

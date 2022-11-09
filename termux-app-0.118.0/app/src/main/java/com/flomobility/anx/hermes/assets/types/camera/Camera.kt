@@ -8,7 +8,7 @@ import com.google.gson.reflect.TypeToken
 import com.serenegiant.usb.UVCCamera
 import org.json.JSONObject
 
-abstract class Camera : BaseAsset {
+abstract class Camera : BaseAsset() {
 
     class Config : BaseAssetConfig() {
 
@@ -66,7 +66,7 @@ abstract class Camera : BaseAsset {
                     fps = 30,
                     width = 1920,
                     height = 1080,
-                    pixelFormat = Stream.PixelFormat.MJPEG
+                    pixelFormat = PixelFormat.MJPEG
                 )
 
                 fun getPixelFormatFromCode(code: Int): PixelFormat {

@@ -12,6 +12,7 @@ import org.zeromq.SocketType
 import org.zeromq.ZContext
 import org.zeromq.ZMQ
 import timber.log.Timber
+import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -21,6 +22,8 @@ class SubscribeAssetHandler @Inject constructor(
     private val gson: Gson,
     private val assetManager: AssetManager
 ) : Runnable {
+
+    val interrupt = AtomicBoolean(false)
 
     lateinit var socket: ZMQ.Socket
 
@@ -32,20 +35,29 @@ class SubscribeAssetHandler @Inject constructor(
     override fun run() {
         try {
             ZContext().use { ctx ->
+                interrupt.set(false)
+
                 socket = ctx.createSocket(SocketType.REP)
                 socket.bind(SocketManager.SUBSCRIBE_ASSET_SOCKET_ADDR)
                 Timber.i("Subscriber Handler running on ${SocketManager.SUBSCRIBE_ASSET_SOCKET_ADDR}")
-                while (!Thread.currentThread().isInterrupted) {
+
+                val poller = ctx.createPoller(1)
+                poller.register(socket)
+
+                while (!interrupt.get()) {
                     try {
-                        socket.recv(0)?.let { bytes ->
-                            val msgStr = String(bytes, ZMQ.CHARSET)
-                            Timber.i("[Subscribe] -- Request : $msgStr")
-                            val subscribeReq =
-                                gson.fromJson<SubscribeRequest>(
-                                    msgStr,
-                                    SubscribeRequest.type
-                                )
-                            handleSubscribeRequest(subscribeReq)
+                        poller.poll(100)
+                        if (poller.pollin(0)) {
+                            socket.recv(0)?.let { bytes ->
+                                val msgStr = String(bytes, ZMQ.CHARSET)
+                                Timber.i("[Subscribe] -- Request : $msgStr")
+                                val subscribeReq =
+                                    gson.fromJson<SubscribeRequest>(
+                                        msgStr,
+                                        SubscribeRequest.type
+                                    )
+                                handleSubscribeRequest(subscribeReq)
+                            }
                         }
                     } catch (e: Exception) {
                         Timber.e("Error in subscribe asset handler : $e")
@@ -60,16 +72,11 @@ class SubscribeAssetHandler @Inject constructor(
                     }
                 }
             }
+            Timber.i("Closing subscribe asset handler running on ${SocketManager.SUBSCRIBE_ASSET_SOCKET_ADDR}")
+        } catch (e: InterruptedException) {
+            Timber.i("Successfully stopped subscribe asset handler")
         } catch (e: Exception) {
             Timber.e("Error in subscribe asset handler : $e")
-            socket.send(
-                gson.toJson(
-                    StandardResponse(
-                        success = false,
-                        message = e.message ?: Constants.UNKNOWN_ERROR_MSG
-                    )
-                ).toByteArray(ZMQ.CHARSET), 0
-            )
         }
     }
 

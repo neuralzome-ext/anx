@@ -1,11 +1,9 @@
 package com.flomobility.anx.hermes.assets
 
 import com.flomobility.anx.hermes.common.Result
-import com.flomobility.anx.hermes.other.GsonUtils
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import org.json.JSONObject
-import timber.log.Timber
 
 abstract class BaseAssetConfig {
 

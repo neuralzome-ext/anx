@@ -1,11 +1,18 @@
 package com.flomobility.anx.hermes.other
 
+import android.content.SharedPreferences
+import com.flomobility.anx.hermes.other.Constants.DEVICE_EXPIRY
+import com.flomobility.anx.hermes.other.Constants.DEVICE_ID
+import com.flomobility.anx.hermes.other.Constants.INSTALL_STATUS
+import com.flomobility.anx.hermes.other.Constants.ON_BOOT
+import com.flomobility.anx.hermes.other.Constants.USER_TOKEN
 import timber.log.Timber
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.net.InetAddress
 import java.net.NetworkInterface
 import java.nio.ByteBuffer
+import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.reflect.KClass
 
@@ -31,6 +38,12 @@ inline fun <T> handleExceptions(
         catchBlock(e)
         e
     }
+}
+
+enum class ThreadStatus {
+    IDLE,
+    ACTIVE,
+    DISPOSED
 }
 
 /**
@@ -116,7 +129,7 @@ fun getIPAddress(useIPv4: Boolean): String {
  * @param useIPv4   true=return ipv4, false=return ipv6
  * @return  address or empty string
  */
-fun getIPAddressList(useIPv4: Boolean): List<String> {
+fun getIPAddressList(useIPv4: Boolean): ArrayList<String> {
     val ipAddresses: ArrayList<String> = ArrayList()
     try {
         val interfaces: List<NetworkInterface> =
@@ -130,7 +143,9 @@ fun getIPAddressList(useIPv4: Boolean): List<String> {
                     //boolean isIPv4 = InetAddressUtils.isIPv4Address(sAddr);
                     val isIPv4 = sAddr.indexOf(':') < 0
                     if (useIPv4) {
-                        if (isIPv4) ipAddresses.add(sAddr)
+                        if (isIPv4) {
+                            ipAddresses.add("$sAddr (${intf.displayName})")
+                        }
                     } else {
                         if (!isIPv4) {
                             val delim = sAddr.indexOf('%') // drop ip6 zone suffix
@@ -150,4 +165,68 @@ fun getIPAddressList(useIPv4: Boolean): List<String> {
     } catch (ignored: java.lang.Exception) {
     } // for now eat exceptions
     return ipAddresses
+}
+
+fun isExpired(expiryStr: String?): Boolean {
+    if (expiryStr == null)
+        return true
+    val formatter = SimpleDateFormat("yyyy-MM-dd hh:mm:ss", Locale.getDefault())
+    formatter.timeZone = TimeZone.getTimeZone("UTC")
+//    val expiry = formatter.parse(expiryStr.split("T")[0])
+    val expiry = formatter.parse(expiryStr.replace("T", " ").replace("Z", ""))
+    val now = Date()
+    return now.after(expiry)
+//    return (expiry.time - now.time)/86400000 < 0
+}
+
+
+fun SharedPreferences.putToken(key: String?) {
+    if (key != null)
+        this.edit().putString(USER_TOKEN, key).apply()
+}
+
+fun SharedPreferences.checkToken(): Boolean {
+    return this.contains(USER_TOKEN)
+}
+
+fun SharedPreferences.getToken(): String? {
+    return this.getString(USER_TOKEN, null)
+}
+
+fun SharedPreferences.putDeviceID(key: String?) {
+    if (key != null)
+        this.edit().putString(DEVICE_ID, key).apply()
+}
+
+fun SharedPreferences.getDeviceID(): String? {
+    return this.getString(DEVICE_ID, null)
+}
+
+fun SharedPreferences.putDeviceExpiry(key: String?) {
+    if (key != null)
+        this.edit().putString(DEVICE_EXPIRY, key).apply()
+}
+
+fun SharedPreferences.getDeviceExpiry(): String? {
+    return this.getString(DEVICE_EXPIRY, null)
+}
+
+fun SharedPreferences.setIsInstalled(isInstalled: Boolean) {
+    this.edit().putBoolean(INSTALL_STATUS, isInstalled).apply()
+}
+
+fun SharedPreferences.getIsInstalled(): Boolean {
+    return this.getBoolean(INSTALL_STATUS, false)
+}
+
+fun SharedPreferences.setIsOnBoot(isOnBoot: Boolean) {
+    this.edit().putBoolean(ON_BOOT, isOnBoot).apply()
+}
+
+fun SharedPreferences.getIsOnBoot(): Boolean {
+    return this.getBoolean(ON_BOOT, false)
+}
+
+fun SharedPreferences.clear() {
+    this.edit().remove(DEVICE_EXPIRY).remove(USER_TOKEN).apply()
 }

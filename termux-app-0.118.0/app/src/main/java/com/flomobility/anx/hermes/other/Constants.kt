@@ -1,9 +1,13 @@
 package com.flomobility.anx.hermes.other
 
+import com.flomobility.anx.BuildConfig.*
+import com.flomobility.anx.FloApplication
+
 object Constants {
     const val ACTION_START_OR_RESUME_SERVICE = "ACTION_START_OR_RESUME_SERVICE"
     const val ACTION_PAUSE_SERVICE = "ACTION_PAUSE_SERVICE"
     const val ACTION_STOP_SERVICE = "ACTION_STOP_SERVICE"
+    const val ACTION_STOP_AND_EXIT = "ACTION_STOP_AND_EXIT"
 
     const val NOTIFICATION_CHANNEL_ID = "hermes_service_channel"
     const val NOTIFICATION_CHANNEL_NAME = "Hermes Comms"
@@ -16,4 +20,17 @@ object Constants {
     const val SOCKET_BIND_DELAY_IN_MS = 500L
 
     const val RPC_DEFAULT_TIMEOUT_IN_MS = 5000
+
+    const val USER_TOKEN = "token"
+    const val DEVICE_ID = "deviceId"
+    const val DEVICE_EXPIRY = "deviceExpiry"
+    const val INSTALL_STATUS = "installStatus"
+    const val ON_BOOT = "onBoot"
+
+    val BASE_URL: String = when (BUILD_TYPE) {
+        FloApplication.BuildType.DEV -> FLO_DEVELOPMENT_URL
+        FloApplication.BuildType.STAGING -> FLO_STAGING_URL
+        FloApplication.BuildType.RELEASE -> FLO_PRODUCTION_URL
+        else -> FLO_DEVELOPMENT_URL
+    }
 }

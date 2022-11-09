@@ -1,7 +1,6 @@
 package com.flomobility.anx.hermes.api.model
 
 import com.flomobility.anx.hermes.other.GsonUtils
-import org.json.JSONObject
 
 data class Imu(
     val linearAcceleration: LinearAcceleration,

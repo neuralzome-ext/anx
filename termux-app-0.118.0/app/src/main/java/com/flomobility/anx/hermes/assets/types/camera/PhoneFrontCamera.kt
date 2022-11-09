@@ -2,16 +2,11 @@ package com.flomobility.anx.hermes.assets.types.camera
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.content.res.Configuration
-import android.graphics.ImageFormat
-import android.graphics.YuvImage
 import android.hardware.camera2.CameraMetadata
 import android.hardware.camera2.CaptureRequest
 import android.os.Handler
 import android.os.Looper
 import android.os.Message
-import android.util.Range
-import android.util.Size
 import androidx.camera.camera2.internal.compat.CameraCharacteristicsCompat
 import androidx.camera.camera2.internal.compat.quirk.CamcorderProfileResolutionQuirk
 import androidx.camera.camera2.interop.Camera2CameraControl
@@ -25,8 +20,10 @@ import com.flomobility.anx.hermes.assets.AssetState
 import com.flomobility.anx.hermes.assets.AssetType
 import com.flomobility.anx.hermes.assets.BaseAssetConfig
 import com.flomobility.anx.hermes.common.Result
-import com.flomobility.anx.hermes.other.*
+import com.flomobility.anx.hermes.other.Constants
 import com.flomobility.anx.hermes.other.Constants.SOCKET_BIND_DELAY_IN_MS
+import com.flomobility.anx.hermes.other.handleExceptions
+import com.flomobility.anx.hermes.other.toJpeg
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -39,8 +36,6 @@ import java.nio.ByteBuffer
 import java.util.concurrent.Executors
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlin.Exception
-import kotlin.system.measureTimeMillis
 
 @SuppressLint("RestrictedApi", "UnsafeOptInUsageError", "VisibleForTests")
 @Singleton
@@ -52,8 +47,6 @@ class PhoneFrontCamera @Inject constructor(
 
     private val _config = Config()
 
-    private var _state = AssetState.IDLE
-
     override val id: String
         get() = _id
 
@@ -62,9 +55,6 @@ class PhoneFrontCamera @Inject constructor(
 
     override val config: BaseAssetConfig
         get() = _config
-
-    override val state: AssetState
-        get() = _state
 
     private var streamingThread: StreamingThread? = null
 
@@ -92,6 +82,7 @@ class PhoneFrontCamera @Inject constructor(
 
     init {
         GlobalScope.launch(Dispatchers.Main) {
+            if(!canRegister()) return@launch
             camera = cameraProvider.bindToLifecycle(
                 ProcessLifecycleOwner.get(),
                 cameraSelector
@@ -102,11 +93,13 @@ class PhoneFrontCamera @Inject constructor(
             val previewSizes = CamcorderProfileResolutionQuirk(characteristics).supportedResolutions
 //            Timber.d("Preview sizes : $previewSizes")
             val streams = mutableListOf<Config.Stream>()
-            streams.add(Config.Stream(
-                fps = 30,
-                width = 640,
-                height = 480,
-                pixelFormat = Config.Stream.PixelFormat.MJPEG)
+            streams.add(
+                Config.Stream(
+                    fps = 30,
+                    width = 640,
+                    height = 480,
+                    pixelFormat = Config.Stream.PixelFormat.MJPEG
+                )
             )
 /*            listOf(1, 2, 5, 10, 15, 30).forEach { fps ->
                 previewSizes.forEach { size ->
@@ -126,7 +119,7 @@ class PhoneFrontCamera @Inject constructor(
     }
 
     override fun updateConfig(config: BaseAssetConfig): Result {
-        if (config !is Camera.Config) {
+        if (config !is Config) {
             return Result(success = false, message = "unknown config type")
         }
         this._config.apply {
@@ -141,13 +134,21 @@ class PhoneFrontCamera @Inject constructor(
         return Result(success = true)
     }
 
+    override fun canRegister(): Boolean {
+        if(!cameraProvider.hasCamera(cameraSelector)) {
+            Timber.e("Front camera not present")
+            return false
+        }
+        return true
+    }
+
     @SuppressLint("UnsafeOptInUsageError")
     override fun start(): Result {
         handleExceptions(catchBlock = { e ->
-            _state = AssetState.IDLE
+            updateState(AssetState.IDLE)
             Result(success = false, message = e.message ?: Constants.UNKNOWN_ERROR_MSG)
         }) {
-            _state = AssetState.STREAMING
+            updateState(AssetState.STREAMING)
             streamingThread = StreamingThread()
             streamingThread?.start()
             streamingThread?.updateAddress()
@@ -228,10 +229,10 @@ class PhoneFrontCamera @Inject constructor(
 
     override fun stop(): Result {
         handleExceptions(catchBlock = { e ->
-            _state = AssetState.STREAMING
+            updateState(AssetState.STREAMING)
             Result(success = false, message = e.message ?: Constants.UNKNOWN_ERROR_MSG)
         }) {
-            _state = AssetState.IDLE
+            updateState(AssetState.IDLE)
             GlobalScope.launch(Dispatchers.Main) {
                 cameraProvider.unbindAll()
             }
@@ -299,7 +300,7 @@ class PhoneFrontCamera @Inject constructor(
                 when (msg.what) {
                     MSG_STREAM_FRAME -> {
 //                        val elapsed = measureTimeMillis {
-                            socket.sendByteBuffer(msg.obj as ByteBuffer, 0)
+                        socket.sendByteBuffer(msg.obj as ByteBuffer, 0)
 //                        }
 //                        Timber.d("$elapsed")
                     }
@@ -323,7 +324,6 @@ class PhoneFrontCamera @Inject constructor(
         private const val MSG_STREAM_FRAME = 9
         private const val MSG_STREAM_FRAME_BYTE_ARRAY = 10
     }
-
 
 
 }

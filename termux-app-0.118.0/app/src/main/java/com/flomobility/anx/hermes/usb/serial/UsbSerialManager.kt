@@ -1,6 +1,5 @@
 package com.flomobility.anx.hermes.usb.serial
 
-import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
 

@@ -15,12 +15,14 @@ import com.flomobility.anx.R
 import com.flomobility.anx.hermes.assets.AssetManager
 import com.flomobility.anx.hermes.comms.SessionManager
 import com.flomobility.anx.hermes.comms.SocketManager
-import com.flomobility.anx.hermes.other.Constants
 import com.flomobility.anx.hermes.other.Constants.ACTION_START_OR_RESUME_SERVICE
+import com.flomobility.anx.hermes.other.Constants.ACTION_STOP_AND_EXIT
 import com.flomobility.anx.hermes.other.Constants.ACTION_STOP_SERVICE
 import com.flomobility.anx.hermes.other.Constants.NOTIFICATION_CHANNEL_ID
 import com.flomobility.anx.hermes.other.Constants.NOTIFICATION_CHANNEL_NAME
 import com.flomobility.anx.hermes.other.Constants.NOTIFICATION_ID
+import com.flomobility.anx.hermes.other.ThreadStatus
+import com.flomobility.anx.hermes.usb.UsbPortManager
 import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
 import javax.inject.Inject
@@ -29,6 +31,8 @@ import kotlin.system.exitProcess
 @AndroidEntryPoint
 class EndlessService : LifecycleService() {
 
+    private var isRunning = false
+
     @Inject
     lateinit var baseNotificationBuilder: NotificationCompat.Builder
 
@@ -36,6 +40,9 @@ class EndlessService : LifecycleService() {
 
     @Inject
     lateinit var socketManager: SocketManager
+
+    @Inject
+    lateinit var usbPortManager: UsbPortManager
 
     @Inject
     lateinit var assetManager: AssetManager
@@ -47,12 +54,19 @@ class EndlessService : LifecycleService() {
         intent?.let {
             when (it.action) {
                 ACTION_START_OR_RESUME_SERVICE -> {
-                    startEndlessService()
-                    Timber.d("Stated service")
+                    if(!isRunning) {
+                        startEndlessService()
+                        Timber.d("Started service")
+                    }
                 }
                 ACTION_STOP_SERVICE -> {
                     killService()
                     Timber.d("Stopped service")
+                }
+                ACTION_STOP_AND_EXIT -> {
+                    killService()
+                    Timber.d("Stopped service")
+                    exitProcess(0)
                 }
                 else -> { /*NO-OP*/
                 }
@@ -72,30 +86,33 @@ class EndlessService : LifecycleService() {
                 this,
                 1,
                 Intent(this, EndlessService::class.java).apply {
-                    action = ACTION_STOP_SERVICE
+                    action = ACTION_STOP_AND_EXIT
                 },
-                PendingIntent.FLAG_UPDATE_CURRENT
+                if (Build.VERSION.SDK_INT >= 31) PendingIntent.FLAG_IMMUTABLE else PendingIntent.FLAG_UPDATE_CURRENT
             )
-        currentNotificationBuilder =
-            baseNotificationBuilder.addAction(R.drawable.star, "Exit", pendingIntent)
+        currentNotificationBuilder = baseNotificationBuilder
+        currentNotificationBuilder = currentNotificationBuilder.addAction(R.drawable.ic_stop, "Exit", pendingIntent)
         startForeground(NOTIFICATION_ID, currentNotificationBuilder.build())
 
         // init
-        socketManager.init()
-        socketManager.doOnSubscribed { subscribed ->
-            Handler(Looper.getMainLooper()).postDelayed({
-                currentNotificationBuilder.setContentText(
-                    if (subscribed) {
-                        "Active session <-> ${sessionManager.connectedDeviceIp}"
-                    } else {
-                        "No active session."
-                    }
-                )
-                notificationManager.notify(NOTIFICATION_ID, currentNotificationBuilder.build())
-            }, 10L)
+        if (socketManager.threadStatus != ThreadStatus.ACTIVE) {
+            socketManager.init()
+            socketManager.doOnSubscribed { subscribed ->
+                Handler(Looper.getMainLooper()).postDelayed({
+                    currentNotificationBuilder.setContentText(
+                        if (subscribed) {
+                            "Active session <-> ${sessionManager.connectedDeviceIp}"
+                        } else {
+                            "No active session."
+                        }
+                    )
+                    notificationManager.notify(NOTIFICATION_ID, currentNotificationBuilder.build())
+                }, 10L)
+            }
         }
-
-        assetManager.init()
+        if (usbPortManager.threadStatus != ThreadStatus.ACTIVE) usbPortManager.init()
+        if (assetManager.threadStatus != ThreadStatus.ACTIVE) assetManager.init()
+        isRunning = true
     }
 
     private fun killService() {
@@ -103,7 +120,7 @@ class EndlessService : LifecycleService() {
         assetManager.stopAllAssets()
         stopForeground(true)
         stopSelf()
-        exitProcess(0)
+        currentNotificationBuilder.clearActions()
     }
 
     @RequiresApi(Build.VERSION_CODES.O)

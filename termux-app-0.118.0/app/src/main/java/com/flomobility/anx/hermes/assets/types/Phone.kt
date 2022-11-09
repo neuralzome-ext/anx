@@ -27,13 +27,11 @@ class Phone @Inject constructor(
     @ApplicationContext private val context: Context,
     private val phoneManager: PhoneManager,
     private val gson: Gson
-) : BaseAsset {
+) : BaseAsset() {
 
     private val _id = "0"
 
     private val _config = Config()
-
-    private var _state = AssetState.IDLE
 
     private var publisherThread: PublisherThread? = null
 
@@ -45,9 +43,6 @@ class Phone @Inject constructor(
 
     override val config: BaseAssetConfig
         get() = _config
-
-    override val state: AssetState
-        get() = _state
 
     override fun updateConfig(config: BaseAssetConfig): Result {
         if (config !is Config) {
@@ -64,9 +59,10 @@ class Phone @Inject constructor(
 
     override fun start(): Result {
         handleExceptions(catchBlock = { e ->
+            updateState(AssetState.IDLE)
             return Result(success = false, message = e.message ?: Constants.UNKNOWN_ERROR_MSG)
         }) {
-            _state = AssetState.STREAMING
+            updateState(AssetState.STREAMING)
             publisherThread = PublisherThread()
             publisherThread?.start()
             return Result(success = true)
@@ -76,9 +72,10 @@ class Phone @Inject constructor(
 
     override fun stop(): Result {
         handleExceptions(catchBlock = { e ->
+            updateState(AssetState.STREAMING)
             return Result(success = false, message = e.message ?: Constants.UNKNOWN_ERROR_MSG)
         }) {
-            _state = AssetState.IDLE
+            updateState(AssetState.IDLE)
             publisherThread?.interrupt()
             publisherThread = null
             return Result(success = true)

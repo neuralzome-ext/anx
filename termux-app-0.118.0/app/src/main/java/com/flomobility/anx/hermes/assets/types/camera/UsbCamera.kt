@@ -26,8 +26,6 @@ class UsbCamera : Camera() {
 
     private val _config = Config()
 
-    private var _state = AssetState.IDLE
-
     override val id: String
         get() = _id
 
@@ -36,9 +34,6 @@ class UsbCamera : Camera() {
 
     override val config: BaseAssetConfig
         get() = _config
-
-    override val state: AssetState
-        get() = _state
 
     private var camThread: UVCCameraHandler? = null
 
@@ -101,7 +96,7 @@ class UsbCamera : Camera() {
     }
 
     override fun updateConfig(config: BaseAssetConfig): Result {
-        if (config !is Camera.Config) {
+        if (config !is Config) {
             return Result(success = false, message = "unknown config type")
         }
         this._config.apply {
@@ -118,10 +113,10 @@ class UsbCamera : Camera() {
 
     override fun start(): Result {
         handleExceptions(catchBlock = { e ->
-            _state = AssetState.IDLE
+            updateState(AssetState.IDLE)
             Result(success = false, message = e.message ?: Constants.UNKNOWN_ERROR_MSG)
         }) {
-            _state = AssetState.STREAMING
+            updateState(AssetState.STREAMING)
             val stream = _config.stream.value
             streamingThread?.updateAddress()
             registerCallback(frameCallback)
@@ -141,10 +136,10 @@ class UsbCamera : Camera() {
 
     override fun stop(): Result {
         handleExceptions(catchBlock = { e ->
-            _state = AssetState.STREAMING
+            updateState(AssetState.STREAMING)
             Result(success = false, message = e.message ?: Constants.UNKNOWN_ERROR_MSG)
         }) {
-            _state = AssetState.IDLE
+            updateState(AssetState.IDLE)
             camThread?.stopPreview()
             unRegisterCallback(frameCallback)
             return Result(success = true)

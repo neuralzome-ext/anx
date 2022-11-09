@@ -26,13 +26,11 @@ import zmq.ZError
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.locks.ReentrantLock
 
-class UsbSerial : BaseAsset {
+class UsbSerial : BaseAsset() {
 
     private var _id: String = ""
 
     private val _config = Config()
-
-    private var _state = AssetState.IDLE
 
     private var usbSerialDevice: UsbSerialDevice? = null
 
@@ -88,11 +86,8 @@ class UsbSerial : BaseAsset {
     override val config: BaseAssetConfig
         get() = _config
 
-    override val state: AssetState
-        get() = _state
-
     override fun updateConfig(config: BaseAssetConfig): Result {
-        if (config !is UsbSerial.Config) {
+        if (config !is Config) {
             return Result(success = false, message = "unknown config type")
         }
         this._config.apply {
@@ -116,9 +111,10 @@ class UsbSerial : BaseAsset {
     override fun start(): Result {
         // close usb serial and open it with new baud rate
         handleExceptions(catchBlock = { e ->
+            updateState(AssetState.IDLE)
             return Result(success = false, message = e.message ?: Constants.UNKNOWN_ERROR_MSG)
         }) {
-
+            updateState(AssetState.STREAMING)
             usbDeviceConnection = usbManager?.openDevice(usbDevice)
             if (usbDeviceConnection == null) {
                 return Result(success = true, message = "Couldn't open usb device $id")
@@ -134,8 +130,10 @@ class UsbSerial : BaseAsset {
 
     override fun stop(): Result {
         handleExceptions(catchBlock = { e ->
+            updateState(AssetState.STREAMING)
             return Result(success = false, message = e.message ?: Constants.UNKNOWN_ERROR_MSG)
         }) {
+            updateState(AssetState.IDLE)
             writerThread?.interrupt?.set(true)
 
             usbHandlerThread?.close()
@@ -269,16 +267,21 @@ class UsbSerial : BaseAsset {
                     socket = ctx.createSocket(SocketType.SUB)
                     socket.connect(address)
                     socket.subscribe("")
+                    val poller = ctx.createPoller(1)
+                    poller.register(socket)
                     while (!interrupt.get()) {
                         try {
-                            val recvBytes = socket.recv(ZMQ.DONTWAIT) ?: continue
-                            val rawData = GsonUtils.getGson().fromJson<Raw>(
-                                String(recvBytes, ZMQ.CHARSET),
-                                Raw.type
-                            )
+                            poller.poll(100)
+                            if (poller.pollin(0)) {
+                                val recvBytes = socket.recv(0)
+                                val rawData = GsonUtils.getGson().fromJson<Raw>(
+                                    String(recvBytes, ZMQ.CHARSET),
+                                    Raw.type
+                                )
 //                            Timber.d("[USB-Serial] : Data sending to usb_serial asset-> $rawData")
-                            val bytes = "${rawData.data}\n".toByteArray(ZMQ.CHARSET)
-                            usbSerialDevice?.write(bytes)
+                                val bytes = "${rawData.data}\n".toByteArray(ZMQ.CHARSET)
+                                usbSerialDevice?.write(bytes)
+                            }
                         } catch (e: Exception) {
                             Timber.e(e)
                             return

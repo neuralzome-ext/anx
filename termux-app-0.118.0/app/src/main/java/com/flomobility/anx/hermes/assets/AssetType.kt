@@ -6,6 +6,7 @@ enum class AssetType(val alias: String) {
     USB_SERIAL("usb_serial"),
     CAM("camera"),
     CLASSIC_BT("classic_bt"),
+    MIC("mic"),
     BLE("ble"),
     SPEAKER("speaker"),
     PHONE("phone"),
@@ -19,6 +20,7 @@ fun getAssetTypeFromAlias(alias: String) = when (alias) {
     AssetType.CAM.alias -> AssetType.CAM
     AssetType.CLASSIC_BT.alias -> AssetType.CLASSIC_BT
     AssetType.BLE.alias -> AssetType.BLE
+    AssetType.SPEAKER.alias -> AssetType.SPEAKER
     AssetType.PHONE.alias -> AssetType.PHONE
     else -> AssetType.UNK
 }

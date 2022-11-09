@@ -14,6 +14,7 @@ import com.flomobility.anx.hermes.assets.AssetType
 import com.flomobility.anx.hermes.assets.types.UsbSerial
 import com.flomobility.anx.hermes.assets.types.camera.Camera
 import com.flomobility.anx.hermes.assets.types.camera.UsbCamera
+import com.flomobility.anx.hermes.other.ThreadStatus
 import com.flomobility.anx.hermes.usb.camera.UsbCamManager
 import com.flomobility.anx.hermes.usb.serial.UsbSerialManager
 import com.serenegiant.usb.UsbControlBlock
@@ -41,6 +42,9 @@ class UsbPortManager @Inject constructor(
 
     private var mPermissionIntent: PendingIntent? = null
 
+    var threadStatus = ThreadStatus.IDLE
+        private set
+
     private val usbReceiver: BroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(arg0: Context, intent: Intent) {
             if (intent.action == ACTION_USB_PERMISSION) {
@@ -49,10 +53,13 @@ class UsbPortManager @Inject constructor(
                     val device: UsbDevice? = intent.getParcelableExtra(UsbManager.EXTRA_DEVICE)
                     if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
                         if (device != null) {
-                            unAuthorizedDevices[device.deviceId]?.isAuth = true
+                            unAuthorizedDevices[device.deviceId]?.state =
+                                SecureUsbDevice.State.PERMISSION_GRANTED
                             registerUsbDevice(device)
                         }
                     } else {
+                        unAuthorizedDevices[device?.deviceId]?.state =
+                            SecureUsbDevice.State.PERMISSION_DENIED
                         Timber.w("Permission not granted for $device")
                     }
                 }
@@ -65,12 +72,21 @@ class UsbPortManager @Inject constructor(
                     return
                 }
 
-                unAuthorizedDevices[usbDevice.deviceId] = SecureUsbDevice(usbDevice, false)
+                unAuthorizedDevices[usbDevice.deviceId] =
+                    SecureUsbDevice(usbDevice, isConnected = true)
 
             } else if (intent.action == ACTION_USB_DETACHED) {
                 val usbDevice = intent.getParcelableExtra<UsbDevice>(UsbManager.EXTRA_DEVICE)
                 if (usbDevice == null) {
                     Timber.e("No usb device detached")
+                    return
+                }
+
+                val secureUsbDevice = unAuthorizedDevices[usbDevice.deviceId]
+                if (secureUsbDevice != null) {
+                    secureUsbDevice.isConnected = false
+                    unAuthorizedDevices.remove(usbDevice.deviceId)
+                    Timber.d("$usbDevice is disconnected")
                     return
                 }
 
@@ -110,7 +126,7 @@ class UsbPortManager @Inject constructor(
                 val port = usbCamManager.registerUsbCamDevice(usbDevice.deviceId)
                 val usbCam = UsbCamera.Builder.createNew("$port")
                 val handler =
-                    UVCCameraHandler.createHandler(2)
+                    UVCCameraHandler.createHandler(2, port)
                 usbCam.setCameraThread(handler)
                 handler?.addCallback(object : CameraCallback {
                     override fun onOpen() {
@@ -170,13 +186,24 @@ class UsbPortManager @Inject constructor(
         return result
     }
 
+    private fun attachDevices() {
+        Timber.i("Looking for devices")
+        val devices = usbManager.deviceList ?: return
+        devices.values.sortedBy { it.deviceId }.forEach { usbDevice ->
+            unAuthorizedDevices[usbDevice.deviceId] = SecureUsbDevice(usbDevice, isConnected = true)
+        }
+    }
+
     fun init() {
+        threadStatus = ThreadStatus.ACTIVE
         mPermissionIntent =
             PendingIntent.getBroadcast(context, 0, Intent(ACTION_USB_PERMISSION), 0);
         val filter = IntentFilter(ACTION_USB_PERMISSION)
         filter.addAction(ACTION_USB_DETACHED)
         filter.addAction(ACTION_USB_ATTACHED)
         context.registerReceiver(usbReceiver, filter)
+
+        attachDevices()
 
         usbChecker = UsbCheckerThread()
         usbChecker?.start()
@@ -196,18 +223,31 @@ class UsbPortManager @Inject constructor(
                     for (key in keys) {
                         val secureDevice =
                             unAuthorizedDevices[key] ?: throw Throwable("Null secure device")
-                        if (secureDevice.isAuth) {
+                        if (secureDevice.state == SecureUsbDevice.State.PERMISSION_GRANTED) {
                             unAuthorizedDevices.remove(key)
                             continue
                         }
-
+                        /*if (!usbManager.hasPermission(secureDevice.usbDevice)) {
+                            requestPermission(secureDevice.usbDevice)
+                        } else {
+                            secureDevice.state = SecureUsbDevice.State.PERMISSION_GRANTED
+                        }*/
                         requestPermission(secureDevice.usbDevice)
-                        while (!secureDevice.isAuth) {
-                            // Wait till permission is granted
-                            continue
+
+                        while (secureDevice.isConnected) {
+                            when (secureDevice.state) {
+                                SecureUsbDevice.State.PERMISSION_WAITING -> continue
+                                SecureUsbDevice.State.PERMISSION_GRANTED -> {
+                                    unAuthorizedDevices.remove(key)
+                                    Timber.i("Permission granted for $secureDevice")
+                                    break
+                                }
+                                SecureUsbDevice.State.PERMISSION_DENIED -> {
+                                    // move on to the next usb device
+                                    break
+                                }
+                            }
                         }
-                        unAuthorizedDevices.remove(key)
-                        Timber.i("Permission granted for $secureDevice")
                     }
                     sleep(1000L)
                 }
@@ -220,13 +260,18 @@ class UsbPortManager @Inject constructor(
 
     data class SecureUsbDevice(
         val usbDevice: UsbDevice,
-        var isAuth: Boolean
-    )
+        var isConnected: Boolean,
+        var state: State = State.PERMISSION_WAITING
+    ) {
+        enum class State {
+            PERMISSION_WAITING, PERMISSION_DENIED, PERMISSION_GRANTED
+        }
+    }
 
     companion object {
         private const val ACTION_USB_ATTACHED = UsbManager.ACTION_USB_DEVICE_ATTACHED
         private const val ACTION_USB_DETACHED = UsbManager.ACTION_USB_DEVICE_DETACHED
-        private const val ACTION_USB_PERMISSION_BASE = "com.flomobility.anx.hermes.USB_PERMISSION."
+        private const val ACTION_USB_PERMISSION_BASE = "com.flomobility.hermes.USB_PERMISSION."
         val ACTION_USB_PERMISSION = ACTION_USB_PERMISSION_BASE + hashCode()
     }
 
