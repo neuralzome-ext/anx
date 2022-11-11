@@ -38,7 +38,7 @@ class AlertDialog : DialogFragment() {
             title: String,
             message: String,
             yesText: String,
-            noText: String,
+            noText: String = "",
             iconResId: Int = R.drawable.ic_warning,
             cancellable: Boolean = false,
             noListener: (() -> Unit)? = null,
@@ -49,6 +49,9 @@ class AlertDialog : DialogFragment() {
             this.iconResId = iconResId
             this.cancellable = cancellable
             this.yesText = yesText
+            if(noText.isEmpty()) {
+                shouldSetNegativeButton = false
+            }
             this.noText = noText
             this.yesListener = yesListener
             this.noListener = noListener

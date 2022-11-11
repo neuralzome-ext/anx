@@ -8,7 +8,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.lifecycleScope
 import com.flomobility.anx.databinding.ActivitySplashBinding
+import com.flomobility.anx.hermes.other.Constants
 import com.flomobility.anx.hermes.other.checkToken
+import com.flomobility.anx.hermes.other.clear
 import com.flomobility.anx.hermes.other.getIsInstalled
 import com.flomobility.anx.hermes.other.viewutils.AlertDialog
 import com.flomobility.anx.hermes.phone.Device
@@ -30,7 +32,6 @@ class SplashActivity : AppCompatActivity() {
     private val bind get() = binding!!
     private lateinit var locationRequest: LocationRequest
 
-    private val FILE_NAME = "sshSetup.zip"
     private var FILE_PATH = ""
 
     @Inject
@@ -50,7 +51,7 @@ class SplashActivity : AppCompatActivity() {
 //            exitTransition = Slide(Gravity.END)
 //        }
         setContentView(binding?.root)
-        FILE_PATH = filesDir.absolutePath + "/termux"
+        FILE_PATH = filesDir.absolutePath
         checkPermissions()
         device.checkIsRooted()
     }
@@ -146,7 +147,7 @@ class SplashActivity : AppCompatActivity() {
             delay(2000)
             when (true) {
                 !sharedPreferences.checkToken() -> LoginActivity.navigateToLogin(this@SplashActivity)
-                File("$FILE_PATH/$FILE_NAME").exists() && sharedPreferences.getIsInstalled() -> {
+                File("$FILE_PATH/${Constants.FILES_SYSTEM_FILE_NAME}").exists() && sharedPreferences.getIsInstalled() -> {
                     HomeActivity.navigateToHome(
                         this@SplashActivity
                     )

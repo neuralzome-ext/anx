@@ -1,37 +1,47 @@
 package com.flomobility.anx.hermes.ui.download
 
 import android.annotation.SuppressLint
-import android.content.Context
-import android.content.Intent
-import android.content.SharedPreferences
+import android.content.*
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Bundle
 import android.view.View
+import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.downloader.OnDownloadListener
 import com.downloader.PRDownloader
 import com.downloader.Status.*
 import com.flomobility.anx.R
+import com.flomobility.anx.app.PluginResultsService
 import com.flomobility.anx.app.TermuxCommandExecutor
 import com.flomobility.anx.app.TermuxCommandExecutor.ITermuxCommandExecutor
+import com.flomobility.anx.app.TermuxInstaller
 import com.flomobility.anx.databinding.ActivityUbuntuSetupBinding
 import com.flomobility.anx.hermes.other.clear
 import com.flomobility.anx.hermes.other.setIsInstalled
 import com.flomobility.anx.hermes.other.viewutils.AlertDialog
 import com.flomobility.anx.hermes.ui.home.HomeActivity
 import com.flomobility.anx.hermes.ui.login.LoginActivity
+import com.flomobility.anx.shared.termux.TermuxConstants
+import com.flomobility.anx.shared.termux.TermuxConstants.TERMUX_APP.TERMUX_ACTIVITY
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
+import java.io.OutputStream
 import java.net.UnknownHostException
 import javax.inject.Inject
+import kotlin.system.exitProcess
+
 
 @SuppressLint("NewApi")
 @AndroidEntryPoint
@@ -42,27 +52,14 @@ class DownloadActivity : AppCompatActivity() {
     private lateinit var viewModel: DownloadViewModel
     private var downloadId = 0
 
-    private val FILE_NAME = "ubuntu20.04-fs.tar.gz"
+    private val FILE_NAME = "ubuntu-latest.tar.gz"
     private var FILE_PATH = ""
-    private val FILE_URl = "https://flo-linux-fs.s3.ap-south-1.amazonaws.com/ubuntu20.04-v0.1.1.tar.gz"
+    private val FILE_URl = "https://flo-linux-fs.s3.ap-south-1.amazonaws.com/ubuntu-latest.tar.gz"
 
-    @Inject
-    lateinit var sharedPreferences: SharedPreferences
-
-    companion object {
-        fun navigateToDownload(context: Context) {
-            context.startActivity(
-                Intent(context, DownloadActivity::class.java)//,
-//                ActivityOptions.makeSceneTransitionAnimation(context as Activity).toBundle()
-            )
-        }
-
-        val INSTALL_CMD = """
-#!/data/data/com.flomobility.anx/files/usr/bin/bash
-
+    val INSTALL_CMD = """#!/data/data/com.flomobility.anx/files/usr/bin/bash
 FS="ubuntu20.04-fs"
 echo "Decompressing the ${'$'}{FS}, please wait..."
-proot --link2symlink tar --recursive-unlink --preserve-permissions -vzxf ${'$'}{FS}.tar.gz --exclude='dev'||:
+proot --link2symlink tar --recursive-unlink --preserve-permissions -vzxf <path> --exclude='dev'||:
 echo "The ubuntu rootfs have been successfully decompressed!"
 
 START=start.sh
@@ -116,6 +113,43 @@ echo "Successfully made start.sh executable"
 echo "done"
 """
 
+    @Inject
+    lateinit var sharedPreferences: SharedPreferences
+
+    companion object {
+        fun navigateToDownload(context: Context) {
+            context.startActivity(
+                Intent(context, DownloadActivity::class.java)//,
+//                ActivityOptions.makeSceneTransitionAnimation(context as Activity).toBundle()
+            )
+        }
+
+        private const val INSTALL_FS_EXECUTION_CODE = 10001
+    }
+
+    // broadcast receiver
+    private val receiver: BroadcastReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent != null) {
+                val executionCode =
+                    intent.getIntExtra(PluginResultsService.RESULT_BROADCAST_EXECUTION_CODE_KEY, -1)
+                val result = intent.getBundleExtra(PluginResultsService.RESULT_BROADCAST_RESULT_KEY)
+                when (executionCode) {
+                    INSTALL_FS_EXECUTION_CODE -> {
+                        result?.let {
+                            val exitCode =
+                                result.getInt(TermuxConstants.TERMUX_APP.TERMUX_SERVICE.EXTRA_PLUGIN_RESULT_BUNDLE_EXIT_CODE)
+                            if (exitCode == 0) {
+                                onInstallSuccess()
+                                return
+                            }
+                            onInstallFailed(exitCode)
+                            Timber.e("Installation Failed")
+                        }
+                    }
+                }
+            }
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -125,11 +159,30 @@ echo "done"
         setContentView(binding?.root)
         FILE_PATH = filesDir.absolutePath
         Timber.d("File path : $FILE_PATH")
+
+        createInstallScript()
         setEventListeners()
         checkDownload()
     }
 
+    private fun createInstallScript() {
+        val dirPath = "/data/data/com.flomobility.anx/files/home/install.sh"
+        val cmd = INSTALL_CMD.replace("<path>", "$FILE_PATH/$FILE_NAME")
+        try {
+            val file = File(dirPath)
+            file.createNewFile()
+            val fo: OutputStream = FileOutputStream(file)
+            val bytes: ByteArray = cmd.toByteArray(Charsets.UTF_8)
+            fo.write(bytes)
+            fo.flush()
+            fo.close()
+        } catch (e: IOException) {
+            Timber.e(e)
+        }
+    }
+
     private fun setEventListeners() {
+        // register broadcast manager
         bind.apply {
             retry.setOnClickListener {
                 errorLayout.visibility = View.GONE
@@ -198,19 +251,28 @@ echo "done"
         bind.progressPercent.text = ""
         lifecycleScope.launch {
             // Install here
-            val termuxCommandExecutor = TermuxCommandExecutor.getInstance(this@DownloadActivity)
-            termuxCommandExecutor.startTermuxCommandExecutor(object : ITermuxCommandExecutor {
-                override fun onTermuxServiceConnected() {
-                    val COMMAND_LS_EXECUTION_ID = 1000
-                    termuxCommandExecutor.executeTermuxCommand(
-                        this@DownloadActivity,
-                        INSTALL_CMD,
-                        arrayOf(),
-                        COMMAND_LS_EXECUTION_ID
-                    )
-                }
 
-                override fun onTermuxServiceDisconnected() {}
+            TermuxInstaller.setupBootstrapIfNeeded(this@DownloadActivity, Runnable {
+                try {
+                    val termuxCommandExecutor =
+                        TermuxCommandExecutor.getInstance(this@DownloadActivity)
+                    termuxCommandExecutor.startTermuxCommandExecutor(object :
+                        ITermuxCommandExecutor {
+                        override fun onTermuxServiceConnected() {
+                            termuxCommandExecutor.executeTermuxCommand(
+                                this@DownloadActivity,
+                                "bash",
+                                arrayOf("install.sh"),
+                                INSTALL_FS_EXECUTION_CODE
+                            )
+                        }
+
+                        override fun onTermuxServiceDisconnected() {}
+                    })
+
+                } catch (e: Exception) {
+                    Timber.e(e)
+                }
             })
         }
     }
@@ -227,8 +289,23 @@ echo "done"
         }
     }
 
+    private fun onInstallFailed(code: Int) {
+        AlertDialog.getInstance(
+            "Installation Failed",
+            "Process exited with code $code",
+            "Exit",
+            yesListener = {
+                exitProcess(0)
+            }
+        ).show(supportFragmentManager, AlertDialog.TAG)
+    }
+
     private fun startDownload() {
         try {
+            if (File("$FILE_PATH/$FILE_NAME").exists()) {
+                checkInstalled()
+                return
+            }
             if (!isNetworkAvailable(this@DownloadActivity)) {
                 showSnack("Network Unavailable")
                 bind.errorMsg.text = "Network Unavailable"
@@ -315,6 +392,17 @@ echo "done"
             if (msg != null)
                 Snackbar.make(bind.root, msg, Snackbar.LENGTH_LONG).show()
         }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        LocalBroadcastManager.getInstance(this)
+            .registerReceiver(receiver, IntentFilter(PluginResultsService.RESULT_BROADCAST_INTENT))
+    }
+
+    override fun onStop() {
+        super.onStop()
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(receiver)
     }
 
     override fun onDestroy() {

@@ -1,15 +1,16 @@
 package com.flomobility.anx.hermes.ui.home
 
-import android.content.Context
-import android.content.Intent
-import android.content.SharedPreferences
+import android.content.*
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.lifecycle.ViewModelProvider
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.downloader.PRDownloader
+import com.flomobility.anx.app.PluginResultsService
+import com.flomobility.anx.app.TermuxCommandExecutor
 import com.flomobility.anx.hermes.adapter.IpAdapter
 import com.flomobility.anx.hermes.adapter.AssetAdapter
 import com.flomobility.anx.hermes.assets.AssetManager
@@ -20,8 +21,11 @@ import com.flomobility.anx.hermes.other.viewutils.AlertDialog
 import com.flomobility.anx.hermes.ui.login.LoginActivity
 import com.flomobility.anx.hermes.ui.settings.SettingsActivity
 import com.flomobility.anx.databinding.ActivityHomeBinding
+import com.flomobility.anx.hermes.ui.download.DownloadActivity
+import com.flomobility.anx.shared.termux.TermuxConstants
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
+import timber.log.Timber
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -34,6 +38,8 @@ class HomeActivity : AppCompatActivity() {
 //                ActivityOptions.makeSceneTransitionAnimation(context as Activity).toBundle()
             )
         }
+
+        private const val START_SSHD_EXECUTION_CODE = 10302
     }
 
     private var binding: ActivityHomeBinding? = null
@@ -61,6 +67,30 @@ class HomeActivity : AppCompatActivity() {
         subscribeToObservers()
         setEventListeners()
         viewModel.sendInfoRequest(InfoRequest(sharedPreferences.getDeviceID()!!))
+    }
+
+    // broadcast receiver
+    private val receiver: BroadcastReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent != null) {
+                val executionCode =
+                    intent.getIntExtra(PluginResultsService.RESULT_BROADCAST_EXECUTION_CODE_KEY, -1)
+                val result = intent.getBundleExtra(PluginResultsService.RESULT_BROADCAST_RESULT_KEY)
+                when (executionCode) {
+                     START_SSHD_EXECUTION_CODE -> {
+                        result?.let {
+                            val exitCode =
+                                result.getInt(TermuxConstants.TERMUX_APP.TERMUX_SERVICE.EXTRA_PLUGIN_RESULT_BUNDLE_EXIT_CODE)
+                            if (exitCode == 0) {
+                                Timber.i("SSH server on port 2222 started successfully")
+                                return
+                            }
+                            Timber.e("Starting ssh server failed")
+                        }
+                    }
+                }
+            }
+        }
     }
 
     private fun setEventListeners() {
@@ -101,6 +131,7 @@ class HomeActivity : AppCompatActivity() {
                         Constants.ACTION_START_OR_RESUME_SERVICE,
                         EndlessService::class.java
                     )
+                    startSshServer()
                 }
                 is Resource.Error -> {
                     when (it.peekContent().errorData?.code) {
@@ -143,6 +174,24 @@ class HomeActivity : AppCompatActivity() {
         }
     }
 
+    private fun startSshServer() {
+        val termuxCommandExecutor =
+            TermuxCommandExecutor.getInstance(this@HomeActivity)
+        termuxCommandExecutor.startTermuxCommandExecutor(object :
+            TermuxCommandExecutor.ITermuxCommandExecutor {
+            override fun onTermuxServiceConnected() {
+                termuxCommandExecutor.executeTermuxCommand(
+                    this@HomeActivity,
+                    "bash",
+                    arrayOf("start.sh"),
+                    START_SSHD_EXECUTION_CODE
+                )
+            }
+
+            override fun onTermuxServiceDisconnected() {}
+        })
+    }
+
     private fun setupRecyclers() {
         bind.ipRecycler.layoutManager = LinearLayoutManager(this@HomeActivity)
         bind.ipRecycler.adapter = IpAdapter(this@HomeActivity, getIPAddressList(true))
@@ -175,6 +224,17 @@ class HomeActivity : AppCompatActivity() {
         sendCommandToService(Constants.ACTION_STOP_SERVICE, EndlessService::class.java)
         LoginActivity.navigateToLogin(this@HomeActivity)
         finish()
+    }
+
+    override fun onStart() {
+        super.onStart()
+        LocalBroadcastManager.getInstance(this)
+            .registerReceiver(receiver, IntentFilter(PluginResultsService.RESULT_BROADCAST_INTENT))
+    }
+
+    override fun onStop() {
+        super.onStop()
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(receiver)
     }
 
     override fun onDestroy() {

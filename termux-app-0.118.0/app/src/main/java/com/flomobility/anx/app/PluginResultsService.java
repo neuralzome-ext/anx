@@ -6,8 +6,13 @@ import android.os.Bundle;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
+import androidx.lifecycle.MutableLiveData;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
+import com.flomobility.anx.hermes.other.Event;
 import com.flomobility.anx.shared.termux.TermuxConstants.TERMUX_APP.TERMUX_SERVICE;
+
+import java.util.Map;
 
 public class PluginResultsService extends IntentService {
 
@@ -50,6 +55,8 @@ public class PluginResultsService extends IntentService {
             "errmsg: `" + resultBundle.getString(TERMUX_SERVICE.EXTRA_PLUGIN_RESULT_BUNDLE_ERRMSG, "") + "`");
 
 
+        sendResultBroadcast(executionId, resultBundle);
+
         switch (executionId) {
             case COMMAND_LS_EXECUTION_ID:
                 Log.d(LOG_TAG , "Command LS execution result received");
@@ -62,5 +69,16 @@ public class PluginResultsService extends IntentService {
     public static synchronized int getNextExecutionId() {
         return EXECUTION_ID++;
     }
+
+    private void sendResultBroadcast(int executionCode, Bundle result) {
+        Intent intent = new Intent(RESULT_BROADCAST_INTENT);
+        intent.putExtra(RESULT_BROADCAST_EXECUTION_CODE_KEY, executionCode);
+        intent.putExtra(RESULT_BROADCAST_RESULT_KEY, result);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+    }
+
+    public static final String RESULT_BROADCAST_INTENT = "com.flomobility.anx.result_broadcast";
+    public static final String RESULT_BROADCAST_EXECUTION_CODE_KEY = "RESULT_BROADCAST_EXECUTION_CODE_KEY";
+    public static final String RESULT_BROADCAST_RESULT_KEY = "RESULT_BROADCAST_RESULT_KEY";
 
 }

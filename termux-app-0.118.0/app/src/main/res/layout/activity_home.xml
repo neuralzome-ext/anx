@@ -130,7 +130,7 @@
         android:layout_marginHorizontal="20dp"
         android:fontFamily="@font/metropolis_regular_webfont"
         android:text="DEVICE ID: "
-        android:textAlignment="center"
+        android:gravity="center"
         android:textColor="@color/white"
         android:textSize="20sp" />
 

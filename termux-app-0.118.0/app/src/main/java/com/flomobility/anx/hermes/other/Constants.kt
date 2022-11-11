@@ -27,6 +27,8 @@ object Constants {
     const val INSTALL_STATUS = "installStatus"
     const val ON_BOOT = "onBoot"
 
+    const val FILES_SYSTEM_FILE_NAME = "ubuntu-latest.tar.gz"
+
     val BASE_URL: String = when (BUILD_TYPE) {
         FloApplication.BuildType.DEV -> FLO_DEVELOPMENT_URL
         FloApplication.BuildType.STAGING -> FLO_STAGING_URL

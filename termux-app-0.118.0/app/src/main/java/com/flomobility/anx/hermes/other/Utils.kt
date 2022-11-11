@@ -230,3 +230,7 @@ fun SharedPreferences.getIsOnBoot(): Boolean {
 fun SharedPreferences.clear() {
     this.edit().remove(DEVICE_EXPIRY).remove(USER_TOKEN).apply()
 }
+
+fun SharedPreferences.clearAll() {
+    this.edit().clear().apply()
+}
