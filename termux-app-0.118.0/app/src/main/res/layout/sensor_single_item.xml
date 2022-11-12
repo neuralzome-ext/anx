@@ -22,7 +22,7 @@
         android:layout_marginTop="5dp"
         android:fontFamily="@font/metropolis_regular_webfont"
         android:text="phone"
-        android:textAlignment="center"
+        android:gravity="center"
         android:textAllCaps="true"
         android:textColor="@color/white" />
 
@@ -44,7 +44,7 @@
         android:layout_marginTop="5dp"
         android:fontFamily="@font/metropolis_extralight_webfont"
         android:text="COMING SOON"
-        android:textAlignment="center"
+        android:gravity="center"
         android:textColor="@color/white"
         android:textSize="12sp"
         android:visibility="gone"/>

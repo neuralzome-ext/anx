@@ -66,9 +66,6 @@ class LoginActivity : ComponentActivity() {
             bind.deviceId.text = "DEVICE ID: ${sharedPreferences.getDeviceID()}"
         } else {
             requestPhoneNumber()
-            val phoneNumber = "+919600511722"
-            bind.deviceId.text = "DEVICE ID: $phoneNumber"
-            sharedPreferences.putDeviceID(phoneNumber)
         }
         bind.spinKitLogin.setIndeterminateDrawable(ThreeBounce())
         setEventListeners()

@@ -6,10 +6,8 @@ import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Bundle
 import android.view.View
-import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import androidx.core.view.isVisible
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
@@ -28,7 +26,6 @@ import com.flomobility.anx.hermes.other.viewutils.AlertDialog
 import com.flomobility.anx.hermes.ui.home.HomeActivity
 import com.flomobility.anx.hermes.ui.login.LoginActivity
 import com.flomobility.anx.shared.termux.TermuxConstants
-import com.flomobility.anx.shared.termux.TermuxConstants.TERMUX_APP.TERMUX_ACTIVITY
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
@@ -140,10 +137,14 @@ echo "done"
                             val exitCode =
                                 result.getInt(TermuxConstants.TERMUX_APP.TERMUX_SERVICE.EXTRA_PLUGIN_RESULT_BUNDLE_EXIT_CODE)
                             if (exitCode == 0) {
-                                onInstallSuccess()
+                                viewModel.setInstallStatus(DownloadViewModel.InstallStatus.Success)
                                 return
                             }
-                            onInstallFailed(exitCode)
+                            viewModel.setInstallStatus(
+                                DownloadViewModel.InstallStatus.Failed(
+                                    exitCode
+                                )
+                            )
                             Timber.e("Installation Failed")
                         }
                     }
@@ -162,23 +163,49 @@ echo "done"
 
         createInstallScript()
         setEventListeners()
+        subscribeToObservers()
         checkDownload()
     }
 
-    private fun createInstallScript() {
-        val dirPath = "/data/data/com.flomobility.anx/files/home/install.sh"
-        val cmd = INSTALL_CMD.replace("<path>", "$FILE_PATH/$FILE_NAME")
-        try {
-            val file = File(dirPath)
-            file.createNewFile()
-            val fo: OutputStream = FileOutputStream(file)
-            val bytes: ByteArray = cmd.toByteArray(Charsets.UTF_8)
-            fo.write(bytes)
-            fo.flush()
-            fo.close()
-        } catch (e: IOException) {
-            Timber.e(e)
+    private fun subscribeToObservers() {
+        viewModel.installStatus.observe(this) {
+            it.getContentIfNotHandled()?.let { status ->
+                when (status) {
+                    DownloadViewModel.InstallStatus.Success -> onInstallSuccess()
+                    is DownloadViewModel.InstallStatus.Failed -> onInstallFailed(status.code)
+                    DownloadViewModel.InstallStatus.Installing -> Unit
+                    DownloadViewModel.InstallStatus.NotStarted -> Unit
+                }
+            }
         }
+    }
+
+    private fun createInstallScript() {
+        TermuxInstaller.setupBootstrapIfNeeded(this@DownloadActivity, Runnable {
+            try {
+                val dirPath = "/data/data/com.flomobility.anx/files/home/"
+                val installScriptFile = "install.sh"
+                val cmd = INSTALL_CMD.replace("<path>", "$FILE_PATH/$FILE_NAME")
+                try {
+                    if (!File(dirPath).exists()) {
+                        File(dirPath).mkdirs()
+                    }
+                    val file = File("$dirPath/$installScriptFile")
+                    if (!file.exists())
+                        file.createNewFile()
+
+                    val fo: OutputStream = FileOutputStream(file)
+                    val bytes: ByteArray = cmd.toByteArray(Charsets.UTF_8)
+                    fo.write(bytes)
+                    fo.flush()
+                    fo.close()
+                } catch (e: IOException) {
+                    Timber.e(e)
+                }
+            } catch (e: Exception) {
+                Timber.e(e)
+            }
+        })
     }
 
     private fun setEventListeners() {
@@ -251,28 +278,20 @@ echo "done"
         bind.progressPercent.text = ""
         lifecycleScope.launch {
             // Install here
-
-            TermuxInstaller.setupBootstrapIfNeeded(this@DownloadActivity, Runnable {
-                try {
-                    val termuxCommandExecutor =
-                        TermuxCommandExecutor.getInstance(this@DownloadActivity)
-                    termuxCommandExecutor.startTermuxCommandExecutor(object :
-                        ITermuxCommandExecutor {
-                        override fun onTermuxServiceConnected() {
-                            termuxCommandExecutor.executeTermuxCommand(
-                                this@DownloadActivity,
-                                "bash",
-                                arrayOf("install.sh"),
-                                INSTALL_FS_EXECUTION_CODE
-                            )
-                        }
-
-                        override fun onTermuxServiceDisconnected() {}
-                    })
-
-                } catch (e: Exception) {
-                    Timber.e(e)
+            val termuxCommandExecutor =
+                TermuxCommandExecutor.getInstance(this@DownloadActivity)
+            termuxCommandExecutor.startTermuxCommandExecutor(object :
+                ITermuxCommandExecutor {
+                override fun onTermuxServiceConnected() {
+                    termuxCommandExecutor.executeTermuxCommand(
+                        this@DownloadActivity,
+                        "bash",
+                        arrayOf("install.sh"),
+                        INSTALL_FS_EXECUTION_CODE
+                    )
                 }
+
+                override fun onTermuxServiceDisconnected() {}
             })
         }
     }

@@ -1,9 +1,12 @@
 package com.flomobility.anx.hermes.ui.splash
 
 import android.Manifest
+import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Bundle
+import android.provider.Settings
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.lifecycleScope
@@ -52,11 +55,10 @@ class SplashActivity : AppCompatActivity() {
 //        }
         setContentView(binding?.root)
         FILE_PATH = filesDir.absolutePath
-        checkPermissions()
         device.checkIsRooted()
     }
 
-    private fun checkPermissions() {
+    private fun checkPermissions(): Boolean {
         if (ActivityCompat.checkSelfPermission(
                 this,
                 Manifest.permission.READ_SMS
@@ -87,23 +89,10 @@ class SplashActivity : AppCompatActivity() {
             ) != PackageManager.PERMISSION_GRANTED
         ) {
             Timber.d("All permissions not granted")
-            requestPermissions(
-                arrayOf(
-                    Manifest.permission.READ_SMS,
-                    Manifest.permission.READ_PHONE_NUMBERS,
-                    Manifest.permission.READ_PHONE_STATE,
-                    Manifest.permission.CAMERA,
-                    Manifest.permission.FOREGROUND_SERVICE,
-                    Manifest.permission.ACCESS_FINE_LOCATION,
-                    Manifest.permission.ACCESS_COARSE_LOCATION,
-                    Manifest.permission.READ_EXTERNAL_STORAGE,
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE
-                ), 1234
-            )
-            return
+            return false
         }
         Timber.d("All permissions granted")
-        checkConditions()
+        return true
     }
 
     override fun onRequestPermissionsResult(
@@ -120,7 +109,11 @@ class SplashActivity : AppCompatActivity() {
                         "Allow",
                         "Exit",
                         yesListener = {
-                            checkPermissions()
+                            // open settings to grant permissions
+                            startActivity(Intent().apply {
+                                action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
+                                data = Uri.fromParts("package", packageName, null)
+                            })
                         },
                         noListener = {
                             finishAffinity()
@@ -137,9 +130,38 @@ class SplashActivity : AppCompatActivity() {
                     return
                 }
             }
-            checkPermissions()
         }
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+    }
+
+    private fun requestPermission() {
+        requestPermissions(
+            arrayOf(
+                Manifest.permission.READ_SMS,
+                Manifest.permission.READ_PHONE_NUMBERS,
+                Manifest.permission.READ_PHONE_STATE,
+                Manifest.permission.CAMERA,
+                Manifest.permission.FOREGROUND_SERVICE,
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION,
+                Manifest.permission.READ_EXTERNAL_STORAGE,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE
+            ), 1234
+        )
+    }
+
+    override fun onStart() {
+        super.onStart()
+        if(!checkPermissions()) {
+            requestPermission()
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if(checkPermissions()) {
+            checkConditions()
+        }
     }
 
     private fun checkConditions() {
