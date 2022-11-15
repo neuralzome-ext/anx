@@ -67,7 +67,7 @@ public class FloTerminalViewClient extends TerminalViewClientBase {
 
     private boolean mTerminalCursorBlinkerStateAlreadySet;
 
-    private static final String LOG_TAG = "TermuxTerminalViewClient";
+    private static final String LOG_TAG = "TerminalViewClient";
 
     public FloTerminalViewClient(TerminalActivity activity, FloTerminalSessionClient floTerminalSessionClient) {
         this.mActivity = activity;
@@ -91,7 +91,7 @@ public class FloTerminalViewClient extends TerminalViewClientBase {
      */
     public void onStart() {
         // Set {@link TerminalView#TERMINAL_VIEW_KEY_LOGGING_ENABLED} value
-        // Also required if user changed the preference from {@link TermuxSettings} activity and returns
+        // Also required if user changed the preference from {@link TerminalSettings} activity and returns
         boolean isTerminalViewKeyLoggingEnabled = mActivity.getPreferences().isTerminalViewKeyLoggingEnabled();
         mActivity.getTerminalView().setIsTerminalViewKeyLoggingEnabled(isTerminalViewKeyLoggingEnabled);
 
@@ -113,7 +113,7 @@ public class FloTerminalViewClient extends TerminalViewClientBase {
             // Start terminal cursor blinking if enabled
             // If emulator is already set, then start blinker now, otherwise wait for onEmulatorSet()
             // event to start it. This is needed since onEmulatorSet() may not be called after
-            // TermuxActivity is started after device display timeout with double tap and not power button.
+            // TerminalActivity is started after device display timeout with double tap and not power button.
             setTerminalCursorBlinkerState(true);
             mTerminalCursorBlinkerStateAlreadySet = true;
         }
@@ -146,9 +146,9 @@ public class FloTerminalViewClient extends TerminalViewClientBase {
         if (!mTerminalCursorBlinkerStateAlreadySet) {
             // Start terminal cursor blinking if enabled
             // We need to wait for the first session to be attached that's set in
-            // TermuxActivity.onServiceConnected() and then the multiple calls to TerminalView.updateSize()
+            // TerminalActivity.onServiceConnected() and then the multiple calls to TerminalView.updateSize()
             // where the final one eventually sets the mEmulator when width/height is not 0. Otherwise
-            // blinker will not start again if TermuxActivity is started again after exiting it with
+            // blinker will not start again if TerminalActivity is started again after exiting it with
             // double back press. Check TerminalView.setTerminalCursorBlinkerState().
             setTerminalCursorBlinkerState(true);
             mTerminalCursorBlinkerStateAlreadySet = true;
@@ -258,7 +258,7 @@ public class FloTerminalViewClient extends TerminalViewClientBase {
                 doPaste();
             } else if (unicodeChar == '+' || e.getUnicodeChar(KeyEvent.META_SHIFT_ON) == '+') {
                 // We also check for the shifted char here since shift may be required to produce '+',
-                // see https://github.com/termux/termux-api/issues/2
+                // see https://github.com/terminal/terminal-api/issues/2
                 changeFontSize(true);
             } else if (unicodeChar == '-') {
                 changeFontSize(false);
@@ -435,7 +435,7 @@ public class FloTerminalViewClient extends TerminalViewClientBase {
                 case 'q':
                 case 'k':
                     mActivity.toggleTerminalToolbar();
-                    mVirtualFnKeyDown=false; // force disable fn key down to restore keyboard input into terminal view, fixes termux/termux-app#1420
+                    mVirtualFnKeyDown=false; // force disable fn key down to restore keyboard input into terminal view, fixes terminal/terminal-app#1420
                     break;
             }
 
@@ -519,7 +519,7 @@ public class FloTerminalViewClient extends TerminalViewClientBase {
         }
         // If soft keyboard toggle behaviour is show/hide
         else {
-            // If soft keyboard is disabled by user for Termux
+            // If soft keyboard is disabled by user for Terminal
             if (!mActivity.getPreferences().isSoftKeyboardEnabled()) {
                 Logger.logVerbose(LOG_TAG, "Maintaining disabled soft keyboard on toggle");
                 KeyboardUtils.disableSoftKeyboard(mActivity, mActivity.getTerminalView());
@@ -540,7 +540,7 @@ public class FloTerminalViewClient extends TerminalViewClientBase {
         // tint will be added to the terminal as highlight for the focussed view. Test with a light
         // theme.
 
-        // If soft keyboard is disabled by user for Termux (check function docs for Termux behaviour info)
+        // If soft keyboard is disabled by user for Terminal (check function docs for Terminal behaviour info)
         if (KeyboardUtils.shouldSoftKeyboardBeDisabled(mActivity,
             mActivity.getPreferences().isSoftKeyboardEnabled(),
             mActivity.getPreferences().isSoftKeyboardEnabledOnlyIfNoHardware())) {
@@ -548,8 +548,8 @@ public class FloTerminalViewClient extends TerminalViewClientBase {
             KeyboardUtils.disableSoftKeyboard(mActivity, mActivity.getTerminalView());
             mActivity.getTerminalView().requestFocus();
             noShowKeyboard = true;
-            // Delay is only required if onCreate() is called like when Termux app is exited with
-            // double back press, not when Termux app is switched back from another app and keyboard
+            // Delay is only required if onCreate() is called like when Terminal app is exited with
+            // double back press, not when Terminal app is switched back from another app and keyboard
             // toggle is pressed to enable keyboard
             if (isStartup && mActivity.isOnResumeAfterOnCreate())
                 mShowSoftKeyboardWithDelayOnce = true;
@@ -563,7 +563,7 @@ public class FloTerminalViewClient extends TerminalViewClientBase {
             // If soft keyboard is to be hidden on startup
             if (isStartup && mActivity.getProperties().shouldSoftKeyboardBeHiddenOnStartup()) {
                 Logger.logVerbose(LOG_TAG, "Hiding soft keyboard on startup");
-                // Required to keep keyboard hidden when Termux app is switched back from another app
+                // Required to keep keyboard hidden when Terminal app is switched back from another app
                 KeyboardUtils.setSoftKeyboardAlwaysHiddenFlags(mActivity);
 
                 KeyboardUtils.hideSoftKeyboard(mActivity, mActivity.getTerminalView());
@@ -596,13 +596,13 @@ public class FloTerminalViewClient extends TerminalViewClientBase {
             }
         });
 
-        // Do not force show soft keyboard if termux-reload-settings command was run with hardware keyboard
+        // Do not force show soft keyboard if terminal-reload-settings command was run with hardware keyboard
         // or soft keyboard is to be hidden or is disabled
         if (!isReloadTermuxProperties && !noShowKeyboard) {
             // Request focus for TerminalView
             // Also show the keyboard, since onFocusChange will not be called if TerminalView already
             // had focus on startup to show the keyboard, like when opening url with context menu
-            // "Select URL" long press and returning to Termux app with back button. This
+            // "Select URL" long press and returning to Terminal app with back button. This
             // will also show keyboard even if it was closed before opening url. #2111
             Logger.logVerbose(LOG_TAG, "Requesting TerminalView focus and showing soft keyboard");
             mActivity.getTerminalView().requestFocus();

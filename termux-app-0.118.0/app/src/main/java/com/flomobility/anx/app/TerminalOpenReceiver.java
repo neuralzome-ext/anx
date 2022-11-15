@@ -197,7 +197,7 @@ public class TerminalOpenReceiver extends BroadcastReceiver {
                     throw new IllegalArgumentException(errmsg);
                 }
 
-                // Do not allow apps with RUN_COMMAND permission to modify termux apps properties files,
+                // Do not allow apps with RUN_COMMAND permission to modify terminal apps properties files,
                 // including allow-external-apps
                 if (TerminalConstants.TERMUX_PROPERTIES_PRIMARY_FILE_PATH.equals(path) ||
                     TerminalConstants.TERMUX_PROPERTIES_SECONDARY_FILE_PATH.equals(path) ||

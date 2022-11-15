@@ -7,7 +7,7 @@ import android.view.ViewGroup;
 import com.flomobility.anx.app.TerminalActivity;
 
 /**
- * Work around for fullscreen mode in Termux to fix ExtraKeysView not being visible.
+ * Work around for fullscreen mode in Terminal to fix ExtraKeysView not being visible.
  * This class is derived from:
  * https://stackoverflow.com/questions/7417123/android-how-to-adjust-layout-in-full-screen-mode-when-softkeyboard-is-visible
  * and has some additional tweaks

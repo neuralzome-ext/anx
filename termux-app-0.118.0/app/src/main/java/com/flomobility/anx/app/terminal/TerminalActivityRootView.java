@@ -24,7 +24,7 @@ import com.flomobility.anx.shared.view.ViewUtils;
  * The {@link TerminalActivity} relies on {@link android.view.WindowManager.LayoutParams#SOFT_INPUT_ADJUST_RESIZE)}
  * set by {@link FloTerminalViewClient#setSoftKeyboardState(boolean, boolean)} to automatically
  * resize the view and push the terminal up when soft keyboard is opened. However, this does not
- * always work properly. When `enforce-char-based-input=true` is set in `termux.properties`
+ * always work properly. When `enforce-char-based-input=true` is set in `terminal.properties`
  * and {@link com.flomobility.anx.view.TerminalView#onCreateInputConnection(EditorInfo)} sets the inputType
  * to `InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS`
  * instead of the default `InputType.TYPE_NULL` for termux, some keyboards may still show suggestions.
@@ -72,7 +72,7 @@ public class TerminalActivityRootView extends LinearLayout implements ViewTreeOb
     /** Log root view events. */
     private boolean ROOT_VIEW_LOGGING_ENABLED = false;
 
-    private static final String LOG_TAG = "TermuxActivityRootView";
+    private static final String LOG_TAG = "TerminalActivityRootView";
 
     private static int mStatusBarHeight;
 

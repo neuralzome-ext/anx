@@ -22,7 +22,7 @@ import java.util.Set;
  *      - Initial Release.
  *
  * - 0.2.0 (2021-03-11)
- *      - Renamed `HOME_PATH` to `TERMUX_HOME_DIR_PATH`.
+ *      - Renamed `HOME_PATH` to `TERMINAL_HOME_DIR_PATH`.
  *      - Renamed `TERMUX_PROPERTIES_PRIMARY_PATH` to `TERMUX_PROPERTIES_PRIMARY_FILE_PATH`.
  *      - Renamed `TERMUX_PROPERTIES_SECONDARY_FILE_PATH` to `TERMUX_PROPERTIES_SECONDARY_FILE_PATH`.
  *
@@ -62,14 +62,14 @@ import java.util.Set;
  *      - Add `*KEY_TERMINAL_MARGIN_HORIZONTAL*` and `*KEY_TERMINAL_MARGIN_VERTICAL*`.
  *
  * - 0.14.0 (2021-09-02)
- *      - Add `getTermuxFloatPropertiesFile()`.
+ *      - Add `getTerminalFloatPropertiesFile()`.
  *
  * - 0.15.0 (2021-09-05)
  *      - Add `KEY_EXTRA_KEYS_TEXT_ALL_CAPS`.
  */
 
 /**
- * A class that defines shared constants of the SharedProperties used by Termux app and its plugins.
+ * A class that defines shared constants of the SharedProperties used by Terminal app and its plugins.
  * This class will be hosted by termux-shared lib and should be imported by other termux plugin
  * apps as is instead of copying constants to random classes. The 3rd party apps can also import
  * it for interacting with termux apps. If changes are made to this file, increment the version number

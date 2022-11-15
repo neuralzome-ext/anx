@@ -24,7 +24,7 @@ public class FloAppSharedProperties extends TerminalSharedProperties {
     private ExtraKeysInfo mExtraKeysInfo;
     private List<KeyboardShortcut> mSessionShortcuts = new ArrayList<>();
 
-    private static final String LOG_TAG = "TermuxAppSharedProperties";
+    private static final String LOG_TAG = "TerminalAppSharedProperties";
 
     public FloAppSharedProperties(@NonNull Context context) {
         super(context, TerminalConstants.TERMINAL_APP_NAME, TerminalPropertyConstants.getTermuxPropertiesFile(),
@@ -32,7 +32,7 @@ public class FloAppSharedProperties extends TerminalSharedProperties {
     }
 
     /**
-     * Reload the termux properties from disk into an in-memory cache.
+     * Reload the terminal properties from disk into an in-memory cache.
      */
     @Override
     public void loadTermuxPropertiesFromDisk() {
@@ -85,7 +85,7 @@ public class FloAppSharedProperties extends TerminalSharedProperties {
         else
             mSessionShortcuts.clear();
 
-        // The {@link TermuxPropertyConstants#MAP_SESSION_SHORTCUTS} stores the session shortcut key and action pair
+        // The {@link TerminalPropertyConstants#MAP_SESSION_SHORTCUTS} stores the session shortcut key and action pair
         for (Map.Entry<String, Integer> entry : TerminalPropertyConstants.MAP_SESSION_SHORTCUTS.entrySet()) {
             // The mMap stores the code points for the session shortcuts while loading properties
             Integer codePoint = (Integer) getInternalPropertyValue(entry.getKey(), true);
@@ -109,7 +109,7 @@ public class FloAppSharedProperties extends TerminalSharedProperties {
 
 
     /**
-     * Load the {@link TerminalPropertyConstants#KEY_TERMINAL_TRANSCRIPT_ROWS} value from termux properties file on disk.
+     * Load the {@link TerminalPropertyConstants#KEY_TERMINAL_TRANSCRIPT_ROWS} value from terminal properties file on disk.
      */
     public static int getTerminalTranscriptRows(Context context) {
         return  (int) TerminalSharedProperties.getInternalPropertyValue(context, TerminalPropertyConstants.getTermuxPropertiesFile(),

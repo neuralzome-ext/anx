@@ -23,7 +23,7 @@ import java.util.regex.Pattern;
 
 public class TerminalFileUtils {
 
-    private static final String LOG_TAG = "TermuxFileUtils";
+    private static final String LOG_TAG = "TerminalFileUtils";
 
     /**
      * Replace "$PREFIX/" or "~/" prefix with termux absolute paths.

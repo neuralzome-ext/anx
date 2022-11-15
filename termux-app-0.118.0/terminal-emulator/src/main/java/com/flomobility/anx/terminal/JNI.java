@@ -1,7 +1,7 @@
 package com.flomobility.anx.terminal;
 
 /**
- * Native methods for creating and managing pseudoterminal subprocesses. C code is in jni/termux.c.
+ * Native methods for creating and managing pseudoterminal subprocesses. C code is in jni/terminal.c.
  */
 final class JNI {
 

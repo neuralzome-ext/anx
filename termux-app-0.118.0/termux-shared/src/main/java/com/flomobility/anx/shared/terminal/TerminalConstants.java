@@ -49,7 +49,7 @@ import java.util.List;
  *          `TERMUX_WIDGET_DEFAULT_PREFERENCES_FILE_BASENAME_WITHOUT_EXTENSION`.
  *
  * - 0.5.0 (2021-03-16)
- *      - Renamed "Termux Plugin app" labels to "Termux:Tasker app".
+ *      - Renamed "Terminal Plugin app" labels to "Terminal:Tasker app".
  *
  * - 0.6.0 (2021-03-16)
  *      - Added `TERMUX_FILE_SHARE_URI_AUTHORITY`.
@@ -214,13 +214,13 @@ import java.util.List;
  */
 
 /**
- * A class that defines shared constants of the Termux app and its plugins.
+ * A class that defines shared constants of the Terminal app and its plugins.
  * This class will be hosted by terminal-shared lib and should be imported by other terminal plugin
  * apps as is instead of copying constants to random classes. The 3rd party apps can also import
  * it for interacting with terminal apps. If changes are made to this file, increment the version number
  * and add an entry in the Changelog section above.
  *
- * Termux app default package name is "com.terminal" and is used in {@link #TERMINAL_PREFIX_DIR_PATH}.
+ * Terminal app default package name is "com.terminal" and is used in {@link #TERMINAL_PREFIX_DIR_PATH}.
  * The binaries compiled for terminal have {@link #TERMINAL_PREFIX_DIR_PATH} hardcoded in them but it
  * can be changed during compilation.
  *
@@ -249,19 +249,19 @@ import java.util.List;
  * Check https://developer.android.com/studio/build/application-id for info on "package" in
  * "AndroidManifest.xml" and "applicationId" in "build.gradle".
  *
- * The {@link #TERMINAL_PACKAGE_NAME} must be used in source code of Termux app and its plugins instead
+ * The {@link #TERMINAL_PACKAGE_NAME} must be used in source code of Terminal app and its plugins instead
  * of hardcoded "com.terminal" paths.
  */
 public final class TerminalConstants {
 
 
     /*
-     * Termux organization variables.
+     * Terminal organization variables.
      */
 
-    /** Termux Github organization name */
+    /** Terminal Github organization name */
     public static final String TERMINAL_GITHUB_ORGANIZATION_NAME = "terminal"; // Default: "terminal"
-    /** Termux Github organization url */
+    /** Terminal Github organization url */
     public static final String TERMINAL_GITHUB_ORGANIZATION_URL = "https://github.com" + "/" + TERMINAL_GITHUB_ORGANIZATION_NAME; // Default: "https://github.com/flo"
 
     /** F-Droid packages base url */
@@ -272,104 +272,104 @@ public final class TerminalConstants {
 
 
     /*
-     * Termux and its plugin app and package names and urls.
+     * Terminal and its plugin app and package names and urls.
      */
 
-    /** Termux app name */
-    public static final String TERMINAL_APP_NAME = "ANX"; // Default: "Termux"
-    /** Termux package name */
+    /** Terminal app name */
+    public static final String TERMINAL_APP_NAME = "ANX"; // Default: "Terminal"
+    /** Terminal package name */
     public static final String TERMINAL_PACKAGE_NAME = "com.flomobility.anx"; // Default: "com.terminal"
-    /** Termux Github repo name */
+    /** Terminal Github repo name */
     public static final String TERMUX_GITHUB_REPO_NAME = "terminal-app"; // Default: "terminal-app"
-    /** Termux Github repo url */
+    /** Terminal Github repo url */
     public static final String TERMUX_GITHUB_REPO_URL = TERMINAL_GITHUB_ORGANIZATION_URL + "/" + TERMUX_GITHUB_REPO_NAME; // Default: "https://github.com/flomobility/terminal-app"
-    /** Termux Github issues repo url */
+    /** Terminal Github issues repo url */
     public static final String TERMUX_GITHUB_ISSUES_REPO_URL = TERMUX_GITHUB_REPO_URL + "/issues"; // Default: "https://github.com/flomobility/terminal-app/issues"
-    /** Termux F-Droid package url */
+    /** Terminal F-Droid package url */
     public static final String TERMUX_FDROID_PACKAGE_URL = FDROID_PACKAGES_BASE_URL + "/" + TERMINAL_PACKAGE_NAME; // Default: "https://f-droid.org/en/packages/com.terminal"
 
 
-    /** Termux:API app name */
-    public static final String TERMUX_API_APP_NAME = "Terminal:API"; // Default: "Termux:API"
-    /** Termux:API app package name */
+    /** Terminal:API app name */
+    public static final String TERMUX_API_APP_NAME = "Terminal:API"; // Default: "Terminal:API"
+    /** Terminal:API app package name */
     public static final String TERMUX_API_PACKAGE_NAME = TERMINAL_PACKAGE_NAME + ".api"; // Default: "com.terminal.api"
-    /** Termux:API Github repo name */
+    /** Terminal:API Github repo name */
     public static final String TERMUX_API_GITHUB_REPO_NAME = "terminal-api"; // Default: "terminal-api"
-    /** Termux:API Github repo url */
+    /** Terminal:API Github repo url */
     public static final String TERMUX_API_GITHUB_REPO_URL = TERMINAL_GITHUB_ORGANIZATION_URL + "/" + TERMUX_API_GITHUB_REPO_NAME;
-    /** Termux:API Github issues repo url */
+    /** Terminal:API Github issues repo url */
     public static final String TERMUX_API_GITHUB_ISSUES_REPO_URL = TERMUX_API_GITHUB_REPO_URL + "/issues";
-    /** Termux:API F-Droid package url */
+    /** Terminal:API F-Droid package url */
     public static final String TERMUX_API_FDROID_PACKAGE_URL = FDROID_PACKAGES_BASE_URL + "/" + TERMUX_API_PACKAGE_NAME;
 
 
-    /** Termux:Boot app name */
-    public static final String TERMUX_BOOT_APP_NAME = "Terminal:Boot"; // Default: "Termux:Boot"
-    /** Termux:Boot app package name */
+    /** Terminal:Boot app name */
+    public static final String TERMUX_BOOT_APP_NAME = "Terminal:Boot"; // Default: "Terminal:Boot"
+    /** Terminal:Boot app package name */
     public static final String TERMUX_BOOT_PACKAGE_NAME = TERMINAL_PACKAGE_NAME + ".boot"; // Default: "com.terminal.boot"
-    /** Termux:Boot Github repo name */
+    /** Terminal:Boot Github repo name */
     public static final String TERMUX_BOOT_GITHUB_REPO_NAME = "terminal-boot"; // Default: "terminal-boot"
-    /** Termux:Boot Github repo url */
+    /** Terminal:Boot Github repo url */
     public static final String TERMUX_BOOT_GITHUB_REPO_URL = TERMINAL_GITHUB_ORGANIZATION_URL + "/" + TERMUX_BOOT_GITHUB_REPO_NAME; // Default: "https://github.com/terminal/terminal-boot"
-    /** Termux:Boot Github issues repo url */
+    /** Terminal:Boot Github issues repo url */
     public static final String TERMUX_BOOT_GITHUB_ISSUES_REPO_URL = TERMUX_BOOT_GITHUB_REPO_URL + "/issues"; // Default: "https://github.com/terminal/terminal-boot/issues"
-    /** Termux:Boot F-Droid package url */
+    /** Terminal:Boot F-Droid package url */
     public static final String TERMUX_BOOT_FDROID_PACKAGE_URL = FDROID_PACKAGES_BASE_URL + "/" + TERMUX_BOOT_PACKAGE_NAME; // Default: "https://f-droid.org/en/packages/com.terminal.boot"
 
 
-    /** Termux:Float app name */
-    public static final String TERMUX_FLOAT_APP_NAME = "Termux:Float"; // Default: "Termux:Float"
-    /** Termux:Float app package name */
+    /** Terminal:Float app name */
+    public static final String TERMUX_FLOAT_APP_NAME = "Terminal:Float"; // Default: "Terminal:Float"
+    /** Terminal:Float app package name */
     public static final String TERMUX_FLOAT_PACKAGE_NAME = TERMINAL_PACKAGE_NAME + ".window"; // Default: "com.terminal.window"
-    /** Termux:Float Github repo name */
+    /** Terminal:Float Github repo name */
     public static final String TERMUX_FLOAT_GITHUB_REPO_NAME = "terminal-float"; // Default: "terminal-float"
-    /** Termux:Float Github repo url */
+    /** Terminal:Float Github repo url */
     public static final String TERMUX_FLOAT_GITHUB_REPO_URL = TERMINAL_GITHUB_ORGANIZATION_URL + "/" + TERMUX_FLOAT_GITHUB_REPO_NAME; // Default: "https://github.com/terminal/terminal-float"
-    /** Termux:Float Github issues repo url */
+    /** Terminal:Float Github issues repo url */
     public static final String TERMUX_FLOAT_GITHUB_ISSUES_REPO_URL = TERMUX_FLOAT_GITHUB_REPO_URL + "/issues"; // Default: "https://github.com/terminal/terminal-float/issues"
-    /** Termux:Float F-Droid package url */
+    /** Terminal:Float F-Droid package url */
     public static final String TERMUX_FLOAT_FDROID_PACKAGE_URL = FDROID_PACKAGES_BASE_URL + "/" + TERMUX_FLOAT_PACKAGE_NAME; // Default: "https://f-droid.org/en/packages/com.terminal.window"
 
 
-    /** Termux:Styling app name */
-    public static final String TERMUX_STYLING_APP_NAME = "Termux:Styling"; // Default: "Termux:Styling"
-    /** Termux:Styling app package name */
+    /** Terminal:Styling app name */
+    public static final String TERMUX_STYLING_APP_NAME = "Terminal:Styling"; // Default: "Terminal:Styling"
+    /** Terminal:Styling app package name */
     public static final String TERMUX_STYLING_PACKAGE_NAME = TERMINAL_PACKAGE_NAME + ".styling"; // Default: "com.terminal.styling"
-    /** Termux:Styling Github repo name */
+    /** Terminal:Styling Github repo name */
     public static final String TERMUX_STYLING_GITHUB_REPO_NAME = "terminal-styling"; // Default: "terminal-styling"
-    /** Termux:Styling Github repo url */
+    /** Terminal:Styling Github repo url */
     public static final String TERMUX_STYLING_GITHUB_REPO_URL = TERMINAL_GITHUB_ORGANIZATION_URL + "/" + TERMUX_STYLING_GITHUB_REPO_NAME; // Default: "https://github.com/terminal/terminal-styling"
-    /** Termux:Styling Github issues repo url */
+    /** Terminal:Styling Github issues repo url */
     public static final String TERMUX_STYLING_GITHUB_ISSUES_REPO_URL = TERMUX_STYLING_GITHUB_REPO_URL + "/issues"; // Default: "https://github.com/terminal/terminal-styling/issues"
-    /** Termux:Styling F-Droid package url */
+    /** Terminal:Styling F-Droid package url */
     public static final String TERMUX_STYLING_FDROID_PACKAGE_URL = FDROID_PACKAGES_BASE_URL + "/" + TERMUX_STYLING_PACKAGE_NAME; // Default: "https://f-droid.org/en/packages/com.terminal.styling"
 
 
-    /** Termux:Tasker app name */
-    public static final String TERMUX_TASKER_APP_NAME = "Termux:Tasker"; // Default: "Termux:Tasker"
-    /** Termux:Tasker app package name */
+    /** Terminal:Tasker app name */
+    public static final String TERMUX_TASKER_APP_NAME = "Terminal:Tasker"; // Default: "Terminal:Tasker"
+    /** Terminal:Tasker app package name */
     public static final String TERMUX_TASKER_PACKAGE_NAME = TERMINAL_PACKAGE_NAME + ".tasker"; // Default: "com.terminal.tasker"
-    /** Termux:Tasker Github repo name */
+    /** Terminal:Tasker Github repo name */
     public static final String TERMUX_TASKER_GITHUB_REPO_NAME = "terminal-tasker"; // Default: "terminal-tasker"
-    /** Termux:Tasker Github repo url */
+    /** Terminal:Tasker Github repo url */
     public static final String TERMUX_TASKER_GITHUB_REPO_URL = TERMINAL_GITHUB_ORGANIZATION_URL + "/" + TERMUX_TASKER_GITHUB_REPO_NAME; // Default: "https://github.com/terminal/terminal-tasker"
-    /** Termux:Tasker Github issues repo url */
+    /** Terminal:Tasker Github issues repo url */
     public static final String TERMUX_TASKER_GITHUB_ISSUES_REPO_URL = TERMUX_TASKER_GITHUB_REPO_URL + "/issues"; // Default: "https://github.com/terminal/terminal-tasker/issues"
-    /** Termux:Tasker F-Droid package url */
+    /** Terminal:Tasker F-Droid package url */
     public static final String TERMUX_TASKER_FDROID_PACKAGE_URL = FDROID_PACKAGES_BASE_URL + "/" + TERMUX_TASKER_PACKAGE_NAME; // Default: "https://f-droid.org/en/packages/com.terminal.tasker"
 
 
-    /** Termux:Widget app name */
-    public static final String TERMUX_WIDGET_APP_NAME = "Termux:Widget"; // Default: "Termux:Widget"
-    /** Termux:Widget app package name */
+    /** Terminal:Widget app name */
+    public static final String TERMUX_WIDGET_APP_NAME = "Terminal:Widget"; // Default: "Terminal:Widget"
+    /** Terminal:Widget app package name */
     public static final String TERMUX_WIDGET_PACKAGE_NAME = TERMINAL_PACKAGE_NAME + ".widget"; // Default: "com.terminal.widget"
-    /** Termux:Widget Github repo name */
+    /** Terminal:Widget Github repo name */
     public static final String TERMUX_WIDGET_GITHUB_REPO_NAME = "terminal-widget"; // Default: "terminal-widget"
-    /** Termux:Widget Github repo url */
+    /** Terminal:Widget Github repo url */
     public static final String TERMUX_WIDGET_GITHUB_REPO_URL = TERMINAL_GITHUB_ORGANIZATION_URL + "/" + TERMUX_WIDGET_GITHUB_REPO_NAME; // Default: "https://github.com/terminal/terminal-widget"
-    /** Termux:Widget Github issues repo url */
+    /** Terminal:Widget Github issues repo url */
     public static final String TERMUX_WIDGET_GITHUB_ISSUES_REPO_URL = TERMUX_WIDGET_GITHUB_REPO_URL + "/issues"; // Default: "https://github.com/terminal/terminal-widget/issues"
-    /** Termux:Widget F-Droid package url */
+    /** Terminal:Widget F-Droid package url */
     public static final String TERMUX_WIDGET_FDROID_PACKAGE_URL = FDROID_PACKAGES_BASE_URL + "/" + TERMUX_WIDGET_PACKAGE_NAME; // Default: "https://f-droid.org/en/packages/com.terminal.widget"
 
 
@@ -377,7 +377,7 @@ public final class TerminalConstants {
 
 
     /*
-     * Termux plugin apps lists.
+     * Terminal plugin apps lists.
      */
 
     public static final List<String> TERMUX_PLUGIN_APP_NAMES_LIST = Arrays.asList(
@@ -401,7 +401,7 @@ public final class TerminalConstants {
 
 
     /*
-     * Termux APK releases.
+     * Terminal APK releases.
      */
 
     /** F-Droid APK release */
@@ -427,54 +427,54 @@ public final class TerminalConstants {
 
 
     /*
-     * Termux packages urls.
+     * Terminal packages urls.
      */
 
-    /** Termux Packages Github repo name */
+    /** Terminal Packages Github repo name */
     public static final String TERMUX_PACKAGES_GITHUB_REPO_NAME = "terminal-packages"; // Default: "terminal-packages"
-    /** Termux Packages Github repo url */
+    /** Terminal Packages Github repo url */
     public static final String TERMUX_PACKAGES_GITHUB_REPO_URL = TERMINAL_GITHUB_ORGANIZATION_URL + "/" + TERMUX_PACKAGES_GITHUB_REPO_NAME; // Default: "https://github.com/terminal/terminal-packages"
-    /** Termux Packages Github issues repo url */
+    /** Terminal Packages Github issues repo url */
     public static final String TERMUX_PACKAGES_GITHUB_ISSUES_REPO_URL = TERMUX_PACKAGES_GITHUB_REPO_URL + "/issues"; // Default: "https://github.com/terminal/terminal-packages/issues"
 
 
-    /** Termux Game Packages Github repo name */
+    /** Terminal Game Packages Github repo name */
     public static final String TERMUX_GAME_PACKAGES_GITHUB_REPO_NAME = "game-packages"; // Default: "game-packages"
-    /** Termux Game Packages Github repo url */
+    /** Terminal Game Packages Github repo url */
     public static final String TERMUX_GAME_PACKAGES_GITHUB_REPO_URL = TERMINAL_GITHUB_ORGANIZATION_URL + "/" + TERMUX_GAME_PACKAGES_GITHUB_REPO_NAME; // Default: "https://github.com/terminal/game-packages"
-    /** Termux Game Packages Github issues repo url */
+    /** Terminal Game Packages Github issues repo url */
     public static final String TERMUX_GAME_PACKAGES_GITHUB_ISSUES_REPO_URL = TERMUX_GAME_PACKAGES_GITHUB_REPO_URL + "/issues"; // Default: "https://github.com/terminal/game-packages/issues"
 
 
-    /** Termux Science Packages Github repo name */
+    /** Terminal Science Packages Github repo name */
     public static final String TERMUX_SCIENCE_PACKAGES_GITHUB_REPO_NAME = "science-packages"; // Default: "science-packages"
-    /** Termux Science Packages Github repo url */
+    /** Terminal Science Packages Github repo url */
     public static final String TERMUX_SCIENCE_PACKAGES_GITHUB_REPO_URL = TERMINAL_GITHUB_ORGANIZATION_URL + "/" + TERMUX_SCIENCE_PACKAGES_GITHUB_REPO_NAME; // Default: "https://github.com/terminal/science-packages"
-    /** Termux Science Packages Github issues repo url */
+    /** Terminal Science Packages Github issues repo url */
     public static final String TERMUX_SCIENCE_PACKAGES_GITHUB_ISSUES_REPO_URL = TERMUX_SCIENCE_PACKAGES_GITHUB_REPO_URL + "/issues"; // Default: "https://github.com/terminal/science-packages/issues"
 
 
-    /** Termux Root Packages Github repo name */
+    /** Terminal Root Packages Github repo name */
     public static final String TERMUX_ROOT_PACKAGES_GITHUB_REPO_NAME = "terminal-root-packages"; // Default: "terminal-root-packages"
-    /** Termux Root Packages Github repo url */
+    /** Terminal Root Packages Github repo url */
     public static final String TERMUX_ROOT_PACKAGES_GITHUB_REPO_URL = TERMINAL_GITHUB_ORGANIZATION_URL + "/" + TERMUX_ROOT_PACKAGES_GITHUB_REPO_NAME; // Default: "https://github.com/terminal/terminal-root-packages"
-    /** Termux Root Packages Github issues repo url */
+    /** Terminal Root Packages Github issues repo url */
     public static final String TERMUX_ROOT_PACKAGES_GITHUB_ISSUES_REPO_URL = TERMUX_ROOT_PACKAGES_GITHUB_REPO_URL + "/issues"; // Default: "https://github.com/terminal/terminal-root-packages/issues"
 
 
-    /** Termux Unstable Packages Github repo name */
+    /** Terminal Unstable Packages Github repo name */
     public static final String TERMUX_UNSTABLE_PACKAGES_GITHUB_REPO_NAME = "unstable-packages"; // Default: "unstable-packages"
-    /** Termux Unstable Packages Github repo url */
+    /** Terminal Unstable Packages Github repo url */
     public static final String TERMUX_UNSTABLE_PACKAGES_GITHUB_REPO_URL = TERMINAL_GITHUB_ORGANIZATION_URL + "/" + TERMUX_UNSTABLE_PACKAGES_GITHUB_REPO_NAME; // Default: "https://github.com/terminal/unstable-packages"
-    /** Termux Unstable Packages Github issues repo url */
+    /** Terminal Unstable Packages Github issues repo url */
     public static final String TERMUX_UNSTABLE_PACKAGES_GITHUB_ISSUES_REPO_URL = TERMUX_UNSTABLE_PACKAGES_GITHUB_REPO_URL + "/issues"; // Default: "https://github.com/terminal/unstable-packages/issues"
 
 
-    /** Termux X11 Packages Github repo name */
+    /** Terminal X11 Packages Github repo name */
     public static final String TERMUX_X11_PACKAGES_GITHUB_REPO_NAME = "x11-packages"; // Default: "x11-packages"
-    /** Termux X11 Packages Github repo url */
+    /** Terminal X11 Packages Github repo url */
     public static final String TERMUX_X11_PACKAGES_GITHUB_REPO_URL = TERMINAL_GITHUB_ORGANIZATION_URL + "/" + TERMUX_X11_PACKAGES_GITHUB_REPO_NAME; // Default: "https://github.com/terminal/x11-packages"
-    /** Termux X11 Packages Github issues repo url */
+    /** Terminal X11 Packages Github issues repo url */
     public static final String TERMUX_X11_PACKAGES_GITHUB_ISSUES_REPO_URL = TERMUX_X11_PACKAGES_GITHUB_REPO_URL + "/issues"; // Default: "https://github.com/terminal/x11-packages/issues"
 
 
@@ -482,37 +482,37 @@ public final class TerminalConstants {
 
 
     /*
-     * Termux miscellaneous urls.
+     * Terminal miscellaneous urls.
      */
 
-    /** Termux Wiki */
-    public static final String TERMUX_WIKI = TERMINAL_APP_NAME + " Wiki"; // Default: "Termux Wiki"
+    /** Terminal Wiki */
+    public static final String TERMUX_WIKI = TERMINAL_APP_NAME + " Wiki"; // Default: "Terminal Wiki"
 
-    /** Termux Wiki url */
+    /** Terminal Wiki url */
     public static final String TERMUX_WIKI_URL = "https://wiki.terminal.com"; // Default: "https://wiki.terminal.com"
 
-    /** Termux Github wiki repo url */
+    /** Terminal Github wiki repo url */
     public static final String TERMUX_GITHUB_WIKI_REPO_URL = TERMUX_GITHUB_REPO_URL + "/wiki"; // Default: "https://github.com/terminal/terminal-app/wiki"
 
-    /** Termux Packages wiki repo url */
+    /** Terminal Packages wiki repo url */
     public static final String TERMUX_PACKAGES_GITHUB_WIKI_REPO_URL = TERMUX_PACKAGES_GITHUB_REPO_URL + "/wiki"; // Default: "https://github.com/terminal/terminal-packages/wiki"
 
 
-    /** Termux support email url */
+    /** Terminal support email url */
     public static final String TERMUX_SUPPORT_EMAIL_URL = "terminalreports@groups.io"; // Default: "terminalreports@groups.io"
 
-    /** Termux support email mailto url */
+    /** Terminal support email mailto url */
     public static final String TERMUX_SUPPORT_EMAIL_MAILTO_URL = "mailto:" + TERMUX_SUPPORT_EMAIL_URL; // Default: "mailto:terminalreports@groups.io"
 
 
-    /** Termux Reddit subreddit */
+    /** Terminal Reddit subreddit */
     public static final String TERMUX_REDDIT_SUBREDDIT = "r/terminal"; // Default: "r/terminal"
 
-    /** Termux Reddit subreddit url */
+    /** Terminal Reddit subreddit url */
     public static final String TERMUX_REDDIT_SUBREDDIT_URL = "https://www.reddit.com/r/terminal"; // Default: "https://www.reddit.com/r/terminal"
 
 
-    /** Termux donate url */
+    /** Terminal donate url */
     public static final String TERMUX_DONATE_URL = TERMUX_PACKAGES_GITHUB_REPO_URL + "/wiki/Donate"; // Default: "https://github.com/terminal/terminal-packages/wiki/Donate"
 
 
@@ -520,107 +520,107 @@ public final class TerminalConstants {
 
 
     /*
-     * Termux app core directory paths.
+     * Terminal app core directory paths.
      */
 
-    /** Termux app internal private app data directory path */
+    /** Terminal app internal private app data directory path */
     @SuppressLint("SdCardPath")
     public static final String TERMUX_INTERNAL_PRIVATE_APP_DATA_DIR_PATH = "/data/data/" + TERMINAL_PACKAGE_NAME; // Default: "/data/data/com.terminal"
-    /** Termux app internal private app data directory */
+    /** Terminal app internal private app data directory */
     public static final File TERMUX_INTERNAL_PRIVATE_APP_DATA_DIR = new File(TERMUX_INTERNAL_PRIVATE_APP_DATA_DIR_PATH);
 
 
 
-    /** Termux app Files directory path */
+    /** Terminal app Files directory path */
     public static final String TERMUX_FILES_DIR_PATH = TERMUX_INTERNAL_PRIVATE_APP_DATA_DIR_PATH + "/files"; // Default: "/data/data/com.terminal/files"
-    /** Termux app Files directory */
+    /** Terminal app Files directory */
     public static final File TERMUX_FILES_DIR = new File(TERMUX_FILES_DIR_PATH);
 
 
 
-    /** Termux app $PREFIX directory path */
+    /** Terminal app $PREFIX directory path */
     public static final String TERMINAL_PREFIX_DIR_PATH = TERMUX_FILES_DIR_PATH + "/usr"; // Default: "/data/data/com.terminal/files/usr"
-    /** Termux app $PREFIX directory */
+    /** Terminal app $PREFIX directory */
     public static final File TERMUX_PREFIX_DIR = new File(TERMINAL_PREFIX_DIR_PATH);
 
 
-    /** Termux app $PREFIX/bin directory path */
+    /** Terminal app $PREFIX/bin directory path */
     public static final String TERMINAL_BIN_PREFIX_DIR_PATH = TERMINAL_PREFIX_DIR_PATH + "/bin"; // Default: "/data/data/com.terminal/files/usr/bin"
-    /** Termux app $PREFIX/bin directory */
+    /** Terminal app $PREFIX/bin directory */
     public static final File TERMUX_BIN_PREFIX_DIR = new File(TERMINAL_BIN_PREFIX_DIR_PATH);
 
 
-    /** Termux app $PREFIX/etc directory path */
+    /** Terminal app $PREFIX/etc directory path */
     public static final String TERMUX_ETC_PREFIX_DIR_PATH = TERMINAL_PREFIX_DIR_PATH + "/etc"; // Default: "/data/data/com.terminal/files/usr/etc"
-    /** Termux app $PREFIX/etc directory */
+    /** Terminal app $PREFIX/etc directory */
     public static final File TERMUX_ETC_PREFIX_DIR = new File(TERMUX_ETC_PREFIX_DIR_PATH);
 
 
-    /** Termux app $PREFIX/include directory path */
+    /** Terminal app $PREFIX/include directory path */
     public static final String TERMUX_INCLUDE_PREFIX_DIR_PATH = TERMINAL_PREFIX_DIR_PATH + "/include"; // Default: "/data/data/com.terminal/files/usr/include"
-    /** Termux app $PREFIX/include directory */
+    /** Terminal app $PREFIX/include directory */
     public static final File TERMUX_INCLUDE_PREFIX_DIR = new File(TERMUX_INCLUDE_PREFIX_DIR_PATH);
 
 
-    /** Termux app $PREFIX/lib directory path */
+    /** Terminal app $PREFIX/lib directory path */
     public static final String TERMUX_LIB_PREFIX_DIR_PATH = TERMINAL_PREFIX_DIR_PATH + "/lib"; // Default: "/data/data/com.terminal/files/usr/lib"
-    /** Termux app $PREFIX/lib directory */
+    /** Terminal app $PREFIX/lib directory */
     public static final File TERMUX_LIB_PREFIX_DIR = new File(TERMUX_LIB_PREFIX_DIR_PATH);
 
 
-    /** Termux app $PREFIX/libexec directory path */
+    /** Terminal app $PREFIX/libexec directory path */
     public static final String TERMUX_LIBEXEC_PREFIX_DIR_PATH = TERMINAL_PREFIX_DIR_PATH + "/libexec"; // Default: "/data/data/com.terminal/files/usr/libexec"
-    /** Termux app $PREFIX/libexec directory */
+    /** Terminal app $PREFIX/libexec directory */
     public static final File TERMUX_LIBEXEC_PREFIX_DIR = new File(TERMUX_LIBEXEC_PREFIX_DIR_PATH);
 
 
-    /** Termux app $PREFIX/share directory path */
+    /** Terminal app $PREFIX/share directory path */
     public static final String TERMUX_SHARE_PREFIX_DIR_PATH = TERMINAL_PREFIX_DIR_PATH + "/share"; // Default: "/data/data/com.terminal/files/usr/share"
-    /** Termux app $PREFIX/share directory */
+    /** Terminal app $PREFIX/share directory */
     public static final File TERMUX_SHARE_PREFIX_DIR = new File(TERMUX_SHARE_PREFIX_DIR_PATH);
 
 
-    /** Termux app $PREFIX/tmp and $TMPDIR directory path */
+    /** Terminal app $PREFIX/tmp and $TMPDIR directory path */
     public static final String TERMINAL_TMP_PREFIX_DIR_PATH = TERMINAL_PREFIX_DIR_PATH + "/tmp"; // Default: "/data/data/com.terminal/files/usr/tmp"
-    /** Termux app $PREFIX/tmp and $TMPDIR directory */
+    /** Terminal app $PREFIX/tmp and $TMPDIR directory */
     public static final File TERMUX_TMP_PREFIX_DIR = new File(TERMINAL_TMP_PREFIX_DIR_PATH);
 
 
-    /** Termux app $PREFIX/var directory path */
+    /** Terminal app $PREFIX/var directory path */
     public static final String TERMUX_VAR_PREFIX_DIR_PATH = TERMINAL_PREFIX_DIR_PATH + "/var"; // Default: "/data/data/com.terminal/files/usr/var"
-    /** Termux app $PREFIX/var directory */
+    /** Terminal app $PREFIX/var directory */
     public static final File TERMUX_VAR_PREFIX_DIR = new File(TERMUX_VAR_PREFIX_DIR_PATH);
 
 
 
-    /** Termux app usr-staging directory path */
+    /** Terminal app usr-staging directory path */
     public static final String TERMUX_STAGING_PREFIX_DIR_PATH = TERMUX_FILES_DIR_PATH + "/usr-staging"; // Default: "/data/data/com.terminal/files/usr-staging"
-    /** Termux app usr-staging directory */
+    /** Terminal app usr-staging directory */
     public static final File TERMUX_STAGING_PREFIX_DIR = new File(TERMUX_STAGING_PREFIX_DIR_PATH);
 
 
 
-    /** Termux app $HOME directory path */
+    /** Terminal app $HOME directory path */
     public static final String TERMINAL_HOME_DIR_PATH = TERMUX_FILES_DIR_PATH + "/home"; // Default: "/data/data/com.terminal/files/home"
-    /** Termux app $HOME directory */
+    /** Terminal app $HOME directory */
     public static final File TERMINAL_HOME_DIR = new File(TERMINAL_HOME_DIR_PATH);
 
 
-    /** Termux app config home directory path */
+    /** Terminal app config home directory path */
     public static final String TERMUX_CONFIG_HOME_DIR_PATH = TERMINAL_HOME_DIR_PATH + "/.config/terminal"; // Default: "/data/data/com.terminal/files/home/.config/terminal"
-    /** Termux app config home directory */
+    /** Terminal app config home directory */
     public static final File TERMUX_CONFIG_HOME_DIR = new File(TERMUX_CONFIG_HOME_DIR_PATH);
 
 
-    /** Termux app data home directory path */
+    /** Terminal app data home directory path */
     public static final String TERMUX_DATA_HOME_DIR_PATH = TERMINAL_HOME_DIR_PATH + "/.terminal"; // Default: "/data/data/com.terminal/files/home/.terminal"
-    /** Termux app data home directory */
+    /** Terminal app data home directory */
     public static final File TERMUX_DATA_HOME_DIR = new File(TERMUX_DATA_HOME_DIR_PATH);
 
 
-    /** Termux app storage home directory path */
+    /** Terminal app storage home directory path */
     public static final String TERMUX_STORAGE_HOME_DIR_PATH = TERMINAL_HOME_DIR_PATH + "/storage"; // Default: "/data/data/com.terminal/files/home/storage"
-    /** Termux app storage home directory */
+    /** Terminal app storage home directory */
     public static final File TERMUX_STORAGE_HOME_DIR = new File(TERMUX_STORAGE_HOME_DIR_PATH);
 
 
@@ -628,68 +628,68 @@ public final class TerminalConstants {
 
 
     /*
-     * Termux app and plugin preferences and properties file paths.
+     * Terminal app and plugin preferences and properties file paths.
      */
 
-    /** Termux app default SharedPreferences file basename without extension */
+    /** Terminal app default SharedPreferences file basename without extension */
     public static final String TERMUX_DEFAULT_PREFERENCES_FILE_BASENAME_WITHOUT_EXTENSION = TERMINAL_PACKAGE_NAME + "_preferences"; // Default: "com.terminal_preferences"
 
-    /** Termux:API app default SharedPreferences file basename without extension */
+    /** Terminal:API app default SharedPreferences file basename without extension */
     public static final String TERMUX_API_DEFAULT_PREFERENCES_FILE_BASENAME_WITHOUT_EXTENSION = TERMUX_API_PACKAGE_NAME + "_preferences"; // Default: "com.terminal.api_preferences"
 
-    /** Termux:Boot app default SharedPreferences file basename without extension */
+    /** Terminal:Boot app default SharedPreferences file basename without extension */
     public static final String TERMUX_BOOT_DEFAULT_PREFERENCES_FILE_BASENAME_WITHOUT_EXTENSION = TERMUX_BOOT_PACKAGE_NAME + "_preferences"; // Default: "com.terminal.boot_preferences"
 
-    /** Termux:Float app default SharedPreferences file basename without extension */
+    /** Terminal:Float app default SharedPreferences file basename without extension */
     public static final String TERMUX_FLOAT_DEFAULT_PREFERENCES_FILE_BASENAME_WITHOUT_EXTENSION = TERMUX_FLOAT_PACKAGE_NAME + "_preferences"; // Default: "com.terminal.window_preferences"
 
-    /** Termux:Styling app default SharedPreferences file basename without extension */
+    /** Terminal:Styling app default SharedPreferences file basename without extension */
     public static final String TERMUX_STYLING_DEFAULT_PREFERENCES_FILE_BASENAME_WITHOUT_EXTENSION = TERMUX_STYLING_PACKAGE_NAME + "_preferences"; // Default: "com.terminal.styling_preferences"
 
-    /** Termux:Tasker app default SharedPreferences file basename without extension */
+    /** Terminal:Tasker app default SharedPreferences file basename without extension */
     public static final String TERMUX_TASKER_DEFAULT_PREFERENCES_FILE_BASENAME_WITHOUT_EXTENSION = TERMUX_TASKER_PACKAGE_NAME + "_preferences"; // Default: "com.terminal.tasker_preferences"
 
-    /** Termux:Widget app default SharedPreferences file basename without extension */
+    /** Terminal:Widget app default SharedPreferences file basename without extension */
     public static final String TERMUX_WIDGET_DEFAULT_PREFERENCES_FILE_BASENAME_WITHOUT_EXTENSION = TERMUX_WIDGET_PACKAGE_NAME + "_preferences"; // Default: "com.terminal.widget_preferences"
 
 
-    /** Termux app terminal.properties primary file path */
-    public static final String TERMUX_PROPERTIES_PRIMARY_FILE_PATH = TERMUX_DATA_HOME_DIR_PATH + "/termux.properties"; // Default: "/data/data/com.terminal/files/home/.terminal/terminal.properties"
-    /** Termux app terminal.properties primary file */
+    /** Terminal app terminal.properties primary file path */
+    public static final String TERMUX_PROPERTIES_PRIMARY_FILE_PATH = TERMUX_DATA_HOME_DIR_PATH + "/terminal.properties"; // Default: "/data/data/com.terminal/files/home/.terminal/terminal.properties"
+    /** Terminal app terminal.properties primary file */
     public static final File TERMUX_PROPERTIES_PRIMARY_FILE = new File(TERMUX_PROPERTIES_PRIMARY_FILE_PATH);
 
-    /** Termux app terminal.properties secondary file path */
-    public static final String TERMUX_PROPERTIES_SECONDARY_FILE_PATH = TERMUX_CONFIG_HOME_DIR_PATH + "/termux.properties"; // Default: "/data/data/com.terminal/files/home/.config/terminal/terminal.properties"
-    /** Termux app terminal.properties secondary file */
+    /** Terminal app terminal.properties secondary file path */
+    public static final String TERMUX_PROPERTIES_SECONDARY_FILE_PATH = TERMUX_CONFIG_HOME_DIR_PATH + "/terminal.properties"; // Default: "/data/data/com.terminal/files/home/.config/terminal/terminal.properties"
+    /** Terminal app terminal.properties secondary file */
     public static final File TERMUX_PROPERTIES_SECONDARY_FILE = new File(TERMUX_PROPERTIES_SECONDARY_FILE_PATH);
 
 
-    /** Termux:Float app terminal.properties primary file path */
-    public static final String TERMUX_FLOAT_PROPERTIES_PRIMARY_FILE_PATH = TERMUX_DATA_HOME_DIR_PATH + "/termux.float.properties"; // Default: "/data/data/com.terminal/files/home/.terminal/terminal.float.properties"
-    /** Termux:Float app terminal.properties primary file */
+    /** Terminal:Float app terminal.properties primary file path */
+    public static final String TERMUX_FLOAT_PROPERTIES_PRIMARY_FILE_PATH = TERMUX_DATA_HOME_DIR_PATH + "/terminal.float.properties"; // Default: "/data/data/com.terminal/files/home/.terminal/terminal.float.properties"
+    /** Terminal:Float app terminal.properties primary file */
     public static final File TERMUX_FLOAT_PROPERTIES_PRIMARY_FILE = new File(TERMUX_FLOAT_PROPERTIES_PRIMARY_FILE_PATH);
 
-    /** Termux:Float app terminal.properties secondary file path */
-    public static final String TERMUX_FLOAT_PROPERTIES_SECONDARY_FILE_PATH = TERMUX_CONFIG_HOME_DIR_PATH + "/termux.float.properties"; // Default: "/data/data/com.terminal/files/home/.config/terminal/terminal.float.properties"
-    /** Termux:Float app terminal.properties secondary file */
+    /** Terminal:Float app terminal.properties secondary file path */
+    public static final String TERMUX_FLOAT_PROPERTIES_SECONDARY_FILE_PATH = TERMUX_CONFIG_HOME_DIR_PATH + "/terminal.float.properties"; // Default: "/data/data/com.terminal/files/home/.config/terminal/terminal.float.properties"
+    /** Terminal:Float app terminal.properties secondary file */
     public static final File TERMUX_FLOAT_PROPERTIES_SECONDARY_FILE = new File(TERMUX_FLOAT_PROPERTIES_SECONDARY_FILE_PATH);
 
 
-    /** Termux app and Termux:Styling colors.properties file path */
+    /** Terminal app and Terminal:Styling colors.properties file path */
     public static final String TERMUX_COLOR_PROPERTIES_FILE_PATH = TERMUX_DATA_HOME_DIR_PATH + "/colors.properties"; // Default: "/data/data/com.terminal/files/home/.terminal/colors.properties"
-    /** Termux app and Termux:Styling colors.properties file */
+    /** Terminal app and Terminal:Styling colors.properties file */
     public static final File TERMUX_COLOR_PROPERTIES_FILE = new File(TERMUX_COLOR_PROPERTIES_FILE_PATH);
 
-    /** Termux app and Termux:Styling font.ttf file path */
+    /** Terminal app and Terminal:Styling font.ttf file path */
     public static final String TERMUX_FONT_FILE_PATH = TERMUX_DATA_HOME_DIR_PATH + "/font.ttf"; // Default: "/data/data/com.terminal/files/home/.terminal/font.ttf"
-    /** Termux app and Termux:Styling font.ttf file */
+    /** Terminal app and Terminal:Styling font.ttf file */
     public static final File TERMUX_FONT_FILE = new File(TERMUX_FONT_FILE_PATH);
 
 
-    /** Termux app and plugins crash log file path */
+    /** Terminal app and plugins crash log file path */
     public static final String TERMUX_CRASH_LOG_FILE_PATH = TERMINAL_HOME_DIR_PATH + "/crash_log.md"; // Default: "/data/data/com.terminal/files/home/crash_log.md"
 
-    /** Termux app and plugins crash log backup file path */
+    /** Terminal app and plugins crash log backup file path */
     public static final String TERMUX_CRASH_LOG_BACKUP_FILE_PATH = TERMINAL_HOME_DIR_PATH + "/crash_log_backup.md"; // Default: "/data/data/com.terminal/files/home/crash_log_backup.md"
 
 
@@ -697,47 +697,47 @@ public final class TerminalConstants {
 
 
     /*
-     * Termux app plugin specific paths.
+     * Terminal app plugin specific paths.
      */
 
-    /** Termux app directory path to store scripts to be run at boot by Termux:Boot */
+    /** Terminal app directory path to store scripts to be run at boot by Terminal:Boot */
     public static final String TERMUX_BOOT_SCRIPTS_DIR_PATH = TERMUX_DATA_HOME_DIR_PATH + "/boot"; // Default: "/data/data/com.terminal/files/home/.terminal/boot"
-    /** Termux app directory to store scripts to be run at boot by Termux:Boot */
+    /** Terminal app directory to store scripts to be run at boot by Terminal:Boot */
     public static final File TERMUX_BOOT_SCRIPTS_DIR = new File(TERMUX_BOOT_SCRIPTS_DIR_PATH);
 
 
-    /** Termux app directory path to store foreground scripts that can be run by the terminal launcher
-     * widget provided by Termux:Widget */
+    /** Terminal app directory path to store foreground scripts that can be run by the terminal launcher
+     * widget provided by Terminal:Widget */
     public static final String TERMUX_SHORTCUT_SCRIPTS_DIR_PATH = TERMINAL_HOME_DIR_PATH + "/.shortcuts"; // Default: "/data/data/com.terminal/files/home/.shortcuts"
-    /** Termux app directory to store foreground scripts that can be run by the terminal launcher widget provided by Termux:Widget */
+    /** Terminal app directory to store foreground scripts that can be run by the terminal launcher widget provided by Terminal:Widget */
     public static final File TERMUX_SHORTCUT_SCRIPTS_DIR = new File(TERMUX_SHORTCUT_SCRIPTS_DIR_PATH);
 
 
-    /** Termux app directory basename that stores background scripts that can be run by the terminal
-     * launcher widget provided by Termux:Widget */
+    /** Terminal app directory basename that stores background scripts that can be run by the terminal
+     * launcher widget provided by Terminal:Widget */
     public static final String TERMUX_SHORTCUT_TASKS_SCRIPTS_DIR_BASENAME =  "tasks"; // Default: "tasks"
-    /** Termux app directory path to store background scripts that can be run by the terminal launcher
-     * widget provided by Termux:Widget */
+    /** Terminal app directory path to store background scripts that can be run by the terminal launcher
+     * widget provided by Terminal:Widget */
     public static final String TERMUX_SHORTCUT_TASKS_SCRIPTS_DIR_PATH = TERMUX_SHORTCUT_SCRIPTS_DIR_PATH + "/" + TERMUX_SHORTCUT_TASKS_SCRIPTS_DIR_BASENAME; // Default: "/data/data/com.terminal/files/home/.shortcuts/tasks"
-    /** Termux app directory to store background scripts that can be run by the terminal launcher widget provided by Termux:Widget */
+    /** Terminal app directory to store background scripts that can be run by the terminal launcher widget provided by Terminal:Widget */
     public static final File TERMUX_SHORTCUT_TASKS_SCRIPTS_DIR = new File(TERMUX_SHORTCUT_TASKS_SCRIPTS_DIR_PATH);
 
 
-    /** Termux app directory basename that stores icons for the foreground and background scripts
-     * that can be run by the terminal launcher widget provided by Termux:Widget */
+    /** Terminal app directory basename that stores icons for the foreground and background scripts
+     * that can be run by the terminal launcher widget provided by Terminal:Widget */
     public static final String TERMUX_SHORTCUT_SCRIPT_ICONS_DIR_BASENAME =  "icons"; // Default: "icons"
-    /** Termux app directory path to store icons for the foreground and background scripts that can
-     * be run by the terminal launcher widget provided by Termux:Widget */
+    /** Terminal app directory path to store icons for the foreground and background scripts that can
+     * be run by the terminal launcher widget provided by Terminal:Widget */
     public static final String TERMUX_SHORTCUT_SCRIPT_ICONS_DIR_PATH = TERMUX_SHORTCUT_SCRIPTS_DIR_PATH + "/" + TERMUX_SHORTCUT_SCRIPT_ICONS_DIR_BASENAME; // Default: "/data/data/com.terminal/files/home/.shortcuts/icons"
-    /** Termux app directory to store icons for the foreground and background scripts that can be
-     * run by the terminal launcher widget provided by Termux:Widget */
+    /** Terminal app directory to store icons for the foreground and background scripts that can be
+     * run by the terminal launcher widget provided by Terminal:Widget */
     public static final File TERMUX_SHORTCUT_SCRIPT_ICONS_DIR = new File(TERMUX_SHORTCUT_SCRIPT_ICONS_DIR_PATH);
 
 
-    /** Termux app directory path to store scripts to be run by 3rd party twofortyfouram locale plugin
-     * host apps like Tasker app via the Termux:Tasker plugin client */
+    /** Terminal app directory path to store scripts to be run by 3rd party twofortyfouram locale plugin
+     * host apps like Tasker app via the Terminal:Tasker plugin client */
     public static final String TERMUX_TASKER_SCRIPTS_DIR_PATH = TERMUX_DATA_HOME_DIR_PATH + "/tasker"; // Default: "/data/data/com.terminal/files/home/.terminal/tasker"
-    /** Termux app directory to store scripts to be run by 3rd party twofortyfouram locale plugin host apps like Tasker app via the Termux:Tasker plugin client */
+    /** Terminal app directory to store scripts to be run by 3rd party twofortyfouram locale plugin host apps like Tasker app via the Terminal:Tasker plugin client */
     public static final File TERMUX_TASKER_SCRIPTS_DIR = new File(TERMUX_TASKER_SCRIPTS_DIR_PATH);
 
 
@@ -745,39 +745,39 @@ public final class TerminalConstants {
 
 
     /*
-     * Termux app and plugins notification variables.
+     * Terminal app and plugins notification variables.
      */
 
-    /** Termux app notification channel id used by {@link TERMUX_APP.TERMUX_SERVICE} */
+    /** Terminal app notification channel id used by {@link TERMUX_APP.TERMUX_SERVICE} */
     public static final String TERMUX_APP_NOTIFICATION_CHANNEL_ID = "hermes_service_channel";
-    /** Termux app notification channel name used by {@link TERMUX_APP.TERMUX_SERVICE} */
+    /** Terminal app notification channel name used by {@link TERMUX_APP.TERMUX_SERVICE} */
     public static final String TERMUX_APP_NOTIFICATION_CHANNEL_NAME = "Hermes Comms";
-    /** Termux app unique notification id used by {@link TERMUX_APP.TERMUX_SERVICE} */
+    /** Terminal app unique notification id used by {@link TERMUX_APP.TERMUX_SERVICE} */
     public static final int TERMUX_APP_NOTIFICATION_ID = 1;
 
-    /** Termux app notification channel id used by {@link TERMUX_APP.RUN_COMMAND_SERVICE} */
-    public static final String TERMUX_RUN_COMMAND_NOTIFICATION_CHANNEL_ID = "termux_run_command_notification_channel";
-    /** Termux app notification channel name used by {@link TERMUX_APP.RUN_COMMAND_SERVICE} */
+    /** Terminal app notification channel id used by {@link TERMUX_APP.RUN_COMMAND_SERVICE} */
+    public static final String TERMUX_RUN_COMMAND_NOTIFICATION_CHANNEL_ID = "terminal_run_command_notification_channel";
+    /** Terminal app notification channel name used by {@link TERMUX_APP.RUN_COMMAND_SERVICE} */
     public static final String TERMUX_RUN_COMMAND_NOTIFICATION_CHANNEL_NAME = TerminalConstants.TERMINAL_APP_NAME + " RunCommandService";
-    /** Termux app unique notification id used by {@link TERMUX_APP.RUN_COMMAND_SERVICE} */
+    /** Terminal app unique notification id used by {@link TERMUX_APP.RUN_COMMAND_SERVICE} */
     public static final int TERMUX_RUN_COMMAND_NOTIFICATION_ID = 1338;
 
-    /** Termux app notification channel id used for plugin command errors */
-    public static final String TERMUX_PLUGIN_COMMAND_ERRORS_NOTIFICATION_CHANNEL_ID = "termux_plugin_command_errors_notification_channel";
-    /** Termux app notification channel name used for plugin command errors */
+    /** Terminal app notification channel id used for plugin command errors */
+    public static final String TERMUX_PLUGIN_COMMAND_ERRORS_NOTIFICATION_CHANNEL_ID = "terminal_plugin_command_errors_notification_channel";
+    /** Terminal app notification channel name used for plugin command errors */
     public static final String TERMUX_PLUGIN_COMMAND_ERRORS_NOTIFICATION_CHANNEL_NAME = TerminalConstants.TERMINAL_APP_NAME + " Plugin Commands Errors";
 
-    /** Termux app notification channel id used for crash reports */
-    public static final String TERMUX_CRASH_REPORTS_NOTIFICATION_CHANNEL_ID = "termux_crash_reports_notification_channel";
-    /** Termux app notification channel name used for crash reports */
+    /** Terminal app notification channel id used for crash reports */
+    public static final String TERMUX_CRASH_REPORTS_NOTIFICATION_CHANNEL_ID = "terminal_crash_reports_notification_channel";
+    /** Terminal app notification channel name used for crash reports */
     public static final String TERMUX_CRASH_REPORTS_NOTIFICATION_CHANNEL_NAME = TerminalConstants.TERMINAL_APP_NAME + " Crash Reports";
 
 
-    /** Termux app notification channel id used by {@link TERMUX_FLOAT_APP.TERMUX_FLOAT_SERVICE} */
-    public static final String TERMUX_FLOAT_APP_NOTIFICATION_CHANNEL_ID = "termux_float_notification_channel";
-    /** Termux app notification channel name used by {@link TERMUX_FLOAT_APP.TERMUX_FLOAT_SERVICE} */
+    /** Terminal app notification channel id used by {@link TERMUX_FLOAT_APP.TERMUX_FLOAT_SERVICE} */
+    public static final String TERMUX_FLOAT_APP_NOTIFICATION_CHANNEL_ID = "terminal_float_notification_channel";
+    /** Terminal app notification channel name used by {@link TERMUX_FLOAT_APP.TERMUX_FLOAT_SERVICE} */
     public static final String TERMUX_FLOAT_APP_NOTIFICATION_CHANNEL_NAME = TerminalConstants.TERMUX_FLOAT_APP_NAME + " App";
-    /** Termux app unique notification id used by {@link TERMUX_APP.TERMUX_SERVICE} */
+    /** Terminal app unique notification id used by {@link TERMUX_APP.TERMUX_SERVICE} */
     public static final int TERMUX_FLOAT_APP_NOTIFICATION_ID = 1339;
 
 
@@ -785,23 +785,23 @@ public final class TerminalConstants {
 
 
     /*
-     * Termux app and plugins miscellaneous variables.
+     * Terminal app and plugins miscellaneous variables.
      */
 
-    /** Android OS permission declared by Termux app in AndroidManifest.xml which can be requested by
-     * 3rd party apps to run various commands in Termux app context */
+    /** Android OS permission declared by Terminal app in AndroidManifest.xml which can be requested by
+     * 3rd party apps to run various commands in Terminal app context */
     public static final String PERMISSION_RUN_COMMAND = TERMINAL_PACKAGE_NAME + ".permission.RUN_COMMAND"; // Default: "com.terminal.permission.RUN_COMMAND"
 
-    /** Termux property defined in terminal.properties file as a secondary check to PERMISSION_RUN_COMMAND
-     * to allow 3rd party apps to run various commands in Termux app context */
+    /** Terminal property defined in terminal.properties file as a secondary check to PERMISSION_RUN_COMMAND
+     * to allow 3rd party apps to run various commands in Terminal app context */
     public static final String PROP_ALLOW_EXTERNAL_APPS = "allow-external-apps"; // Default: "allow-external-apps"
     /** Default value for {@link #PROP_ALLOW_EXTERNAL_APPS} */
     public static final String PROP_DEFAULT_VALUE_ALLOW_EXTERNAL_APPS = "false"; // Default: "false"
 
-    /** The broadcast action sent when Termux App opens */
+    /** The broadcast action sent when Terminal App opens */
     public static final String BROADCAST_TERMUX_OPENED = TERMINAL_PACKAGE_NAME + ".app.OPENED";
 
-    /** The Uri authority for Termux app file shares */
+    /** The Uri authority for Terminal app file shares */
     public static final String TERMUX_FILE_SHARE_URI_AUTHORITY = TERMINAL_PACKAGE_NAME + ".files"; // Default: "com.terminal.files"
 
     /** The normal comma character (U+002C, &comma;, &#44;, comma) */
@@ -817,15 +817,15 @@ public final class TerminalConstants {
 
 
     /**
-     * Termux app constants.
+     * Terminal app constants.
      */
     public static final class TERMUX_APP {
 
-        /** Termux app core activity name. */
-        public static final String TERMUX_ACTIVITY_NAME = TERMINAL_PACKAGE_NAME + ".app.TermuxActivity"; // Default: "com.terminal.app.TermuxActivity"
+        /** Terminal app core activity name. */
+        public static final String TERMUX_ACTIVITY_NAME = TERMINAL_PACKAGE_NAME + ".app.TerminalActivity"; // Default: "com.terminal.app.TerminalActivity"
 
         /**
-         * Termux app core activity.
+         * Terminal app core activity.
          */
         public static final class TERMUX_ACTIVITY {
 
@@ -848,18 +848,18 @@ public final class TerminalConstants {
 
 
 
-        /** Termux app settings activity name. */
+        /** Terminal app settings activity name. */
         public static final String TERMUX_SETTINGS_ACTIVITY_NAME = TERMINAL_PACKAGE_NAME + ".app.activities.SettingsActivity"; // Default: "com.terminal.app.activities.SettingsActivity"
 
 
 
 
 
-        /** Termux app core service name. */
+        /** Terminal app core service name. */
         public static final String TERMUX_SERVICE_NAME = TERMINAL_PACKAGE_NAME + ".app.EndlessService"; // Default: "com.terminal.app.EndlessService"
 
         /**
-         * Termux app core service.
+         * Terminal app core service.
          */
         public static final class TERMUX_SERVICE {
 
@@ -942,7 +942,7 @@ public final class TerminalConstants {
 
             /** The value for {@link #EXTRA_SESSION_ACTION} extra that will set the new session as
              * the current session but will not start {@link TERMUX_ACTIVITY} if its not running
-             * and session(s) will be seen in Termux notification and can be clicked to bring new
+             * and session(s) will be seen in Terminal notification and can be clicked to bring new
              * session to foreground. If the {@link TERMUX_ACTIVITY} is already running, then this
              * will behave like {@link #VALUE_EXTRA_SESSION_ACTION_KEEP_CURRENT_SESSION_AND_OPEN_ACTIVITY}.
              */
@@ -950,7 +950,7 @@ public final class TerminalConstants {
 
             /** The value for {@link #EXTRA_SESSION_ACTION} extra that will keep any existing session
              * as the current session but will not start {@link TERMUX_ACTIVITY} if its not running
-             * and session(s) will be seen in Termux notification and can be clicked to bring
+             * and session(s) will be seen in Terminal notification and can be clicked to bring
              * existing session to foreground. If the {@link TERMUX_ACTIVITY} is already running,
              * then this will behave like {@link #VALUE_EXTRA_SESSION_ACTION_KEEP_CURRENT_SESSION_AND_OPEN_ACTIVITY}.
              */
@@ -988,15 +988,15 @@ public final class TerminalConstants {
 
 
 
-        /** Termux app run command service name. */
-        public static final String RUN_COMMAND_SERVICE_NAME = TERMINAL_PACKAGE_NAME + ".app.RunCommandService"; // Termux app service to receive commands from 3rd party apps "com.terminal.app.RunCommandService"
+        /** Terminal app run command service name. */
+        public static final String RUN_COMMAND_SERVICE_NAME = TERMINAL_PACKAGE_NAME + ".app.RunCommandService"; // Terminal app service to receive commands from 3rd party apps "com.terminal.app.RunCommandService"
 
         /**
-         * Termux app run command service to receive commands sent by 3rd party apps.
+         * Terminal app run command service to receive commands sent by 3rd party apps.
          */
         public static final class RUN_COMMAND_SERVICE {
 
-            /** Termux RUN_COMMAND Intent help url */
+            /** Terminal RUN_COMMAND Intent help url */
             public static final String RUN_COMMAND_API_HELP_URL = TERMUX_GITHUB_WIKI_REPO_URL + "/RUN_COMMAND-Intent"; // Default: "https://github.com/terminal/terminal-app/wiki/RUN_COMMAND-Intent"
 
 
@@ -1060,7 +1060,7 @@ public final class TerminalConstants {
 
 
     /**
-     * Termux class to send back results of commands to their callers like plugin or 3rd party apps.
+     * Terminal class to send back results of commands to their callers like plugin or 3rd party apps.
      */
     public static final class RESULT_SENDER {
 
@@ -1128,12 +1128,12 @@ public final class TerminalConstants {
 
 
     /**
-     * Termux:API app constants.
+     * Terminal:API app constants.
      */
     public static final class TERMUX_API {
 
-        /** Termux:API app core activity name. */
-        public static final String TERMUX_API_ACTIVITY_NAME = TERMUX_API_PACKAGE_NAME + ".activities.TermuxAPIActivity"; // Default: "com.terminal.tasker.activities.TermuxAPIActivity"
+        /** Terminal:API app core activity name. */
+        public static final String TERMUX_API_ACTIVITY_NAME = TERMUX_API_PACKAGE_NAME + ".activities.TerminalAPIActivity"; // Default: "com.terminal.tasker.activities.TerminalAPIActivity"
 
     }
 
@@ -1142,15 +1142,15 @@ public final class TerminalConstants {
 
 
     /**
-     * Termux:Float app constants.
+     * Terminal:Float app constants.
      */
     public static final class TERMUX_FLOAT_APP {
 
-        /** Termux:Float app core service name. */
-        public static final String TERMUX_FLOAT_SERVICE_NAME = TERMUX_FLOAT_PACKAGE_NAME + ".TermuxFloatService"; // Default: "com.terminal.window.TermuxFloatService"
+        /** Terminal:Float app core service name. */
+        public static final String TERMUX_FLOAT_SERVICE_NAME = TERMUX_FLOAT_PACKAGE_NAME + ".TerminalFloatService"; // Default: "com.terminal.window.TerminalFloatService"
 
         /**
-         * Termux:Float app core service.
+         * Terminal:Float app core service.
          */
         public static final class TERMUX_FLOAT_SERVICE {
 
@@ -1172,12 +1172,12 @@ public final class TerminalConstants {
 
 
     /**
-     * Termux:Styling app constants.
+     * Terminal:Styling app constants.
      */
     public static final class TERMUX_STYLING {
 
-        /** Termux:Styling app core activity name. */
-        public static final String TERMUX_STYLING_ACTIVITY_NAME = TERMUX_STYLING_PACKAGE_NAME + ".TermuxStyleActivity"; // Default: "com.terminal.styling.TermuxStyleActivity"
+        /** Terminal:Styling app core activity name. */
+        public static final String TERMUX_STYLING_ACTIVITY_NAME = TERMUX_STYLING_PACKAGE_NAME + ".TerminalStyleActivity"; // Default: "com.terminal.styling.TerminalStyleActivity"
 
     }
 
@@ -1186,12 +1186,12 @@ public final class TerminalConstants {
 
 
     /**
-     * Termux:Tasker app constants.
+     * Terminal:Tasker app constants.
      */
     public static final class TERMUX_TASKER {
 
-        /** Termux:Tasker app core activity name. */
-        public static final String TERMUX_TASKER_ACTIVITY_NAME = TERMUX_TASKER_PACKAGE_NAME + ".activities.TermuxTaskerActivity"; // Default: "com.terminal.tasker.activities.TermuxTaskerActivity"
+        /** Terminal:Tasker app core activity name. */
+        public static final String TERMUX_TASKER_ACTIVITY_NAME = TERMUX_TASKER_PACKAGE_NAME + ".activities.TerminalTaskerActivity"; // Default: "com.terminal.tasker.activities.TerminalTaskerActivity"
 
     }
 
@@ -1200,19 +1200,19 @@ public final class TerminalConstants {
 
 
     /**
-     * Termux:Widget app constants.
+     * Terminal:Widget app constants.
      */
     public static final class TERMUX_WIDGET {
 
-        /** Termux:Widget app core activity name. */
-        public static final String TERMUX_WIDGET_ACTIVITY_NAME = TERMUX_WIDGET_PACKAGE_NAME + ".activities.TermuxWidgetActivity"; // Default: "com.terminal.widget.activities.TermuxWidgetActivity"
+        /** Terminal:Widget app core activity name. */
+        public static final String TERMUX_WIDGET_ACTIVITY_NAME = TERMUX_WIDGET_PACKAGE_NAME + ".activities.TerminalWidgetActivity"; // Default: "com.terminal.widget.activities.TerminalWidgetActivity"
 
 
-        /**  Intent {@code String} extra for the token of the Termux:Widget app shortcuts. */
+        /**  Intent {@code String} extra for the token of the Terminal:Widget app shortcuts. */
         public static final String EXTRA_TOKEN_NAME = TERMINAL_PACKAGE_NAME + ".shortcut.token"; // Default: "com.terminal.shortcut.token"
 
         /**
-         * Termux:Widget app {@link android.appwidget.AppWidgetProvider} class.
+         * Terminal:Widget app {@link android.appwidget.AppWidgetProvider} class.
          */
         public static final class TERMUX_WIDGET_PROVIDER {
 

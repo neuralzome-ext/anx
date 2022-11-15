@@ -19,7 +19,7 @@ public class TerminalAPIAppSharedPreferences {
     private final SharedPreferences mMultiProcessSharedPreferences;
 
 
-    private static final String LOG_TAG = "TermuxAPIAppSharedPreferences";
+    private static final String LOG_TAG = "TerminalAPIAppSharedPreferences";
 
     private TerminalAPIAppSharedPreferences(@NonNull Context context) {
         mContext = context;

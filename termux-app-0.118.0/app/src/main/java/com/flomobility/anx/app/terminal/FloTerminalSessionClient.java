@@ -40,7 +40,7 @@ public class FloTerminalSessionClient extends TerminalSessionClientBase {
 
     private int mBellSoundId;
 
-    private static final String LOG_TAG = "TermuxTerminalSessionClient";
+    private static final String LOG_TAG = "TerminalSessionClient";
 
     public FloTerminalSessionClient(TerminalActivity activity) {
         this.mActivity = activity;

@@ -31,7 +31,7 @@ import com.flomobility.anx.shared.models.ExecutionCommand;
  * plugins that contains info on command execution and forwards the extras to {@link EndlessService}
  * for the actual execution.
  *
- * Check https://github.com/termux/termux-app/wiki/RUN_COMMAND-Intent for more info.
+ * Check https://github.com/flomobility/anx/wiki/RUN_COMMAND-Intent for more info.
  */
 public class RunCommandService extends Service {
 
@@ -120,7 +120,7 @@ public class RunCommandService extends Service {
 
         // If "allow-external-apps" property to not set to "true", then just return
         // We enable force notifications if "allow-external-apps" policy is violated so that the
-        // user knows someone tried to run a command in termux context, since it may be malicious
+        // user knows someone tried to run a command in terminal context, since it may be malicious
         // app or imported (tasker) plugin project and not the user himself. If a pending intent is
         // also sent, then its creator is also logged and shown.
         errmsg = PluginUtils.checkIfAllowExternalAppsPolicyIsViolated(this, LOG_TAG);
@@ -163,7 +163,7 @@ public class RunCommandService extends Service {
 
             // If workingDirectory is not a directory, or is not readable or writable, then just return
             // Creation of missing directory and setting of read, write and execute permissions are only done if workingDirectory is
-            // under allowed termux working directory paths.
+            // under allowed terminal working directory paths.
             // We try to set execute permissions, but ignore if they are missing, since only read and write permissions are required
             // for working directories.
             error = TerminalFileUtils.validateDirectoryFileExistenceAndPermissions("working", executionCommand.workingDirectory,
@@ -191,7 +191,7 @@ public class RunCommandService extends Service {
 
         Logger.logVerboseExtended(LOG_TAG, executionCommand.toString());
 
-        // Create execution intent with the action TERMUX_SERVICE#ACTION_SERVICE_EXECUTE to be sent to the TERMUX_SERVICE
+        // Create execution intent with the action TERMINAL_SERVICE#ACTION_SERVICE_EXECUTE to be sent to the TERMINAL_SERVICE
         Intent execIntent = new Intent(TERMUX_SERVICE.ACTION_SERVICE_EXECUTE, executionCommand.executableUri);
         execIntent.setClass(this, EndlessService.class);
         execIntent.putExtra(TERMUX_SERVICE.EXTRA_ARGUMENTS, executionCommand.arguments);
@@ -214,7 +214,7 @@ public class RunCommandService extends Service {
             execIntent.putExtra(TERMUX_SERVICE.EXTRA_RESULT_FILES_SUFFIX, executionCommand.resultConfig.resultFilesSuffix);
         }
 
-        // Start TERMUX_SERVICE and pass it execution intent
+        // Start TERMINAL_SERVICE and pass it execution intent
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             this.startForegroundService(execIntent);
         } else {

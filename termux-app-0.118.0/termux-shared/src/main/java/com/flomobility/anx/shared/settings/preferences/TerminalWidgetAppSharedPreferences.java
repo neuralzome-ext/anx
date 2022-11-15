@@ -21,7 +21,7 @@ public class TerminalWidgetAppSharedPreferences {
     private final SharedPreferences mMultiProcessSharedPreferences;
 
 
-    private static final String LOG_TAG = "TermuxWidgetAppSharedPreferences";
+    private static final String LOG_TAG = "TerminalWidgetAppSharedPreferences";
 
     private TerminalWidgetAppSharedPreferences(@NonNull Context context) {
         mContext = context;

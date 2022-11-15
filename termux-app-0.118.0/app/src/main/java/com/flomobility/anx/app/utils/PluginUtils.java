@@ -113,7 +113,7 @@ public class PluginUtils {
      *
      * Otherwise if the {@link TERMINAL_APP#KEY_PLUGIN_ERROR_NOTIFICATIONS_ENABLED} is
      * enabled, then a flash and a notification will be shown for the error as well
-     * on the {@link TerminalConstants#TERMUX_PLUGIN_COMMAND_ERRORS_NOTIFICATION_CHANNEL_NAME} channel instead of just logging
+     * on the {@link TerminalConstants#TERMINAL_PLUGIN_COMMAND_ERRORS_NOTIFICATION_CHANNEL_NAME} channel instead of just logging
      * the error.
      *
      * @param context The {@link Context} for operations.

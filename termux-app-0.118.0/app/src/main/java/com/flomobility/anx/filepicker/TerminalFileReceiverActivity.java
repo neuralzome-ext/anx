@@ -30,8 +30,8 @@ import java.util.regex.Pattern;
 public class TerminalFileReceiverActivity extends Activity {
 
     static final String TERMUX_RECEIVEDIR = TerminalConstants.TERMUX_FILES_DIR_PATH + "/home/downloads";
-    static final String EDITOR_PROGRAM = TerminalConstants.TERMINAL_HOME_DIR_PATH + "/bin/termux-file-editor";
-    static final String URL_OPENER_PROGRAM = TerminalConstants.TERMINAL_HOME_DIR_PATH + "/bin/termux-url-opener";
+    static final String EDITOR_PROGRAM = TerminalConstants.TERMINAL_HOME_DIR_PATH + "/bin/terminal-file-editor";
+    static final String URL_OPENER_PROGRAM = TerminalConstants.TERMINAL_HOME_DIR_PATH + "/bin/terminal-url-opener";
 
     /**
      * If the activity should be finished when the name input dialog is dismissed. This is disabled
@@ -43,7 +43,7 @@ public class TerminalFileReceiverActivity extends Activity {
 
     private static final String API_TAG = TerminalConstants.TERMINAL_APP_NAME + "FileReceiver";
 
-    private static final String LOG_TAG = "TermuxFileReceiverActivity";
+    private static final String LOG_TAG = "TerminalFileReceiverActivity";
 
     static boolean isSharedTextAnUrl(String sharedText) {
         return Patterns.WEB_URL.matcher(sharedText).matches()
@@ -150,7 +150,7 @@ public class TerminalFileReceiverActivity extends Activity {
 
             final File editorProgramFile = new File(EDITOR_PROGRAM);
             if (!editorProgramFile.isFile()) {
-                showErrorDialogAndQuit("The following file does not exist:\n$HOME/bin/termux-file-editor\n\n"
+                showErrorDialogAndQuit("The following file does not exist:\n$HOME/bin/terminal-file-editor\n\n"
                     + "Create this file as a script or a symlink - it will be called with the received file as only argument.");
                 return;
             }

@@ -19,7 +19,7 @@ public class TerminalBootAppSharedPreferences {
     private final SharedPreferences mMultiProcessSharedPreferences;
 
 
-    private static final String LOG_TAG = "TermuxBootAppSharedPreferences";
+    private static final String LOG_TAG = "TerminalBootAppSharedPreferences";
 
     private TerminalBootAppSharedPreferences(@NonNull Context context) {
         mContext = context;

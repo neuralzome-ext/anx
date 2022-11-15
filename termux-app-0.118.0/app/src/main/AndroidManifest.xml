@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.flomobility.anx"
     android:installLocation="internalOnly"
-    android:sharedUserId="${TERMUX_PACKAGE_NAME}"
+    android:sharedUserId="${TERMINAL_PACKAGE_NAME}"
     android:sharedUserLabel="@string/shared_user_label">
 
     <uses-feature
@@ -14,7 +14,7 @@
         android:required="false" />
 
     <permission
-        android:name="${TERMUX_PACKAGE_NAME}.permission.RUN_COMMAND"
+        android:name="${TERMINAL_PACKAGE_NAME}.permission.RUN_COMMAND"
         android:description="@string/permission_run_command_description"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/permission_run_command_label"
@@ -144,7 +144,7 @@
 
         <activity
             android:name=".shared.activities.ReportActivity"
-            android:theme="@style/Theme.AppCompat.TermuxReportActivity"
+            android:theme="@style/Theme.AppCompat.TerminalReportActivity"
             android:documentLaunchMode="intoExisting"
             />
 
@@ -154,7 +154,7 @@
             android:label="@string/application_name"
             android:noHistory="true"
             android:resizeableActivity="true"
-            android:taskAffinity="${TERMUX_PACKAGE_NAME}.filereceiver">
+            android:taskAffinity="${TERMINAL_PACKAGE_NAME}.filereceiver">
 
             <!-- Accept multiple file types when sending. -->
             <intent-filter>
@@ -170,7 +170,7 @@
                 <data android:mimeType="text/*" />
                 <data android:mimeType="video/*" />
             </intent-filter>
-            <!-- Accept multiple file types to let Termux be usable as generic file viewer. -->
+            <!-- Accept multiple file types to let Terminal be usable as generic file viewer. -->
             <intent-filter tools:ignore="AppLinkUrlError">
                 <action android:name="android.intent.action.VIEW" />
 
@@ -187,7 +187,7 @@
 
         <provider
             android:name=".filepicker.TerminalDocumentsProvider"
-            android:authorities="${TERMUX_PACKAGE_NAME}.documents"
+            android:authorities="${TERMINAL_PACKAGE_NAME}.documents"
             android:exported="true"
             android:grantUriPermissions="true"
             android:permission="android.permission.MANAGE_DOCUMENTS">
@@ -198,10 +198,10 @@
 
         <provider
             android:name=".app.TerminalOpenReceiver$ContentProvider"
-            android:authorities="${TERMUX_PACKAGE_NAME}.files"
+            android:authorities="${TERMINAL_PACKAGE_NAME}.files"
             android:exported="true"
             android:grantUriPermissions="true"
-            android:permission="${TERMUX_PACKAGE_NAME}.permission.RUN_COMMAND" />
+            android:permission="${TERMINAL_PACKAGE_NAME}.permission.RUN_COMMAND" />
 
 
         <receiver android:name=".app.TerminalOpenReceiver" android:exported="false" />
@@ -210,15 +210,15 @@
 
 
 <!--        <service-->
-<!--            android:name=".app.TermuxService"-->
+<!--            android:name=".app.TerminalService"-->
 <!--            android:exported="false" />-->
 
         <service
             android:name=".app.RunCommandService"
             android:exported="true"
-            android:permission="${TERMUX_PACKAGE_NAME}.permission.RUN_COMMAND">
+            android:permission="${TERMINAL_PACKAGE_NAME}.permission.RUN_COMMAND">
             <intent-filter>
-                <action android:name="${TERMUX_PACKAGE_NAME}.RUN_COMMAND" />
+                <action android:name="${TERMINAL_PACKAGE_NAME}.RUN_COMMAND" />
             </intent-filter>
         </service>
 

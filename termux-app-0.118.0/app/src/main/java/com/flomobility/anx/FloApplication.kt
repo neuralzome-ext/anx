@@ -29,7 +29,7 @@ class FloApplication: Application() {
         // Set crash handler for the app
         TerminalCrashUtils.setCrashHandler(this)
 
-        // Set log level for the app (Termux
+        // Set log level for the app (Terminal
         setLogLevel()
     }
 

@@ -19,7 +19,7 @@ public class TerminalTaskerAppSharedPreferences {
     private final SharedPreferences mMultiProcessSharedPreferences;
 
 
-    private static final String LOG_TAG = "TermuxTaskerAppSharedPreferences";
+    private static final String LOG_TAG = "TerminalTaskerAppSharedPreferences";
 
     private TerminalTaskerAppSharedPreferences(@NonNull Context context) {
         mContext = context;

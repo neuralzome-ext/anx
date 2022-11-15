@@ -26,7 +26,7 @@ public class TerminalSession {
     private final TermuxSessionClient mTermuxSessionClient;
     private final boolean mSetStdoutOnExit;
 
-    private static final String LOG_TAG = "TermuxSession";
+    private static final String LOG_TAG = "TerminalSession";
 
     private TerminalSession(@NonNull final com.flomobility.anx.terminal.TerminalSession terminalSession, @NonNull final ExecutionCommand executionCommand,
                             final TermuxSessionClient termuxSessionClient, final boolean setStdoutOnExit) {

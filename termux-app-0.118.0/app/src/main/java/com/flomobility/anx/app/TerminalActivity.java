@@ -102,12 +102,12 @@ public final class TerminalActivity extends Activity implements ServiceConnectio
     FloTerminalSessionClient mFloTerminalSessionClient;
 
     /**
-     * Termux app shared preferences manager.
+     * Terminal app shared preferences manager.
      */
     private FloAppSharedPreferences mPreferences;
 
     /**
-     * Termux app shared properties manager, loaded from termux.properties
+     * Terminal app shared properties manager, loaded from terminal.properties
      */
     private FloAppSharedProperties mProperties;
 
@@ -117,7 +117,7 @@ public final class TerminalActivity extends Activity implements ServiceConnectio
     TerminalActivityRootView mTerminalActivityRootView;
 
     /**
-     * The space at the bottom of {@link @mTermuxActivityRootView} of the {@link TerminalActivity}.
+     * The space at the bottom of {@link @mTerminalActivityRootView} of the {@link TerminalActivity}.
      */
     View mTerminalActivityBottomSpaceView;
 
@@ -127,14 +127,14 @@ public final class TerminalActivity extends Activity implements ServiceConnectio
     ExtraKeysView mExtraKeysView;
 
     /**
-     * The termux sessions list controller.
+     * The terminal sessions list controller.
      */
     TerminalSessionsListViewController mTerminalSessionListViewController;
 
     /**
      * The {@link TerminalActivity} broadcast receiver for various things like terminal style configuration changes.
      */
-    private final BroadcastReceiver mTermuxActivityBroadcastReceiver = new TerminalActivityBroadcastReceiver();
+    private final BroadcastReceiver mTerminalActivityBroadcastReceiver = new TerminalActivityBroadcastReceiver();
 
     /**
      * The last toast shown, used cancel current toast before showing new in {@link #showToast(String, boolean)}.
@@ -175,7 +175,7 @@ public final class TerminalActivity extends Activity implements ServiceConnectio
 
     private static final String ARG_TERMINAL_TOOLBAR_TEXT_INPUT = "terminal_toolbar_text_input";
 
-    private static final String LOG_TAG = "TermuxActivity";
+    private static final String LOG_TAG = "TerminalActivity";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -190,7 +190,7 @@ public final class TerminalActivity extends Activity implements ServiceConnectio
         // Delete ReportInfo serialized object files from cache older than 14 days
         ReportActivity.deleteReportInfoFilesOlderThanXDays(this, 14, false);
 
-        // Load termux shared properties
+        // Load terminal shared properties
         mProperties = new FloAppSharedProperties(this);
 
         setActivityTheme();
@@ -199,8 +199,8 @@ public final class TerminalActivity extends Activity implements ServiceConnectio
 
         setContentView(R.layout.activity_terminal);
 
-        // Load termux shared preferences
-        // This will also fail if TermuxConstants.TERMUX_PACKAGE_NAME does not equal applicationId
+        // Load terminal shared preferences
+        // This will also fail if TerminalConstants.TERMINAL_PACKAGE_NAME does not equal applicationId
         mPreferences = FloAppSharedPreferences.build(this, true);
         if (mPreferences == null) {
             // An AlertDialog should have shown to kill the app, so we don't continue running activity code
@@ -248,7 +248,7 @@ public final class TerminalActivity extends Activity implements ServiceConnectio
         if (!bindService(serviceIntent, this, 0))
             throw new RuntimeException("bindService() failed");
 
-        // Send the {@link TermuxConstants#BROADCAST_TERMUX_OPENED} broadcast to notify apps that Termux
+        // Send the {@link TerminalConstants#BROADCAST_TERMINAL_OPENED} broadcast to notify apps that Terminal
         // app has been opened.
         TerminalUtils.sendTerminalOpenedBroadcast(this);
 
@@ -258,9 +258,9 @@ public final class TerminalActivity extends Activity implements ServiceConnectio
             @Override
             public void run() {
 
-                // Example executing termux command, termux service is required to execute any termux task.
-                // TermuxCommandExecutor will bind to termux service if it's not already binded.
-                // All the termux command must execute after termux service is connected
+                // Example executing terminal command, terminal service is required to execute any terminal task.
+                // TerminalCommandExecutor will bind to terminal service if it's not already binded.
+                // All the terminal command must execute after terminal service is connected
 
                 // note: this can be optimize later if required as per requirement.
 
@@ -490,11 +490,11 @@ public final class TerminalActivity extends Activity implements ServiceConnectio
 
 
     private void setTermuxTerminalViewAndClients() {
-        // Set termux terminal view and session clients
+        // Set terminal terminal view and session clients
         mFloTerminalSessionClient = new FloTerminalSessionClient(this);
         mFloTerminalViewClient = new FloTerminalViewClient(this, mFloTerminalSessionClient);
 
-        // Set termux terminal view
+        // Set terminal terminal view
         mTerminalView = findViewById(R.id.terminal_view);
         mTerminalView.setTerminalViewClient(mFloTerminalViewClient);
 
@@ -883,11 +883,11 @@ public final class TerminalActivity extends Activity implements ServiceConnectio
         intentFilter.addAction(TERMUX_ACTIVITY.ACTION_REQUEST_PERMISSIONS);
         intentFilter.addAction(TERMUX_ACTIVITY.ACTION_RELOAD_STYLE);
 
-        registerReceiver(mTermuxActivityBroadcastReceiver, intentFilter);
+        registerReceiver(mTerminalActivityBroadcastReceiver, intentFilter);
     }
 
     private void unregisterTerminalActivityBroadcastReceiever() {
-        unregisterReceiver(mTermuxActivityBroadcastReceiver);
+        unregisterReceiver(mTerminalActivityBroadcastReceiver);
     }
 
     private void fixTermuxActivityBroadcastReceieverIntent(Intent intent) {
@@ -952,7 +952,7 @@ public final class TerminalActivity extends Activity implements ServiceConnectio
         // views will be destroyed and bindService() will be called again. Extra keys input
         // text will we restored since that has already been implemented. Terminal sessions
         // and transcripts are also already preserved. Theme does change properly too.
-        // TermuxActivity.this.recreate();
+        // TerminalActivity.this.recreate();
     }
 
 

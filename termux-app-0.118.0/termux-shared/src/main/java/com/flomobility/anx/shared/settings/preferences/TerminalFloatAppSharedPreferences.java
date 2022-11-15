@@ -23,7 +23,7 @@ public class TerminalFloatAppSharedPreferences {
     private int MAX_FONTSIZE;
     private int DEFAULT_FONTSIZE;
 
-    private static final String LOG_TAG = "TermuxFloatAppSharedPreferences";
+    private static final String LOG_TAG = "TerminalFloatAppSharedPreferences";
 
     private TerminalFloatAppSharedPreferences(@NonNull Context context) {
         mContext = context;

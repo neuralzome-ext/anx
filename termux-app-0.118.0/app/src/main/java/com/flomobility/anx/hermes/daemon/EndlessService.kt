@@ -79,7 +79,7 @@ class EndlessService : LifecycleService() , TerminalTask.TermuxTaskClient, com.f
     private val mHandler = Handler()
 
     /**
-     * The foreground TermuxSessions which this service manages.
+     * The foreground TerminalSessions which this service manages.
      * Note that this list is observed by [TerminalActivity.mTermuxSessionListViewController],
      * so any changes must be made on the UI thread and followed by a call to
      * [ArrayAdapter.notifyDataSetChanged] }.

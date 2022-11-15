@@ -163,19 +163,19 @@ public class TerminalUtils {
             Context termuxPackageContext = TerminalUtils.getTermuxPackageContext(currentPackageContext);
             // If failed to get Termux app package context
             if (termuxPackageContext == null)
-                errmsg = currentPackageContext.getString(R.string.error_termux_app_package_context_not_accessible);
+                errmsg = currentPackageContext.getString(R.string.error_terminal_app_package_context_not_accessible);
 
             if (errmsg == null) {
                 // If TermuxConstants.TERMUX_PREFIX_DIR_PATH is not a directory or does not have required permissions
                 Error error = TerminalFileUtils.isTermuxPrefixDirectoryAccessible(false, false);
                 if (error != null)
-                    errmsg = currentPackageContext.getString(R.string.error_termux_prefix_dir_path_not_accessible,
+                    errmsg = currentPackageContext.getString(R.string.error_terminal_prefix_dir_path_not_accessible,
                         PackageUtils.getAppNameForPackage(currentPackageContext));
             }
         }
 
         if (errmsg != null)
-            return errmsg + " " + currentPackageContext.getString(R.string.msg_termux_app_required_by_app,
+            return errmsg + " " + currentPackageContext.getString(R.string.msg_terminal_app_required_by_app,
                 PackageUtils.getAppNameForPackage(currentPackageContext));
         else
             return null;

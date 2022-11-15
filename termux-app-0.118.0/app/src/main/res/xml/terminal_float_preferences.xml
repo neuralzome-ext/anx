@@ -3,6 +3,6 @@
     <Preference
         app:title="@string/terminal_debugging_preferences_title"
         app:summary="@string/terminal_debugging_preferences_summary"
-        app:fragment="com.flomobility.anx.app.fragments.settings.termux_float.DebuggingPreferencesFragment"/>
+        app:fragment="com.flomobility.anx.app.fragments.settings.terminal_float.DebuggingPreferencesFragment"/>
 
 </PreferenceScreen>

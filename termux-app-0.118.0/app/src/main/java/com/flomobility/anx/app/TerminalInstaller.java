@@ -36,7 +36,7 @@ import static com.flomobility.anx.shared.terminal.TerminalConstants.TERMUX_STAGI
 import static com.flomobility.anx.shared.terminal.TerminalConstants.TERMUX_STAGING_PREFIX_DIR_PATH;
 
 /**
- * Install the Termux bootstrap packages if necessary by following the below steps:
+ * Install the Terminal bootstrap packages if necessary by following the below steps:
  * <p/>
  * (1) If $PREFIX already exist, assume that it is correct and be done. Note that this relies on that we do not create a
  * broken $PREFIX directory below.
@@ -56,19 +56,19 @@ import static com.flomobility.anx.shared.terminal.TerminalConstants.TERMUX_STAGI
  */
 public class TerminalInstaller {
 
-    private static final String LOG_TAG = "TermuxInstaller";
+    private static final String LOG_TAG = "TerminalInstaller";
 
     /** Performs bootstrap setup if necessary. */
     public static void setupBootstrapIfNeeded(final Activity activity, final Runnable whenDone) {
         String bootstrapErrorMessage;
         Error filesDirectoryAccessibleError;
 
-        // This will also call Context.getFilesDir(), which should ensure that termux files directory
+        // This will also call Context.getFilesDir(), which should ensure that terminal files directory
         // is created if it does not already exist
         filesDirectoryAccessibleError = TerminalFileUtils.isTermuxFilesDirectoryAccessible(activity, true, true);
         boolean isFilesDirectoryAccessible = filesDirectoryAccessibleError == null;
 
-        // Termux can only be run as the primary user (device owner) since only that
+        // Terminal can only be run as the primary user (device owner) since only that
         // account has the expected file system paths. Verify that:
         if (!PackageUtils.isCurrentUserThePrimaryUser(activity)) {
             bootstrapErrorMessage = activity.getString(R.string.bootstrap_error_not_primary_user_message, MarkdownUtils.getMarkdownCodeForString(TERMINAL_PREFIX_DIR_PATH, false));
@@ -82,7 +82,7 @@ public class TerminalInstaller {
         }
 
         if (!isFilesDirectoryAccessible) {
-            bootstrapErrorMessage = Error.getMinimalErrorString(filesDirectoryAccessibleError) + "\nTERMUX_FILES_DIR: " + MarkdownUtils.getMarkdownCodeForString(TerminalConstants.TERMUX_FILES_DIR_PATH, false);
+            bootstrapErrorMessage = Error.getMinimalErrorString(filesDirectoryAccessibleError) + "\nTERMINAL_FILES_DIR: " + MarkdownUtils.getMarkdownCodeForString(TerminalConstants.TERMUX_FILES_DIR_PATH, false);
             Logger.logError(LOG_TAG, bootstrapErrorMessage);
             sendBootstrapCrashReportNotification(activity, bootstrapErrorMessage);
             MessageDialogUtils.showMessage(activity,
@@ -96,13 +96,13 @@ public class TerminalInstaller {
             File[] PREFIX_FILE_LIST =  TERMUX_PREFIX_DIR.listFiles();
             // If prefix directory is empty or only contains the tmp directory
             if(PREFIX_FILE_LIST == null || PREFIX_FILE_LIST.length == 0 || (PREFIX_FILE_LIST.length == 1 && TerminalConstants.TERMINAL_TMP_PREFIX_DIR_PATH.equals(PREFIX_FILE_LIST[0].getAbsolutePath()))) {
-                Logger.logInfo(LOG_TAG, "The termux prefix directory \"" + TERMINAL_PREFIX_DIR_PATH + "\" exists but is empty or only contains the tmp directory.");
+                Logger.logInfo(LOG_TAG, "The terminal prefix directory \"" + TERMINAL_PREFIX_DIR_PATH + "\" exists but is empty or only contains the tmp directory.");
             } else {
                 whenDone.run();
                 return;
             }
         } else if (FileUtils.fileExists(TERMINAL_PREFIX_DIR_PATH, false)) {
-            Logger.logInfo(LOG_TAG, "The termux prefix directory \"" + TERMINAL_PREFIX_DIR_PATH + "\" does not exist but another file exists at its destination.");
+            Logger.logInfo(LOG_TAG, "The terminal prefix directory \"" + TERMINAL_PREFIX_DIR_PATH + "\" does not exist but another file exists at its destination.");
         }
 
   //      final ProgressDialog progress = ProgressDialog.show(activity, null, activity.getString(R.string.bootstrap_installer_body), true, false);
@@ -116,14 +116,14 @@ public class TerminalInstaller {
                     Error error;
 
                     // Delete prefix staging directory or any file at its destination
-                    error = FileUtils.deleteFile("termux prefix staging directory", TERMUX_STAGING_PREFIX_DIR_PATH, true);
+                    error = FileUtils.deleteFile("terminal prefix staging directory", TERMUX_STAGING_PREFIX_DIR_PATH, true);
                     if (error != null) {
                         showBootstrapErrorDialog(activity, whenDone, Error.getErrorMarkdownString(error));
                         return;
                     }
 
                     // Delete prefix directory or any file at its destination
-                    error = FileUtils.deleteFile("termux prefix directory", TERMINAL_PREFIX_DIR_PATH, true);
+                    error = FileUtils.deleteFile("terminal prefix directory", TERMINAL_PREFIX_DIR_PATH, true);
                     if (error != null) {
                         showBootstrapErrorDialog(activity, whenDone, Error.getErrorMarkdownString(error));
                         return;
@@ -202,10 +202,10 @@ public class TerminalInstaller {
                         Os.symlink(symlink.first, symlink.second);
                     }
 
-                    Logger.logInfo(LOG_TAG, "Moving termux prefix staging to prefix directory.");
+                    Logger.logInfo(LOG_TAG, "Moving terminal prefix staging to prefix directory.");
 
                     if (!TERMUX_STAGING_PREFIX_DIR.renameTo(TERMUX_PREFIX_DIR)) {
-                        throw new RuntimeException("Moving termux prefix staging to prefix directory failed");
+                        throw new RuntimeException("Moving terminal prefix staging to prefix directory failed");
                     }
 
                     Logger.logInfo(LOG_TAG, "Bootstrap packages installed successfully.");
@@ -242,7 +242,7 @@ public class TerminalInstaller {
                     })
                     .setPositiveButton(R.string.bootstrap_error_try_again, (dialog, which) -> {
                         dialog.dismiss();
-                        FileUtils.deleteFile("termux prefix directory", TERMINAL_PREFIX_DIR_PATH, true);
+                        FileUtils.deleteFile("terminal prefix directory", TERMINAL_PREFIX_DIR_PATH, true);
                         TerminalInstaller.setupBootstrapIfNeeded(activity, whenDone);
                     }).show();
             } catch (WindowManager.BadTokenException e1) {
@@ -259,7 +259,7 @@ public class TerminalInstaller {
     }
 
     static void setupStorageSymlinks(final Context context) {
-        final String LOG_TAG = "termux-storage";
+        final String LOG_TAG = "terminal-storage";
 
         Logger.logInfo(LOG_TAG, "Setting up storage symlinks.");
 

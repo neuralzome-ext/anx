@@ -51,12 +51,12 @@ public class TerminalCommandExecutor implements ServiceConnection {
         }
 
         if(mEndlessService == null) {
-            Log.e(LOG_TAG, "Termux service not connected, can not proceed further.");
+            Log.e(LOG_TAG, "Terminal service not connected, can not proceed further.");
             return -1;
         }
 
         if(!isEndlessServiceBinded) {
-            Log.e(LOG_TAG, "Termux service not binded yet!");
+            Log.e(LOG_TAG, "Terminal service not binded yet!");
             return -1;
         }
 

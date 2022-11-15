@@ -87,28 +87,28 @@
 
 
 
-    <!-- Termux Notifications -->
+    <!-- Terminal Notifications -->
     <string name="notification_action_exit">Exit</string>
     <string name="notification_action_wake_lock">Acquire wakelock</string>
     <string name="notification_action_wake_unlock">Release wakelock</string>
 
 
 
-    <!-- TermuxService -->
+    <!-- TerminalService -->
     <string name="error_display_over_other_apps_permission_not_granted">&TERMINAL_APP_NAME; requires
         \"Display over other apps\" permission to start terminal sessions from background on Android >= 10.
         Grants it from Settings -> Apps -> &TERMINAL_APP_NAME; -> Advanced</string>
 
 
 
-    <!-- Termux RunCommandService -->
+    <!-- Terminal RunCommandService -->
     <string name="error_run_command_service_invalid_intent_action">Invalid intent action to RunCommandService: `%1$s`</string>
     <string name="error_run_command_service_mandatory_extra_missing">Mandatory extra missing to RunCommandService: \"%1$s\"</string>
     <string name="error_run_command_service_api_help">Visit %1$s for more info on RUN_COMMAND Intent usage.</string>
 
 
 
-    <!-- Termux File Receiver -->
+    <!-- Terminal File Receiver -->
     <string name="title_file_received">Save file in ~/downloads/</string>
     <string name="action_file_received_edit">Edit</string>
     <string name="action_file_received_open_directory">Open directory</string>
@@ -121,10 +121,10 @@
 
 
 
-    <!-- Termux Settings -->
+    <!-- Terminal Settings -->
     <string name="title_activity_terminal_settings">&TERMINAL_APP_NAME; Settings</string>
 
-    <!-- Termux App Preferences -->
+    <!-- Terminal App Preferences -->
     <string name="terminal_preferences_title">&TERMINAL_APP_NAME;</string>
     <string name="terminal_preferences_summary">Preferences for &TERMINAL_APP_NAME; app</string>
 
@@ -191,25 +191,25 @@
 
 
 
-    <!-- Termux:API App Preferences -->
+    <!-- Terminal:API App Preferences -->
     <string name="terminal_api_preferences_title">&TERMINAL_API_APP_NAME;</string>
     <string name="terminal_api_preferences_summary">Preferences for &TERMINAL_API_APP_NAME; app</string>
 
 
 
-    <!-- Termux:Float App Preferences -->
+    <!-- Terminal:Float App Preferences -->
     <string name="terminal_float_preferences_title">&TERMINAL_FLOAT_APP_NAME;</string>
     <string name="terminal_float_preferences_summary">Preferences for &TERMINAL_FLOAT_APP_NAME; app</string>
 
 
 
-    <!-- Termux:Tasker App Preferences -->
+    <!-- Terminal:Tasker App Preferences -->
     <string name="terminal_tasker_preferences_title">&TERMINAL_TASKER_APP_NAME;</string>
     <string name="terminal_tasker_preferences_summary">Preferences for &TERMINAL_TASKER_APP_NAME; app</string>
 
 
 
-    <!-- Termux:Widget App Preferences -->
+    <!-- Terminal:Widget App Preferences -->
     <string name="terminal_widget_preferences_title">&TERMINAL_WIDGET_APP_NAME;</string>
     <string name="terminal_widget_preferences_summary">Preferences for &TERMINAL_WIDGET_APP_NAME; app</string>
 

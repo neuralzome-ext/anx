@@ -3,16 +3,16 @@
     <Preference
         app:title="@string/terminal_debugging_preferences_title"
         app:summary="@string/terminal_debugging_preferences_summary"
-        app:fragment="com.flomobility.anx.app.fragments.settings.termux.DebuggingPreferencesFragment"/>
+        app:fragment="com.flomobility.anx.app.fragments.settings.terminal.DebuggingPreferencesFragment"/>
 
     <Preference
         app:title="@string/terminal_io_preferences_title"
         app:summary="@string/terminal_io_preferences_summary"
-        app:fragment="com.flomobility.anx.app.fragments.settings.termux.TerminalIOPreferencesFragment"/>
+        app:fragment="com.flomobility.anx.app.fragments.settings.terminal.TerminalIOPreferencesFragment"/>
 
     <Preference
         app:title="@string/terminal_view_preferences_title"
         app:summary="@string/terminal_view_preferences_summary"
-        app:fragment="com.flomobility.anx.app.fragments.settings.termux.TerminalViewPreferencesFragment"/>
+        app:fragment="com.flomobility.anx.app.fragments.settings.terminal.TerminalViewPreferencesFragment"/>
 
 </PreferenceScreen>
