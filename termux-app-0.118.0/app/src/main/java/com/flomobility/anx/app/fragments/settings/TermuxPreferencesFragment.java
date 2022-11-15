@@ -9,7 +9,7 @@ import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
 
 import com.flomobility.anx.R;
-import com.flomobility.anx.shared.settings.preferences.TermuxAppSharedPreferences;
+import com.flomobility.anx.shared.settings.preferences.FloAppSharedPreferences;
 
 @Keep
 public class TermuxPreferencesFragment extends PreferenceFragmentCompat {
@@ -30,13 +30,13 @@ public class TermuxPreferencesFragment extends PreferenceFragmentCompat {
 class TermuxPreferencesDataStore extends PreferenceDataStore {
 
     private final Context mContext;
-    private final TermuxAppSharedPreferences mPreferences;
+    private final FloAppSharedPreferences mPreferences;
 
     private static TermuxPreferencesDataStore mInstance;
 
     private TermuxPreferencesDataStore(Context context) {
         mContext = context;
-        mPreferences = TermuxAppSharedPreferences.build(context, true);
+        mPreferences = FloAppSharedPreferences.build(context, true);
     }
 
     public static synchronized TermuxPreferencesDataStore getInstance(Context context) {

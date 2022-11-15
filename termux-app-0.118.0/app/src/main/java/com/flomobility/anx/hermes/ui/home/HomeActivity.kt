@@ -10,7 +10,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.downloader.PRDownloader
 import com.flomobility.anx.app.PluginResultsService
-import com.flomobility.anx.app.TermuxCommandExecutor
+import com.flomobility.anx.app.TerminalCommandExecutor
 import com.flomobility.anx.hermes.adapter.IpAdapter
 import com.flomobility.anx.hermes.adapter.AssetAdapter
 import com.flomobility.anx.hermes.assets.AssetManager
@@ -21,7 +21,6 @@ import com.flomobility.anx.hermes.other.viewutils.AlertDialog
 import com.flomobility.anx.hermes.ui.login.LoginActivity
 import com.flomobility.anx.hermes.ui.settings.SettingsActivity
 import com.flomobility.anx.databinding.ActivityHomeBinding
-import com.flomobility.anx.hermes.ui.download.DownloadActivity
 import com.flomobility.anx.shared.termux.TermuxConstants
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
@@ -175,12 +174,12 @@ class HomeActivity : AppCompatActivity() {
     }
 
     private fun startSshServer() {
-        val termuxCommandExecutor =
-            TermuxCommandExecutor.getInstance(this@HomeActivity)
-        termuxCommandExecutor.startTermuxCommandExecutor(object :
-            TermuxCommandExecutor.ITermuxCommandExecutor {
+        val terminalCommandExecutor =
+            TerminalCommandExecutor.getInstance(this@HomeActivity)
+        terminalCommandExecutor.startCommandExecutor(object :
+            TerminalCommandExecutor.ITerminalCommandExecutor {
             override fun onEndlessServiceConnected() {
-                termuxCommandExecutor.executeTermuxCommand(
+                terminalCommandExecutor.executeCommand(
                     this@HomeActivity,
                     "bash",
                     arrayOf("start.sh"),

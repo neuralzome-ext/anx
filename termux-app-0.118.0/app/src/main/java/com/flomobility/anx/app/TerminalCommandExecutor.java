@@ -1,6 +1,5 @@
 package com.flomobility.anx.app;
 
-import android.annotation.SuppressLint;
 import android.app.PendingIntent;
 import android.content.ComponentName;
 import android.content.Context;
@@ -16,17 +15,17 @@ import com.flomobility.anx.shared.logger.Logger;
 import com.flomobility.anx.shared.models.ExecutionCommand;
 import com.flomobility.anx.shared.termux.TermuxConstants;
 
-public class TermuxCommandExecutor implements ServiceConnection {
+public class TerminalCommandExecutor implements ServiceConnection {
 
     private static final String BIN_PATH = "/data/data/com.flomobility.anx/files/usr/bin/";
     private EndlessService mEndlessService;
     private Context context;
     private  boolean isEndlessServiceBinded;
-    private static TermuxCommandExecutor termuxCommandExecutor;
-    private static final String LOG_TAG = TermuxCommandExecutor.class.getSimpleName();
-    private ITermuxCommandExecutor iTermuxCommandExecutor;
+    private static TerminalCommandExecutor terminalCommandExecutor;
+    private static final String LOG_TAG = TerminalCommandExecutor.class.getSimpleName();
+    private ITerminalCommandExecutor iTerminalCommandExecutor;
 
-    private TermuxCommandExecutor(Context context) {
+    private TerminalCommandExecutor(Context context) {
         this.context = context;
         if(mEndlessService == null) {
             Intent serviceIntent = new Intent(context, EndlessService.class);
@@ -38,14 +37,14 @@ public class TermuxCommandExecutor implements ServiceConnection {
         }
     }
 
-    public static TermuxCommandExecutor getInstance(Context context) {
-        if (termuxCommandExecutor == null) {
-            termuxCommandExecutor = new TermuxCommandExecutor(context);
+    public static TerminalCommandExecutor getInstance(Context context) {
+        if (terminalCommandExecutor == null) {
+            terminalCommandExecutor = new TerminalCommandExecutor(context);
         }
-        return termuxCommandExecutor;
+        return terminalCommandExecutor;
     }
 
-    public int executeTermuxCommand(Context context, String binary, String[] arguments, int executionId ) {
+    public int executeCommand(Context context, String binary, String[] arguments, int executionId ) {
         if(null == context || null == binary || null == arguments || TextUtils.isEmpty(binary)) {
             Log.e(LOG_TAG, "Invalid input parameters");
             return -1;
@@ -79,8 +78,8 @@ public class TermuxCommandExecutor implements ServiceConnection {
         Logger.logDebug(LOG_TAG, "onServiceConnected");
         mEndlessService = ((EndlessService.LocalBinder) service).getService();
         isEndlessServiceBinded = true;
-        if(iTermuxCommandExecutor != null) {
-            iTermuxCommandExecutor.onEndlessServiceConnected();
+        if(iTerminalCommandExecutor != null) {
+            iTerminalCommandExecutor.onEndlessServiceConnected();
         }
     }
 
@@ -88,27 +87,27 @@ public class TermuxCommandExecutor implements ServiceConnection {
     public void onServiceDisconnected(ComponentName componentName) {
         isEndlessServiceBinded = false;
         mEndlessService = null;
-        if(iTermuxCommandExecutor != null) {
-            iTermuxCommandExecutor.onEndlessServiceDisconnected();
+        if(iTerminalCommandExecutor != null) {
+            iTerminalCommandExecutor.onEndlessServiceDisconnected();
         }
     }
 
     public void closeTermuxCommandExecutor() {
         try {
-            termuxCommandExecutor.context.unbindService(termuxCommandExecutor);
+            terminalCommandExecutor.context.unbindService(terminalCommandExecutor);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public void startTermuxCommandExecutor(ITermuxCommandExecutor iTermuxCommandExecutor) {
-        this.iTermuxCommandExecutor = iTermuxCommandExecutor;
+    public void startCommandExecutor(ITerminalCommandExecutor iTerminalCommandExecutor) {
+        this.iTerminalCommandExecutor = iTerminalCommandExecutor;
         if(isEndlessServiceBinded) {
-            iTermuxCommandExecutor.onEndlessServiceConnected();
+            iTerminalCommandExecutor.onEndlessServiceConnected();
         }
     }
 
-    public interface ITermuxCommandExecutor {
+    public interface ITerminalCommandExecutor {
         void onEndlessServiceConnected();
         void onEndlessServiceDisconnected();
     }

@@ -2,13 +2,11 @@ package com.flomobility.anx.app.terminal;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
-import android.content.ActivityNotFoundException;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.media.AudioManager;
-import android.net.Uri;
 import android.os.Environment;
 import android.text.TextUtils;
 import android.view.Gravity;
@@ -21,7 +19,7 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import com.flomobility.anx.R;
-import com.flomobility.anx.app.TermuxActivity;
+import com.flomobility.anx.app.TerminalActivity;
 import com.flomobility.anx.shared.data.UrlUtils;
 import com.flomobility.anx.shared.file.FileUtils;
 import com.flomobility.anx.shared.interact.MessageDialogUtils;
@@ -39,11 +37,10 @@ import com.flomobility.anx.shared.settings.properties.TermuxPropertyConstants;
 import com.flomobility.anx.shared.data.DataUtils;
 import com.flomobility.anx.shared.logger.Logger;
 import com.flomobility.anx.shared.markdown.MarkdownUtils;
-import com.flomobility.anx.shared.termux.TermuxUtils;
+import com.flomobility.anx.shared.termux.TerminalUtils;
 import com.flomobility.anx.shared.view.KeyboardUtils;
 import com.flomobility.anx.shared.view.ViewUtils;
 import com.flomobility.anx.terminal.KeyHandler;
-import com.flomobility.anx.terminal.TerminalBuffer;
 import com.flomobility.anx.terminal.TerminalEmulator;
 import com.flomobility.anx.terminal.TerminalSession;
 
@@ -54,11 +51,11 @@ import java.util.List;
 
 import androidx.drawerlayout.widget.DrawerLayout;
 
-public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
+public class FloTerminalViewClient extends TermuxTerminalViewClientBase {
 
-    final TermuxActivity mActivity;
+    final TerminalActivity mActivity;
 
-    final TermuxTerminalSessionClient mTermuxTerminalSessionClient;
+    final FloTerminalSessionClient mFloTerminalSessionClient;
 
     /** Keeping track of the special keys acting as Ctrl and Fn for the soft keyboard and other hardware keys. */
     boolean mVirtualControlKeyDown, mVirtualFnKeyDown;
@@ -72,12 +69,12 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
 
     private static final String LOG_TAG = "TermuxTerminalViewClient";
 
-    public TermuxTerminalViewClient(TermuxActivity activity, TermuxTerminalSessionClient termuxTerminalSessionClient) {
+    public FloTerminalViewClient(TerminalActivity activity, FloTerminalSessionClient floTerminalSessionClient) {
         this.mActivity = activity;
-        this.mTermuxTerminalSessionClient = termuxTerminalSessionClient;
+        this.mFloTerminalSessionClient = floTerminalSessionClient;
     }
 
-    public TermuxActivity getActivity() {
+    public TerminalActivity getActivity() {
         return mActivity;
     }
 
@@ -232,7 +229,7 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
         if (handleVirtualKeys(keyCode, e, true)) return true;
 
         if (keyCode == KeyEvent.KEYCODE_ENTER && !currentSession.isRunning()) {
-            mTermuxTerminalSessionClient.removeFinishedSession(currentSession);
+            mFloTerminalSessionClient.removeFinishedSession(currentSession);
             return true;
         } else if (!mActivity.getProperties().areHardwareKeyboardShortcutsDisabled() &&
             e.isCtrlPressed() && e.isAltPressed()) {
@@ -240,9 +237,9 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
             int unicodeChar = e.getUnicodeChar(0);
 
             if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN || unicodeChar == 'n'/* next */) {
-                mTermuxTerminalSessionClient.switchToSession(true);
+                mFloTerminalSessionClient.switchToSession(true);
             } else if (keyCode == KeyEvent.KEYCODE_DPAD_UP || unicodeChar == 'p' /* previous */) {
-                mTermuxTerminalSessionClient.switchToSession(false);
+                mFloTerminalSessionClient.switchToSession(false);
             } else if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) {
                 mActivity.getDrawer().openDrawer(Gravity.LEFT);
             } else if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
@@ -252,9 +249,9 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
             } else if (unicodeChar == 'm'/* menu */) {
                 mActivity.getTerminalView().showContextMenu();
             } else if (unicodeChar == 'r'/* rename */) {
-                mTermuxTerminalSessionClient.renameSession(currentSession);
+                mFloTerminalSessionClient.renameSession(currentSession);
             } else if (unicodeChar == 'c'/* create */) {
-                mTermuxTerminalSessionClient.addNewSession(false, null);
+                mFloTerminalSessionClient.addNewSession(false, null);
             } else if (unicodeChar == 'u' /* urls */) {
                 showUrlSelection();
             } else if (unicodeChar == 'v') {
@@ -267,7 +264,7 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
                 changeFontSize(false);
             } else if (unicodeChar >= '1' && unicodeChar <= '9') {
                 int index = unicodeChar - '1';
-                mTermuxTerminalSessionClient.switchToSession(index);
+                mFloTerminalSessionClient.switchToSession(index);
             }
             return true;
         }
@@ -451,7 +448,7 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
             return true;
         } else if (ctrlDown) {
             if (codePoint == 106 /* Ctrl+j or \n */ && !session.isRunning()) {
-                mTermuxTerminalSessionClient.removeFinishedSession(session);
+                mFloTerminalSessionClient.removeFinishedSession(session);
                 return true;
             }
 
@@ -463,16 +460,16 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
                     if (codePointLowerCase == shortcut.codePoint) {
                         switch (shortcut.shortcutAction) {
                             case TermuxPropertyConstants.ACTION_SHORTCUT_CREATE_SESSION:
-                                mTermuxTerminalSessionClient.addNewSession(false, null);
+                                mFloTerminalSessionClient.addNewSession(false, null);
                                 return true;
                             case TermuxPropertyConstants.ACTION_SHORTCUT_NEXT_SESSION:
-                                mTermuxTerminalSessionClient.switchToSession(true);
+                                mFloTerminalSessionClient.switchToSession(true);
                                 return true;
                             case TermuxPropertyConstants.ACTION_SHORTCUT_PREVIOUS_SESSION:
-                                mTermuxTerminalSessionClient.switchToSession(false);
+                                mFloTerminalSessionClient.switchToSession(false);
                                 return true;
                             case TermuxPropertyConstants.ACTION_SHORTCUT_RENAME_SESSION:
-                                mTermuxTerminalSessionClient.renameSession(mActivity.getCurrentSession());
+                                mFloTerminalSessionClient.renameSession(mActivity.getCurrentSession());
                                 return true;
                         }
                     }
@@ -724,15 +721,15 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
                 reportString.append("\n").append(MarkdownUtils.getMarkdownCodeForString(transcriptText, true));
                 reportString.append("\n##\n");
 
-                reportString.append("\n\n").append(TermuxUtils.getAppInfoMarkdownString(mActivity, true));
+                reportString.append("\n\n").append(TerminalUtils.getAppInfoMarkdownString(mActivity, true));
                 reportString.append("\n\n").append(AndroidUtils.getDeviceInfoMarkdownString(mActivity));
 
-                String termuxAptInfo = TermuxUtils.geAPTInfoMarkdownString(mActivity);
+                String termuxAptInfo = TerminalUtils.geAPTInfoMarkdownString(mActivity);
                 if (termuxAptInfo != null)
                     reportString.append("\n\n").append(termuxAptInfo);
 
                 if (addTermuxDebugInfo) {
-                    String termuxDebugInfo = TermuxUtils.getTermuxDebugMarkdownString(mActivity);
+                    String termuxDebugInfo = TerminalUtils.getTermuxDebugMarkdownString(mActivity);
                     if (termuxDebugInfo != null)
                         reportString.append("\n\n").append(termuxDebugInfo);
                 }
@@ -741,7 +738,7 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
                 ReportActivity.startReportActivity(mActivity,
                     new ReportInfo(userActionName,
                         TermuxConstants.TERMUX_APP.TERMUX_ACTIVITY_NAME, title, null,
-                        reportString.toString(), "\n\n" + TermuxUtils.getReportIssueMarkdownString(mActivity),
+                        reportString.toString(), "\n\n" + TerminalUtils.getReportIssueMarkdownString(mActivity),
                         false,
                         userActionName,
                         Environment.getExternalStorageDirectory() + "/" +

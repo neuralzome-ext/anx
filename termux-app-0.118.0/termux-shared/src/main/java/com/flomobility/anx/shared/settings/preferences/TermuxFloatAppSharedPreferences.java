@@ -119,7 +119,7 @@ public class TermuxFloatAppSharedPreferences {
 
 
     public void setFontVariables(Context context) {
-        int[] sizes = TermuxAppSharedPreferences.getDefaultFontSizes(context);
+        int[] sizes = FloAppSharedPreferences.getDefaultFontSizes(context);
 
         DEFAULT_FONTSIZE = sizes[0];
         MIN_FONTSIZE = sizes[1];

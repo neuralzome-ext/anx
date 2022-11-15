@@ -24,7 +24,7 @@ import com.flomobility.anx.shared.termux.AndroidUtils;
 import com.flomobility.anx.shared.termux.TermuxConstants;
 import com.flomobility.anx.shared.termux.TermuxConstants.TERMUX_APP.TERMUX_SERVICE;
 import com.flomobility.anx.shared.logger.Logger;
-import com.flomobility.anx.shared.settings.preferences.TermuxAppSharedPreferences;
+import com.flomobility.anx.shared.settings.preferences.FloAppSharedPreferences;
 import com.flomobility.anx.shared.settings.preferences.TermuxPreferenceConstants.TERMUX_APP;
 import com.flomobility.anx.shared.settings.properties.SharedProperties;
 import com.flomobility.anx.shared.settings.properties.TermuxPropertyConstants;
@@ -33,7 +33,7 @@ import com.flomobility.anx.shared.models.ExecutionCommand;
 import com.flomobility.anx.app.models.UserAction;
 import com.flomobility.anx.shared.data.DataUtils;
 import com.flomobility.anx.shared.markdown.MarkdownUtils;
-import com.flomobility.anx.shared.termux.TermuxUtils;
+import com.flomobility.anx.shared.termux.TerminalUtils;
 
 public class PluginUtils {
 
@@ -165,7 +165,7 @@ public class PluginUtils {
             if (!forceNotification) return;
         }
 
-        TermuxAppSharedPreferences preferences = TermuxAppSharedPreferences.build(context);
+        FloAppSharedPreferences preferences = FloAppSharedPreferences.build(context);
         if (preferences == null) return;
 
         // If user has disabled notifications for plugin commands, then just return
@@ -224,7 +224,7 @@ public class PluginUtils {
         StringBuilder reportString = new StringBuilder();
 
         reportString.append(ExecutionCommand.getExecutionCommandMarkdownString(executionCommand));
-        reportString.append("\n\n").append(TermuxUtils.getAppInfoMarkdownString(context, true));
+        reportString.append("\n\n").append(TerminalUtils.getAppInfoMarkdownString(context, true));
         reportString.append("\n\n").append(AndroidUtils.getDeviceInfoMarkdownString(context));
 
         String userActionName = UserAction.PLUGIN_EXECUTION_COMMAND.getName();

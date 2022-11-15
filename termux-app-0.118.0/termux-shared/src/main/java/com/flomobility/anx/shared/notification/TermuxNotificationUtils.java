@@ -2,7 +2,7 @@ package com.flomobility.anx.shared.notification;
 
 import android.content.Context;
 
-import com.flomobility.anx.shared.settings.preferences.TermuxAppSharedPreferences;
+import com.flomobility.anx.shared.settings.preferences.FloAppSharedPreferences;
 import com.flomobility.anx.shared.settings.preferences.TermuxPreferenceConstants;
 import com.flomobility.anx.shared.termux.TermuxConstants;
 
@@ -19,7 +19,7 @@ public class TermuxNotificationUtils {
     public synchronized static int getNextNotificationId(final Context context) {
         if (context == null) return TermuxPreferenceConstants.TERMUX_APP.DEFAULT_VALUE_KEY_LAST_NOTIFICATION_ID;
 
-        TermuxAppSharedPreferences preferences = TermuxAppSharedPreferences.build(context);
+        FloAppSharedPreferences preferences = FloAppSharedPreferences.build(context);
         if (preferences == null) return TermuxPreferenceConstants.TERMUX_APP.DEFAULT_VALUE_KEY_LAST_NOTIFICATION_ID;
 
         int lastNotificationId = preferences.getLastNotificationId();

@@ -23,7 +23,7 @@ import com.flomobility.anx.shared.settings.preferences.TermuxTaskerAppSharedPref
 import com.flomobility.anx.shared.settings.preferences.TermuxWidgetAppSharedPreferences;
 import com.flomobility.anx.shared.termux.AndroidUtils;
 import com.flomobility.anx.shared.termux.TermuxConstants;
-import com.flomobility.anx.shared.termux.TermuxUtils;
+import com.flomobility.anx.shared.termux.TerminalUtils;
 
 public class SettingsActivity extends AppCompatActivity {
 
@@ -112,14 +112,14 @@ public class SettingsActivity extends AppCompatActivity {
                             String title = "About";
 
                             StringBuilder aboutString = new StringBuilder();
-                            aboutString.append(TermuxUtils.getAppInfoMarkdownString(context, false));
+                            aboutString.append(TerminalUtils.getAppInfoMarkdownString(context, false));
 
-                            String termuxPluginAppsInfo =  TermuxUtils.getTermuxPluginAppsInfoMarkdownString(context);
+                            String termuxPluginAppsInfo =  TerminalUtils.getTermuxPluginAppsInfoMarkdownString(context);
                             if (termuxPluginAppsInfo != null)
                                 aboutString.append("\n\n").append(termuxPluginAppsInfo);
 
                             aboutString.append("\n\n").append(AndroidUtils.getDeviceInfoMarkdownString(context));
-                            aboutString.append("\n\n").append(TermuxUtils.getImportantLinksMarkdownString(context));
+                            aboutString.append("\n\n").append(TerminalUtils.getImportantLinksMarkdownString(context));
 
                             String userActionName = UserAction.ABOUT.getName();
                             ReportActivity.startReportActivity(context, new ReportInfo(userActionName,
@@ -144,7 +144,7 @@ public class SettingsActivity extends AppCompatActivity {
                     // If APK is a Google Playstore release, then do not show the donation link
                     // since Termux isn't exempted from the playstore policy donation links restriction
                     // Check Fund solicitations: https://pay.google.com/intl/en_in/about/policy/
-                    String apkRelease = TermuxUtils.getAPKRelease(signingCertificateSHA256Digest);
+                    String apkRelease = TerminalUtils.getAPKRelease(signingCertificateSHA256Digest);
                     if (apkRelease == null || apkRelease.equals(TermuxConstants.APK_RELEASE_GOOGLE_PLAYSTORE_SIGNING_CERTIFICATE_SHA256_DIGEST)) {
                         donatePreference.setVisible(false);
                         return;

@@ -2,7 +2,6 @@ package com.flomobility.anx.app;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.Environment;
 import android.system.Os;
@@ -19,7 +18,7 @@ import com.flomobility.anx.shared.markdown.MarkdownUtils;
 import com.flomobility.anx.shared.models.errors.Error;
 import com.flomobility.anx.shared.packages.PackageUtils;
 import com.flomobility.anx.shared.termux.TermuxConstants;
-import com.flomobility.anx.shared.termux.TermuxUtils;
+import com.flomobility.anx.shared.termux.TerminalUtils;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -255,7 +254,7 @@ public class TermuxInstaller {
     private static void sendBootstrapCrashReportNotification(Activity activity, String message) {
         CrashUtils.sendCrashReportNotification(activity, LOG_TAG,
             "## Bootstrap Error\n\n" + message + "\n\n" +
-                TermuxUtils.getTermuxDebugMarkdownString(activity),
+                TerminalUtils.getTermuxDebugMarkdownString(activity),
             true, true);
     }
 

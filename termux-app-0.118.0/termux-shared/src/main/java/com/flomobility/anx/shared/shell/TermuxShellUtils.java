@@ -9,7 +9,7 @@ import com.flomobility.anx.shared.termux.TermuxConstants;
 import com.flomobility.anx.shared.file.FileUtils;
 import com.flomobility.anx.shared.logger.Logger;
 import com.flomobility.anx.shared.packages.PackageUtils;
-import com.flomobility.anx.shared.termux.TermuxUtils;
+import com.flomobility.anx.shared.termux.TerminalUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -165,20 +165,20 @@ public class TermuxShellUtils {
         TERMUX_VERSION_NAME = TERMUX_IS_DEBUGGABLE_BUILD = TERMUX_APP_PID = TERMUX_APK_RELEASE = null;
 
         // Check if Termux app is installed and not disabled
-        if (TermuxUtils.isTermuxAppInstalled(currentPackageContext) == null) {
+        if (TerminalUtils.isTermuxAppInstalled(currentPackageContext) == null) {
             // This function may be called by a different package like a plugin, so we get version for Termux package via its context
-            Context termuxPackageContext = TermuxUtils.getTermuxPackageContext(currentPackageContext);
+            Context termuxPackageContext = TerminalUtils.getTermuxPackageContext(currentPackageContext);
             if (termuxPackageContext != null) {
                 TERMUX_VERSION_NAME = PackageUtils.getVersionNameForPackage(termuxPackageContext);
                 TERMUX_IS_DEBUGGABLE_BUILD = PackageUtils.isAppForPackageADebuggableBuild(termuxPackageContext) ? "1" : "0";
 
-                TERMUX_APP_PID = TermuxUtils.getTermuxAppPID(currentPackageContext);
+                TERMUX_APP_PID = TerminalUtils.getTermuxAppPID(currentPackageContext);
 
                 // Getting APK signature is a slightly expensive operation, so do it only when needed
                 if (termuxAPKReleaseOld == null) {
                     String signingCertificateSHA256Digest = PackageUtils.getSigningCertificateSHA256DigestForPackage(termuxPackageContext);
                     if (signingCertificateSHA256Digest != null)
-                        TERMUX_APK_RELEASE = TermuxUtils.getAPKRelease(signingCertificateSHA256Digest).replaceAll("[^a-zA-Z]", "_").toUpperCase();
+                        TERMUX_APK_RELEASE = TerminalUtils.getAPKRelease(signingCertificateSHA256Digest).replaceAll("[^a-zA-Z]", "_").toUpperCase();
                 } else {
                     TERMUX_APK_RELEASE = termuxAPKReleaseOld;
                 }
@@ -189,9 +189,9 @@ public class TermuxShellUtils {
         TERMUX_API_VERSION_NAME = null;
 
         // Check if Termux:API app is installed and not disabled
-        if (TermuxUtils.isTermuxAPIAppInstalled(currentPackageContext) == null) {
+        if (TerminalUtils.isTermuxAPIAppInstalled(currentPackageContext) == null) {
             // This function may be called by a different package like a plugin, so we get version for Termux:API package via its context
-            Context termuxAPIPackageContext = TermuxUtils.getTermuxAPIPackageContext(currentPackageContext);
+            Context termuxAPIPackageContext = TerminalUtils.getTermuxAPIPackageContext(currentPackageContext);
             if (termuxAPIPackageContext != null)
                 TERMUX_API_VERSION_NAME = PackageUtils.getVersionNameForPackage(termuxAPIPackageContext);
         }

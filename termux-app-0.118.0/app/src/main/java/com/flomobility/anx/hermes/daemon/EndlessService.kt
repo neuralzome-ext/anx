@@ -1,7 +1,6 @@
 package com.flomobility.anx.hermes.daemon
 
 import android.annotation.SuppressLint
-import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -20,9 +19,9 @@ import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.LifecycleService
 import com.flomobility.anx.R
-import com.flomobility.anx.app.TermuxActivity
-import com.flomobility.anx.app.settings.properties.TermuxAppSharedProperties
-import com.flomobility.anx.app.terminal.TermuxTerminalSessionClient
+import com.flomobility.anx.app.TerminalActivity
+import com.flomobility.anx.app.settings.properties.FloAppSharedProperties
+import com.flomobility.anx.app.terminal.FloTerminalSessionClient
 import com.flomobility.anx.app.utils.PluginUtils
 import com.flomobility.anx.hermes.assets.AssetManager
 import com.flomobility.anx.hermes.comms.SessionManager
@@ -40,9 +39,8 @@ import com.flomobility.anx.shared.data.IntentUtils
 import com.flomobility.anx.shared.logger.Logger
 import com.flomobility.anx.shared.models.ExecutionCommand
 import com.flomobility.anx.shared.models.errors.Errno
-import com.flomobility.anx.shared.notification.NotificationUtils
 import com.flomobility.anx.shared.packages.PermissionUtils
-import com.flomobility.anx.shared.settings.preferences.TermuxAppSharedPreferences
+import com.flomobility.anx.shared.settings.preferences.FloAppSharedPreferences
 import com.flomobility.anx.shared.shell.*
 import com.flomobility.anx.shared.terminal.TermuxTerminalSessionClientBase
 import com.flomobility.anx.shared.termux.TermuxConstants
@@ -82,7 +80,7 @@ class EndlessService : LifecycleService() , TermuxTask.TermuxTaskClient, TermuxS
 
     /**
      * The foreground TermuxSessions which this service manages.
-     * Note that this list is observed by [TermuxActivity.mTermuxSessionListViewController],
+     * Note that this list is observed by [TerminalActivity.mTermuxSessionListViewController],
      * so any changes must be made on the UI thread and followed by a call to
      * [ArrayAdapter.notifyDataSetChanged] }.
      */
@@ -104,7 +102,7 @@ class EndlessService : LifecycleService() , TermuxTask.TermuxTaskClient, TermuxS
      * that holds activity references for activity related functions.
      * Note that the service may often outlive the activity, so need to clear this reference.
      */
-    var mTermuxTerminalSessionClient: TermuxTerminalSessionClient? = null
+    var mFloTerminalSessionClient: FloTerminalSessionClient? = null
 
     /** The basic implementation of the [TerminalSessionClient] interface to be used by [TerminalSession]
      * that does not hold activity references.
@@ -182,7 +180,7 @@ class EndlessService : LifecycleService() , TermuxTask.TermuxTaskClient, TermuxS
         // Since we cannot rely on {@link TermuxActivity.onDestroy()} to always complete,
         // we unset clients here as well if it failed, so that we do not leave service and session
         // clients with references to the activity.
-        if (mTermuxTerminalSessionClient != null) unsetTermuxTerminalSessionClient()
+        if (mFloTerminalSessionClient != null) unsetTermuxTerminalSessionClient()
         return false
     }
 
@@ -730,7 +728,7 @@ class EndlessService : LifecycleService() , TermuxTask.TermuxTaskClient, TermuxS
 
     /**
      * Create a [TermuxSession].
-     * Currently called by [TermuxTerminalSessionClient.addNewSession] to add a new [TermuxSession].
+     * Currently called by [FloTerminalSessionClient.addNewSession] to add a new [TermuxSession].
      */
     fun createTermuxSession(
         executablePath: String?,
@@ -817,9 +815,9 @@ class EndlessService : LifecycleService() , TermuxTask.TermuxTaskClient, TermuxS
 
         // Notify {@link TermuxSessionsListViewController} that sessions list has been updated if
         // activity in is foreground
-        if (mTermuxTerminalSessionClient != null) mTermuxTerminalSessionClient!!.termuxSessionListNotifyUpdated()
+        if (mFloTerminalSessionClient != null) mFloTerminalSessionClient!!.termuxSessionListNotifyUpdated()
         updateNotification()
-        TermuxActivity.updateTermuxActivityStyling(this)
+        TerminalActivity.updateTermuxActivityStyling(this)
         return newTermuxSession
     }
 
@@ -851,7 +849,7 @@ class EndlessService : LifecycleService() , TermuxTask.TermuxTaskClient, TermuxS
 
             // Notify {@link TermuxSessionsListViewController} that sessions list has been updated if
             // activity in is foreground
-            if (mTermuxTerminalSessionClient != null) mTermuxTerminalSessionClient!!.termuxSessionListNotifyUpdated()
+            if (mFloTerminalSessionClient != null) mFloTerminalSessionClient!!.termuxSessionListNotifyUpdated()
         }
         updateNotification()
     }
@@ -865,7 +863,7 @@ class EndlessService : LifecycleService() , TermuxTask.TermuxTaskClient, TermuxS
     fun setTerminalTranscriptRows() {
         // TermuxService only uses this termux property currently, so no need to load them all into
         // an internal values map like TermuxActivity does
-        mTerminalTranscriptRows = TermuxAppSharedProperties.getTerminalTranscriptRows(this)
+        mTerminalTranscriptRows = FloAppSharedProperties.getTerminalTranscriptRows(this)
     }
 
 
@@ -878,7 +876,7 @@ class EndlessService : LifecycleService() , TermuxTask.TermuxTaskClient, TermuxS
         when (sessionAction) {
             TERMUX_SERVICE.VALUE_EXTRA_SESSION_ACTION_SWITCH_TO_NEW_SESSION_AND_OPEN_ACTIVITY -> {
                 setCurrentStoredTerminalSession(newTerminalSession)
-                if (mTermuxTerminalSessionClient != null) mTermuxTerminalSessionClient!!.setCurrentSession(
+                if (mFloTerminalSessionClient != null) mFloTerminalSessionClient!!.setCurrentSession(
                     newTerminalSession
                 )
                 startTermuxActivity()
@@ -889,7 +887,7 @@ class EndlessService : LifecycleService() , TermuxTask.TermuxTaskClient, TermuxS
             }
             TERMUX_SERVICE.VALUE_EXTRA_SESSION_ACTION_SWITCH_TO_NEW_SESSION_AND_DONT_OPEN_ACTIVITY -> {
                 setCurrentStoredTerminalSession(newTerminalSession)
-                if (mTermuxTerminalSessionClient != null) mTermuxTerminalSessionClient!!.setCurrentSession(
+                if (mFloTerminalSessionClient != null) mFloTerminalSessionClient!!.setCurrentSession(
                     newTerminalSession
                 )
             }
@@ -915,9 +913,9 @@ class EndlessService : LifecycleService() , TermuxTask.TermuxTaskClient, TermuxS
         // from background (services). If it is not granted, then TermuxSessions that are started will
         // show in Termux notification but will not run until user manually clicks the notification.
         if (PermissionUtils.validateDisplayOverOtherAppsPermissionForPostAndroid10(this, true)) {
-            TermuxActivity.startTermuxActivity(this)
+            TerminalActivity.startTermuxActivity(this)
         } else {
-            val preferences = TermuxAppSharedPreferences.build(this) ?: return
+            val preferences = FloAppSharedPreferences.build(this) ?: return
             if (preferences.arePluginErrorNotificationsEnabled()) Logger.showToast(
                 this,
                 this.getString(R.string.error_display_over_other_apps_permission_not_granted),
@@ -927,39 +925,39 @@ class EndlessService : LifecycleService() , TermuxTask.TermuxTaskClient, TermuxS
     }
 
 
-    /** If [TermuxActivity] has not bound to the [TermuxService] yet or is destroyed, then
+    /** If [TerminalActivity] has not bound to the [TermuxService] yet or is destroyed, then
      * interface functions requiring the activity should not be available to the terminal sessions,
-     * so we just return the [.mTermuxTerminalSessionClientBase]. Once [TermuxActivity] bind
+     * so we just return the [.mTermuxTerminalSessionClientBase]. Once [TerminalActivity] bind
      * callback is received, it should call [.setTermuxTerminalSessionClient] to set the
      * [TermuxService.mTermuxTerminalSessionClient] so that further terminal sessions are directly
-     * passed the [TermuxTerminalSessionClient] object which fully implements the
+     * passed the [FloTerminalSessionClient] object which fully implements the
      * [TerminalSessionClient] interface.
      *
-     * @return Returns the [TermuxTerminalSessionClient] if [TermuxActivity] has bound with
+     * @return Returns the [FloTerminalSessionClient] if [TerminalActivity] has bound with
      * [TermuxService], otherwise [TermuxTerminalSessionClientBase].
      */
     @Synchronized
     fun getTermuxTerminalSessionClient(): TermuxTerminalSessionClientBase? {
-        return if (mTermuxTerminalSessionClient != null) mTermuxTerminalSessionClient else mTermuxTerminalSessionClientBase
+        return if (mFloTerminalSessionClient != null) mFloTerminalSessionClient else mTermuxTerminalSessionClientBase
     }
 
-    /** This should be called when [TermuxActivity.onServiceConnected] is called to set the
+    /** This should be called when [TerminalActivity.onServiceConnected] is called to set the
      * [TermuxService.mTermuxTerminalSessionClient] variable and update the [TerminalSession]
      * and [TerminalEmulator] clients in case they were passed [TermuxTerminalSessionClientBase]
      * earlier.
      *
-     * @param termuxTerminalSessionClient The [TermuxTerminalSessionClient] object that fully
+     * @param floTerminalSessionClient The [FloTerminalSessionClient] object that fully
      * implements the [TerminalSessionClient] interface.
      */
     @Synchronized
-    fun setTermuxTerminalSessionClient(termuxTerminalSessionClient: TermuxTerminalSessionClient) {
-        mTermuxTerminalSessionClient = termuxTerminalSessionClient
+    fun setTermuxTerminalSessionClient(floTerminalSessionClient: FloTerminalSessionClient) {
+        mFloTerminalSessionClient = floTerminalSessionClient
         for (i in mTermuxSessions.indices) mTermuxSessions[i].terminalSession.updateTerminalSessionClient(
-            mTermuxTerminalSessionClient
+            mFloTerminalSessionClient
         )
     }
 
-    /** This should be called when [TermuxActivity] has been destroyed and in [.onUnbind]
+    /** This should be called when [TerminalActivity] has been destroyed and in [.onUnbind]
      * so that the [TermuxService] and [TerminalSession] and [TerminalEmulator]
      * clients do not hold an activity references.
      */
@@ -968,13 +966,13 @@ class EndlessService : LifecycleService() , TermuxTask.TermuxTaskClient, TermuxS
         for (i in mTermuxSessions.indices) mTermuxSessions[i].terminalSession.updateTerminalSessionClient(
             mTermuxTerminalSessionClientBase
         )
-        mTermuxTerminalSessionClient = null
+        mFloTerminalSessionClient = null
     }
 
     private fun setCurrentStoredTerminalSession(session: TerminalSession?) {
         if (session == null) return
         // Make the newly created session the current one to be displayed
-        val preferences = TermuxAppSharedPreferences.build(this) ?: return
+        val preferences = FloAppSharedPreferences.build(this) ?: return
         preferences.currentSession = session.mHandle
     }
 

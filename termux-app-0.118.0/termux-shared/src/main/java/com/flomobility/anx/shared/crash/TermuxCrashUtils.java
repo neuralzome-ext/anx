@@ -5,7 +5,7 @@ import android.content.Context;
 import androidx.annotation.NonNull;
 
 import com.flomobility.anx.shared.termux.TermuxConstants;
-import com.flomobility.anx.shared.termux.TermuxUtils;
+import com.flomobility.anx.shared.termux.TerminalUtils;
 
 public class TermuxCrashUtils implements CrashHandler.CrashHandlerClient {
 
@@ -25,7 +25,7 @@ public class TermuxCrashUtils implements CrashHandler.CrashHandlerClient {
 
     @Override
     public String getAppInfoMarkdownString(Context context) {
-        return TermuxUtils.getAppInfoMarkdownString(context, true);
+        return TerminalUtils.getAppInfoMarkdownString(context, true);
     }
 
 }

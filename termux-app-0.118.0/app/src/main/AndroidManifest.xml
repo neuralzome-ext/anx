@@ -74,7 +74,7 @@
         android:theme="@style/Theme.Flo">
 
         <activity
-            android:name=".app.TermuxActivity"
+            android:name=".app.TerminalActivity"
             android:configChanges="orientation|screenSize|smallestScreenSize|density|screenLayout|uiMode|keyboard|keyboardHidden|navigation"
             android:label="@string/application_name"
             android:launchMode="singleTask"
@@ -117,7 +117,7 @@
 
         <activity-alias
             android:name=".HomeActivity"
-            android:targetActivity=".app.TermuxActivity">
+            android:targetActivity=".app.TerminalActivity">
 
             <!-- Launch activity automatically on boot on Android Things devices -->
             <intent-filter>
@@ -132,7 +132,7 @@
             android:name=".app.activities.HelpActivity"
             android:exported="false"
             android:label="@string/application_name"
-            android:parentActivityName=".app.TermuxActivity"
+            android:parentActivityName=".app.TerminalActivity"
             android:resizeableActivity="true"
             android:theme="@android:style/Theme.Material.Light.DarkActionBar" />
 

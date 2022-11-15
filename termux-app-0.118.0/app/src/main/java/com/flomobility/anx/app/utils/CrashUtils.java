@@ -16,12 +16,12 @@ import com.flomobility.anx.shared.file.FileUtils;
 import com.flomobility.anx.shared.models.ReportInfo;
 import com.flomobility.anx.app.models.UserAction;
 import com.flomobility.anx.shared.notification.TermuxNotificationUtils;
-import com.flomobility.anx.shared.settings.preferences.TermuxAppSharedPreferences;
+import com.flomobility.anx.shared.settings.preferences.FloAppSharedPreferences;
 import com.flomobility.anx.shared.settings.preferences.TermuxPreferenceConstants;
 import com.flomobility.anx.shared.data.DataUtils;
 import com.flomobility.anx.shared.logger.Logger;
 import com.flomobility.anx.shared.termux.AndroidUtils;
-import com.flomobility.anx.shared.termux.TermuxUtils;
+import com.flomobility.anx.shared.termux.TerminalUtils;
 
 import com.flomobility.anx.shared.termux.TermuxConstants;
 
@@ -49,7 +49,7 @@ public class CrashUtils {
     public static void notifyAppCrashOnLastRun(final Context context, final String logTagParam) {
         if (context == null) return;
 
-        TermuxAppSharedPreferences preferences = TermuxAppSharedPreferences.build(context);
+        FloAppSharedPreferences preferences = FloAppSharedPreferences.build(context);
         if (preferences == null) return;
 
         // If user has disabled notifications for crashes
@@ -109,7 +109,7 @@ public class CrashUtils {
     public static void sendCrashReportNotification(final Context context, String logTag, String message, boolean forceNotification, boolean addAppAndDeviceInfo) {
         if (context == null) return;
 
-        TermuxAppSharedPreferences preferences = TermuxAppSharedPreferences.build(context);
+        FloAppSharedPreferences preferences = FloAppSharedPreferences.build(context);
         if (preferences == null) return;
 
         // If user has disabled notifications for crashes
@@ -127,14 +127,14 @@ public class CrashUtils {
         StringBuilder reportString = new StringBuilder(message);
 
         if (addAppAndDeviceInfo) {
-            reportString.append("\n\n").append(TermuxUtils.getAppInfoMarkdownString(context, true));
+            reportString.append("\n\n").append(TerminalUtils.getAppInfoMarkdownString(context, true));
             reportString.append("\n\n").append(AndroidUtils.getDeviceInfoMarkdownString(context));
         }
 
         String userActionName = UserAction.CRASH_REPORT.getName();
         ReportActivity.NewInstanceResult result = ReportActivity.newInstance(context, new ReportInfo(userActionName,
             logTag, title, null, reportString.toString(),
-            "\n\n" + TermuxUtils.getReportIssueMarkdownString(context), true,
+            "\n\n" + TerminalUtils.getReportIssueMarkdownString(context), true,
             userActionName,
             Environment.getExternalStorageDirectory() + "/" +
                 FileUtils.sanitizeFileName(TermuxConstants.TERMUX_APP_NAME + "-" + userActionName + ".log", true, true)));

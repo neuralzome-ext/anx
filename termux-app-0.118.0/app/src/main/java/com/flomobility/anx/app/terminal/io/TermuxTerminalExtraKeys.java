@@ -7,40 +7,40 @@ import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.drawerlayout.widget.DrawerLayout;
 
-import com.flomobility.anx.app.terminal.TermuxTerminalSessionClient;
-import com.flomobility.anx.app.terminal.TermuxTerminalViewClient;
+import com.flomobility.anx.app.terminal.FloTerminalSessionClient;
+import com.flomobility.anx.app.terminal.FloTerminalViewClient;
 import com.flomobility.anx.shared.terminal.io.TerminalExtraKeys;
 import com.flomobility.anx.view.TerminalView;
 
 public class TermuxTerminalExtraKeys extends TerminalExtraKeys {
 
 
-    TermuxTerminalViewClient mTermuxTerminalViewClient;
-    TermuxTerminalSessionClient mTermuxTerminalSessionClient;
+    FloTerminalViewClient mFloTerminalViewClient;
+    FloTerminalSessionClient mFloTerminalSessionClient;
 
     public TermuxTerminalExtraKeys(@NonNull TerminalView terminalView,
-                                   TermuxTerminalViewClient termuxTerminalViewClient,
-                                   TermuxTerminalSessionClient termuxTerminalSessionClient) {
+                                   FloTerminalViewClient floTerminalViewClient,
+                                   FloTerminalSessionClient floTerminalSessionClient) {
         super(terminalView);
-        mTermuxTerminalViewClient = termuxTerminalViewClient;
-        mTermuxTerminalSessionClient = termuxTerminalSessionClient;
+        mFloTerminalViewClient = floTerminalViewClient;
+        mFloTerminalSessionClient = floTerminalSessionClient;
     }
 
     @SuppressLint("RtlHardcoded")
     @Override
     public void onTerminalExtraKeyButtonClick(View view, String key, boolean ctrlDown, boolean altDown, boolean shiftDown, boolean fnDown) {
         if ("KEYBOARD".equals(key)) {
-            if(mTermuxTerminalViewClient != null)
-                mTermuxTerminalViewClient.onToggleSoftKeyboardRequest();
+            if(mFloTerminalViewClient != null)
+                mFloTerminalViewClient.onToggleSoftKeyboardRequest();
         } else if ("DRAWER".equals(key)) {
-            DrawerLayout drawerLayout = mTermuxTerminalViewClient.getActivity().getDrawer();
+            DrawerLayout drawerLayout = mFloTerminalViewClient.getActivity().getDrawer();
             if (drawerLayout.isDrawerOpen(Gravity.LEFT))
                 drawerLayout.closeDrawer(Gravity.LEFT);
             else
                 drawerLayout.openDrawer(Gravity.LEFT);
         } else if ("PASTE".equals(key)) {
-            if(mTermuxTerminalSessionClient != null)
-                mTermuxTerminalSessionClient.onPasteTextFromClipboard(null);
+            if(mFloTerminalSessionClient != null)
+                mFloTerminalSessionClient.onPasteTextFromClipboard(null);
         } else {
             super.onTerminalExtraKeyButtonClick(view, key, ctrlDown, altDown, shiftDown, fnDown);
         }

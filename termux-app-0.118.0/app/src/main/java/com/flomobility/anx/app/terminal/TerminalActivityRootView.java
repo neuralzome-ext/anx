@@ -15,14 +15,14 @@ import android.widget.LinearLayout;
 import androidx.annotation.Nullable;
 import androidx.core.view.WindowInsetsCompat;
 
-import com.flomobility.anx.app.TermuxActivity;
+import com.flomobility.anx.app.TerminalActivity;
 import com.flomobility.anx.shared.logger.Logger;
 import com.flomobility.anx.shared.view.ViewUtils;
 
 
 /**
- * The {@link TermuxActivity} relies on {@link android.view.WindowManager.LayoutParams#SOFT_INPUT_ADJUST_RESIZE)}
- * set by {@link TermuxTerminalViewClient#setSoftKeyboardState(boolean, boolean)} to automatically
+ * The {@link TerminalActivity} relies on {@link android.view.WindowManager.LayoutParams#SOFT_INPUT_ADJUST_RESIZE)}
+ * set by {@link FloTerminalViewClient#setSoftKeyboardState(boolean, boolean)} to automatically
  * resize the view and push the terminal up when soft keyboard is opened. However, this does not
  * always work properly. When `enforce-char-based-input=true` is set in `termux.properties`
  * and {@link com.flomobility.anx.view.TerminalView#onCreateInputConnection(EditorInfo)} sets the inputType
@@ -52,7 +52,7 @@ import com.flomobility.anx.shared.view.ViewUtils;
  *
  * To fix these issues, `activity_termux.xml` has the constant 1sp transparent
  * `activity_termux_bottom_space_view` View at the bottom. This will appear as a line matching the
- * activity theme. When {@link TermuxActivity} {@link ViewTreeObserver.OnGlobalLayoutListener} is
+ * activity theme. When {@link TerminalActivity} {@link ViewTreeObserver.OnGlobalLayoutListener} is
  * called when any of the sub view layouts change,  like keyboard opening/closing keyboard,
  * extra keys/input view switched, etc, we check if the bottom space view is visible or not.
  * If its not, then we add a margin to the bottom of the root view, so that the keyboard does not
@@ -61,9 +61,9 @@ import com.flomobility.anx.shared.view.ViewUtils;
  * hidden part equals the `header_height`. The updates to margins may cause a jitter in some cases
  * when the view is redrawn if the margin is incorrect, but logic has been implemented to avoid that.
  */
-public class TermuxActivityRootView extends LinearLayout implements ViewTreeObserver.OnGlobalLayoutListener {
+public class TerminalActivityRootView extends LinearLayout implements ViewTreeObserver.OnGlobalLayoutListener {
 
-    public TermuxActivity mActivity;
+    public TerminalActivity mActivity;
     public Integer marginBottom;
     public Integer lastMarginBottom;
     public long lastMarginBottomTime;
@@ -76,19 +76,19 @@ public class TermuxActivityRootView extends LinearLayout implements ViewTreeObse
 
     private static int mStatusBarHeight;
 
-    public TermuxActivityRootView(Context context) {
+    public TerminalActivityRootView(Context context) {
         super(context);
     }
 
-    public TermuxActivityRootView(Context context, @Nullable AttributeSet attrs) {
+    public TerminalActivityRootView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
     }
 
-    public TermuxActivityRootView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+    public TerminalActivityRootView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
     }
 
-    public void setActivity(TermuxActivity activity) {
+    public void setActivity(TerminalActivity activity) {
         mActivity = activity;
     }
 

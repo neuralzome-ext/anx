@@ -16,8 +16,8 @@ import com.downloader.PRDownloader
 import com.downloader.Status.*
 import com.flomobility.anx.R
 import com.flomobility.anx.app.PluginResultsService
-import com.flomobility.anx.app.TermuxCommandExecutor
-import com.flomobility.anx.app.TermuxCommandExecutor.ITermuxCommandExecutor
+import com.flomobility.anx.app.TerminalCommandExecutor
+import com.flomobility.anx.app.TerminalCommandExecutor.ITerminalCommandExecutor
 import com.flomobility.anx.app.TermuxInstaller
 import com.flomobility.anx.databinding.ActivityUbuntuSetupBinding
 import com.flomobility.anx.hermes.other.clear
@@ -278,12 +278,12 @@ echo "done"
         bind.progressPercent.text = ""
         lifecycleScope.launch {
             // Install here
-            val termuxCommandExecutor =
-                TermuxCommandExecutor.getInstance(this@DownloadActivity)
-            termuxCommandExecutor.startTermuxCommandExecutor(object :
-                ITermuxCommandExecutor {
+            val terminalCommandExecutor =
+                TerminalCommandExecutor.getInstance(this@DownloadActivity)
+            terminalCommandExecutor.startCommandExecutor(object :
+                ITerminalCommandExecutor {
                 override fun onEndlessServiceConnected() {
-                    termuxCommandExecutor.executeTermuxCommand(
+                    terminalCommandExecutor.executeCommand(
                         this@DownloadActivity,
                         "bash",
                         arrayOf("install.sh"),

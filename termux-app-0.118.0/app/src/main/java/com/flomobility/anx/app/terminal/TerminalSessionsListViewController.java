@@ -19,20 +19,20 @@ import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 
 import com.flomobility.anx.R;
-import com.flomobility.anx.app.TermuxActivity;
+import com.flomobility.anx.app.TerminalActivity;
 import com.flomobility.anx.shared.shell.TermuxSession;
 import com.flomobility.anx.terminal.TerminalSession;
 
 import java.util.List;
 
-public class TermuxSessionsListViewController extends ArrayAdapter<TermuxSession> implements AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener {
+public class TerminalSessionsListViewController extends ArrayAdapter<TermuxSession> implements AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener {
 
-    final TermuxActivity mActivity;
+    final TerminalActivity mActivity;
 
     final StyleSpan boldSpan = new StyleSpan(Typeface.BOLD);
     final StyleSpan italicSpan = new StyleSpan(Typeface.ITALIC);
 
-    public TermuxSessionsListViewController(TermuxActivity activity, List<TermuxSession> sessionList) {
+    public TerminalSessionsListViewController(TerminalActivity activity, List<TermuxSession> sessionList) {
         super(activity.getApplicationContext(), R.layout.item_terminal_sessions_list, sessionList);
         this.mActivity = activity;
     }

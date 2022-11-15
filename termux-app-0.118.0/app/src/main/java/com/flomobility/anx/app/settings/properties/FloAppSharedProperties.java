@@ -19,14 +19,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class TermuxAppSharedProperties extends TermuxSharedProperties {
+public class FloAppSharedProperties extends TermuxSharedProperties {
 
     private ExtraKeysInfo mExtraKeysInfo;
     private List<KeyboardShortcut> mSessionShortcuts = new ArrayList<>();
 
     private static final String LOG_TAG = "TermuxAppSharedProperties";
 
-    public TermuxAppSharedProperties(@NonNull Context context) {
+    public FloAppSharedProperties(@NonNull Context context) {
         super(context, TermuxConstants.TERMUX_APP_NAME, TermuxPropertyConstants.getTermuxPropertiesFile(),
             TermuxPropertyConstants.TERMUX_PROPERTIES_LIST, new SharedPropertiesParserClient());
     }

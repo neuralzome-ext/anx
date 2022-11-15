@@ -3,8 +3,6 @@ package com.flomobility.anx.shared.termux;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 
 import androidx.annotation.NonNull;
@@ -28,7 +26,7 @@ import java.nio.charset.Charset;
 import java.util.List;
 import java.util.regex.Pattern;
 
-public class TermuxUtils {
+public class TerminalUtils {
 
     private static final String LOG_TAG = "TermuxUtils";
 
@@ -162,7 +160,7 @@ public class TermuxUtils {
     public static String isTermuxAppAccessible(@NonNull final Context currentPackageContext) {
         String errmsg = isTermuxAppInstalled(currentPackageContext);
         if (errmsg == null) {
-            Context termuxPackageContext = TermuxUtils.getTermuxPackageContext(currentPackageContext);
+            Context termuxPackageContext = TerminalUtils.getTermuxPackageContext(currentPackageContext);
             // If failed to get Termux app package context
             if (termuxPackageContext == null)
                 errmsg = currentPackageContext.getString(R.string.error_termux_app_package_context_not_accessible);
@@ -191,7 +189,7 @@ public class TermuxUtils {
      *
      * @param context The Context to send the broadcast.
      */
-    public static void sendTermuxOpenedBroadcast(@NonNull Context context) {
+    public static void sendTerminalOpenedBroadcast(@NonNull Context context) {
         Intent broadcast = new Intent(TermuxConstants.BROADCAST_TERMUX_OPENED);
         List<ResolveInfo> matches = context.getPackageManager().queryBroadcastReceivers(broadcast, 0);
 

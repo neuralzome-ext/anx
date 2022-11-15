@@ -169,15 +169,15 @@ android {
             abiFilters 'arm64-v8a'
         }
 
-        splits {
+/*        splits {
             abi {
                 enable ((gradle.startParameter.taskNames.any { it.contains("Debug") } && splitAPKsForDebugBuilds == "1") ||
                     (gradle.startParameter.taskNames.any { it.contains("Release") } && splitAPKsForReleaseBuilds == "1"))
                 reset ()
-                include /*'x86', 'x86_64', 'armeabi-v7a', */'arm64-v8a'
+                include *//*'x86', 'x86_64', 'armeabi-v7a', *//*'arm64-v8a'
                 universalApk false
             }
-        }
+        }*/
     }
 
     signingConfigs {
@@ -211,17 +211,21 @@ android {
             minifyEnabled false
             signingConfig signingConfigs.flo
             versionNameSuffix "-dev"
-            resValue "string", "app_name", "(D)Hermes"
+            resValue "string", "app_name", "(D)anx"
         }
         release {
             minifyEnabled true
             shrinkResources true // Reproducible builds
             signingConfig signingConfigs.flo
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            debuggable false
         }
 
         debug {
-            signingConfig signingConfigs.debug
+            signingConfig signingConfigs.flo
+            debuggable true
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
 

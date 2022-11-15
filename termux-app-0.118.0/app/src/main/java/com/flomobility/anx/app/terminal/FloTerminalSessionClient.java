@@ -16,7 +16,7 @@ import com.flomobility.anx.R;
 import com.flomobility.anx.hermes.daemon.EndlessService;
 import com.flomobility.anx.shared.shell.TermuxSession;
 import com.flomobility.anx.shared.interact.TextInputDialogUtils;
-import com.flomobility.anx.app.TermuxActivity;
+import com.flomobility.anx.app.TerminalActivity;
 import com.flomobility.anx.shared.terminal.TermuxTerminalSessionClientBase;
 import com.flomobility.anx.shared.termux.TermuxConstants;
 import com.flomobility.anx.shared.settings.properties.TermuxPropertyConstants;
@@ -31,9 +31,9 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.Properties;
 
-public class TermuxTerminalSessionClient extends TermuxTerminalSessionClientBase {
+public class FloTerminalSessionClient extends TermuxTerminalSessionClientBase {
 
-    private final TermuxActivity mActivity;
+    private final TerminalActivity mActivity;
 
     private static final int MAX_SESSIONS = 8;
 
@@ -43,7 +43,7 @@ public class TermuxTerminalSessionClient extends TermuxTerminalSessionClientBase
 
     private static final String LOG_TAG = "TermuxTerminalSessionClient";
 
-    public TermuxTerminalSessionClient(TermuxActivity activity) {
+    public FloTerminalSessionClient(TerminalActivity activity) {
         this.mActivity = activity;
     }
 

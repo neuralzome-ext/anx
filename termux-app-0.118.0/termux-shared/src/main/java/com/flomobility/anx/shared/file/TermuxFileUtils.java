@@ -14,7 +14,7 @@ import com.flomobility.anx.shared.shell.TermuxShellEnvironmentClient;
 import com.flomobility.anx.shared.shell.TermuxTask;
 import com.flomobility.anx.shared.termux.AndroidUtils;
 import com.flomobility.anx.shared.termux.TermuxConstants;
-import com.flomobility.anx.shared.termux.TermuxUtils;
+import com.flomobility.anx.shared.termux.TerminalUtils;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -313,7 +313,7 @@ public class TermuxFileUtils {
      * @return Returns the markdown {@link String}.
      */
     public static String getTermuxFilesStatMarkdownString(@NonNull final Context context) {
-        Context termuxPackageContext = TermuxUtils.getTermuxPackageContext(context);
+        Context termuxPackageContext = TerminalUtils.getTermuxPackageContext(context);
         if (termuxPackageContext == null) return null;
 
         // Also ensures that termux files directory is created if it does not already exist

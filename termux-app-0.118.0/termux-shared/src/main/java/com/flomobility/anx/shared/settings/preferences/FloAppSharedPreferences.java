@@ -14,7 +14,7 @@ import com.flomobility.anx.shared.logger.Logger;
 import com.flomobility.anx.shared.data.DataUtils;
 import com.flomobility.anx.shared.settings.preferences.TermuxPreferenceConstants.TERMUX_APP;
 
-public class TermuxAppSharedPreferences {
+public class FloAppSharedPreferences {
 
     private final Context mContext;
     private final SharedPreferences mSharedPreferences;
@@ -25,7 +25,7 @@ public class TermuxAppSharedPreferences {
 
     private static final String LOG_TAG = "TermuxAppSharedPreferences";
 
-    private TermuxAppSharedPreferences(@NonNull Context context) {
+    private FloAppSharedPreferences(@NonNull Context context) {
         mContext = context;
         mSharedPreferences = getPrivateSharedPreferences(mContext);
 
@@ -37,15 +37,15 @@ public class TermuxAppSharedPreferences {
      *
      * @param context The {@link Context} to use to get the {@link Context} of the
      *                {@link TermuxConstants#TERMUX_PACKAGE_NAME}.
-     * @return Returns the {@link TermuxAppSharedPreferences}. This will {@code null} if an exception is raised.
+     * @return Returns the {@link FloAppSharedPreferences}. This will {@code null} if an exception is raised.
      */
     @Nullable
-    public static TermuxAppSharedPreferences build(@NonNull final Context context) {
+    public static FloAppSharedPreferences build(@NonNull final Context context) {
         Context termuxPackageContext = PackageUtils.getContextForPackage(context, TermuxConstants.TERMUX_PACKAGE_NAME);
         if (termuxPackageContext == null)
             return null;
         else
-            return new TermuxAppSharedPreferences(termuxPackageContext);
+            return new FloAppSharedPreferences(termuxPackageContext);
     }
 
     /**
@@ -55,14 +55,14 @@ public class TermuxAppSharedPreferences {
      *                {@link TermuxConstants#TERMUX_PACKAGE_NAME}.
      * @param exitAppOnError If {@code true} and failed to get package context, then a dialog will
      *                       be shown which when dismissed will exit the app.
-     * @return Returns the {@link TermuxAppSharedPreferences}. This will {@code null} if an exception is raised.
+     * @return Returns the {@link FloAppSharedPreferences}. This will {@code null} if an exception is raised.
      */
-    public static TermuxAppSharedPreferences build(@NonNull final Context context, final boolean exitAppOnError) {
+    public static FloAppSharedPreferences build(@NonNull final Context context, final boolean exitAppOnError) {
         Context termuxPackageContext = PackageUtils.getContextForPackageOrExitApp(context, TermuxConstants.TERMUX_PACKAGE_NAME, exitAppOnError);
         if (termuxPackageContext == null)
             return null;
         else
-            return new TermuxAppSharedPreferences(termuxPackageContext);
+            return new FloAppSharedPreferences(termuxPackageContext);
     }
 
     private static SharedPreferences getPrivateSharedPreferences(Context context) {
