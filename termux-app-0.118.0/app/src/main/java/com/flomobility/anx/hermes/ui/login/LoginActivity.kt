@@ -21,6 +21,7 @@ import com.google.android.gms.auth.api.identity.Identity
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
+import java.io.File
 import javax.inject.Inject
 
 
@@ -62,6 +63,7 @@ class LoginActivity : ComponentActivity() {
         binding = ActivityLoginBinding.inflate(layoutInflater)
         viewModel = ViewModelProvider(this@LoginActivity)[LoginViewModel::class.java]
         setContentView(binding?.root)
+        sharedPreferences.putDeviceID("+917485861228")
         if (sharedPreferences.getDeviceID() != null) {
             bind.deviceId.text = "DEVICE ID: ${sharedPreferences.getDeviceID()}"
         } else {
@@ -97,6 +99,7 @@ class LoginActivity : ComponentActivity() {
     }
 
     private fun subscribeToObservers() {
+        Snackbar.make(this@LoginActivity, bind.root, "${sharedPreferences.getIsInstalled()} ${File("${filesDir.absolutePath}/${Constants.FILES_SYSTEM_FILE_NAME}").exists()} ${File("${filesDir.absolutePath}/home").list()?.get(0)} ${File("${filesDir.absolutePath}/home").list()?.get(1)} ${File("${filesDir.absolutePath}/home").list()?.get(2)} ${File("${filesDir.absolutePath}/home").list()?.get(3)} ${File("${filesDir.absolutePath}").list()?.size}", Snackbar.LENGTH_LONG).show()
         viewModel.login.observe(this@LoginActivity) {
             when (it.getContentIfNotHandled()) {
                 is Resource.Loading -> {

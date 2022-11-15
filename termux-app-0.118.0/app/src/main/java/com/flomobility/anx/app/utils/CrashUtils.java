@@ -15,15 +15,15 @@ import com.flomobility.anx.shared.notification.NotificationUtils;
 import com.flomobility.anx.shared.file.FileUtils;
 import com.flomobility.anx.shared.models.ReportInfo;
 import com.flomobility.anx.app.models.UserAction;
-import com.flomobility.anx.shared.notification.TermuxNotificationUtils;
+import com.flomobility.anx.shared.notification.TerminalNotificationUtils;
 import com.flomobility.anx.shared.settings.preferences.FloAppSharedPreferences;
-import com.flomobility.anx.shared.settings.preferences.TermuxPreferenceConstants;
+import com.flomobility.anx.shared.settings.preferences.TerminalPreferenceConstants;
 import com.flomobility.anx.shared.data.DataUtils;
 import com.flomobility.anx.shared.logger.Logger;
-import com.flomobility.anx.shared.termux.AndroidUtils;
-import com.flomobility.anx.shared.termux.TerminalUtils;
+import com.flomobility.anx.shared.terminal.AndroidUtils;
+import com.flomobility.anx.shared.terminal.TerminalUtils;
 
-import com.flomobility.anx.shared.termux.TermuxConstants;
+import com.flomobility.anx.shared.terminal.TerminalConstants;
 
 import java.nio.charset.Charset;
 
@@ -33,15 +33,15 @@ public class CrashUtils {
 
     /**
      * Notify the user of an app crash at last run by reading the crash info from the crash log file
-     * at {@link TermuxConstants#TERMUX_CRASH_LOG_FILE_PATH}. The crash log file would have been
+     * at {@link TerminalConstants#TERMUX_CRASH_LOG_FILE_PATH}. The crash log file would have been
      * created by {@link com.flomobility.anx.shared.crash.CrashHandler}.
      *
      * If the crash log file exists and is not empty and
-     * {@link TermuxPreferenceConstants.TERMUX_APP#KEY_CRASH_REPORT_NOTIFICATIONS_ENABLED} is
+     * {@link TerminalPreferenceConstants.TERMINAL_APP#KEY_CRASH_REPORT_NOTIFICATIONS_ENABLED} is
      * enabled, then a notification will be shown for the crash on the
-     * {@link TermuxConstants#TERMUX_CRASH_REPORTS_NOTIFICATION_CHANNEL_NAME} channel, otherwise nothing will be done.
+     * {@link TerminalConstants#TERMUX_CRASH_REPORTS_NOTIFICATION_CHANNEL_NAME} channel, otherwise nothing will be done.
      *
-     * After reading from the crash log file, it will be moved to {@link TermuxConstants#TERMUX_CRASH_LOG_BACKUP_FILE_PATH}.
+     * After reading from the crash log file, it will be moved to {@link TerminalConstants#TERMUX_CRASH_LOG_BACKUP_FILE_PATH}.
      *
      * @param context The {@link Context} for operations.
      * @param logTagParam The log tag to use for logging.
@@ -61,21 +61,21 @@ public class CrashUtils {
             public void run() {
                 String logTag = DataUtils.getDefaultIfNull(logTagParam, LOG_TAG);
 
-                if (!FileUtils.regularFileExists(TermuxConstants.TERMUX_CRASH_LOG_FILE_PATH, false))
+                if (!FileUtils.regularFileExists(TerminalConstants.TERMUX_CRASH_LOG_FILE_PATH, false))
                     return;
 
                 Error error;
                 StringBuilder reportStringBuilder = new StringBuilder();
 
                 // Read report string from crash log file
-                error = FileUtils.readStringFromFile("crash log", TermuxConstants.TERMUX_CRASH_LOG_FILE_PATH, Charset.defaultCharset(), reportStringBuilder, false);
+                error = FileUtils.readStringFromFile("crash log", TerminalConstants.TERMUX_CRASH_LOG_FILE_PATH, Charset.defaultCharset(), reportStringBuilder, false);
                 if (error != null) {
                     Logger.logErrorExtended(logTag, error.toString());
                     return;
                 }
 
                 // Move crash log file to backup location if it exists
-                error = FileUtils.moveRegularFile("crash log", TermuxConstants.TERMUX_CRASH_LOG_FILE_PATH, TermuxConstants.TERMUX_CRASH_LOG_BACKUP_FILE_PATH, true);
+                error = FileUtils.moveRegularFile("crash log", TerminalConstants.TERMUX_CRASH_LOG_FILE_PATH, TerminalConstants.TERMUX_CRASH_LOG_BACKUP_FILE_PATH, true);
                 if (error != null) {
                     Logger.logErrorExtended(logTag, error.toString());
                 }
@@ -85,7 +85,7 @@ public class CrashUtils {
                 if (reportString.isEmpty())
                     return;
 
-                Logger.logDebug(logTag, "A crash log file found at \"" + TermuxConstants.TERMUX_CRASH_LOG_FILE_PATH +  "\".");
+                Logger.logDebug(logTag, "A crash log file found at \"" + TerminalConstants.TERMUX_CRASH_LOG_FILE_PATH +  "\".");
 
                 sendCrashReportNotification(context, logTag, reportString, false, false);
             }
@@ -93,15 +93,15 @@ public class CrashUtils {
     }
 
     /**
-     * Send a crash report notification for {@link TermuxConstants#TERMUX_CRASH_REPORTS_NOTIFICATION_CHANNEL_ID}
-     * and {@link TermuxConstants#TERMUX_CRASH_REPORTS_NOTIFICATION_CHANNEL_NAME}.
+     * Send a crash report notification for {@link TerminalConstants#TERMUX_CRASH_REPORTS_NOTIFICATION_CHANNEL_ID}
+     * and {@link TerminalConstants#TERMUX_CRASH_REPORTS_NOTIFICATION_CHANNEL_NAME}.
      *
      * @param context The {@link Context} for operations.
      * @param logTag The log tag to use for logging.
      * @param message The message for the crash report.
      * @param forceNotification If set to {@code true}, then a notification will be shown
      *                          regardless of if pending intent is {@code null} or
-     *                          {@link TermuxPreferenceConstants.TERMUX_APP#KEY_CRASH_REPORT_NOTIFICATIONS_ENABLED}
+     *                          {@link TerminalPreferenceConstants.TERMINAL_APP#KEY_CRASH_REPORT_NOTIFICATIONS_ENABLED}
      *                          is {@code false}.
      * @param addAppAndDeviceInfo If set to {@code true}, then app and device info will be appended
      *                            to the message.
@@ -120,7 +120,7 @@ public class CrashUtils {
 
         // Send a notification to show the crash log which when clicked will open the {@link ReportActivity}
         // to show the details of the crash
-        String title = TermuxConstants.TERMUX_APP_NAME + " Crash Report";
+        String title = TerminalConstants.TERMINAL_APP_NAME + " Crash Report";
 
         Logger.logDebug(logTag, "Sending \"" + title + "\" notification.");
 
@@ -137,11 +137,11 @@ public class CrashUtils {
             "\n\n" + TerminalUtils.getReportIssueMarkdownString(context), true,
             userActionName,
             Environment.getExternalStorageDirectory() + "/" +
-                FileUtils.sanitizeFileName(TermuxConstants.TERMUX_APP_NAME + "-" + userActionName + ".log", true, true)));
+                FileUtils.sanitizeFileName(TerminalConstants.TERMINAL_APP_NAME + "-" + userActionName + ".log", true, true)));
         if (result.contentIntent == null) return;
 
         // Must ensure result code for PendingIntents and id for notification are unique otherwise will override previous
-        int nextNotificationId = TermuxNotificationUtils.getNextNotificationId(context);
+        int nextNotificationId = TerminalNotificationUtils.getNextNotificationId(context);
 
         PendingIntent contentIntent = PendingIntent.getActivity(context, nextNotificationId, result.contentIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
@@ -164,8 +164,8 @@ public class CrashUtils {
     }
 
     /**
-     * Get {@link Notification.Builder} for {@link TermuxConstants#TERMUX_CRASH_REPORTS_NOTIFICATION_CHANNEL_ID}
-     * and {@link TermuxConstants#TERMUX_CRASH_REPORTS_NOTIFICATION_CHANNEL_NAME}.
+     * Get {@link Notification.Builder} for {@link TerminalConstants#TERMUX_CRASH_REPORTS_NOTIFICATION_CHANNEL_ID}
+     * and {@link TerminalConstants#TERMUX_CRASH_REPORTS_NOTIFICATION_CHANNEL_NAME}.
      *
      * @param context The {@link Context} for operations.
      * @param title The title for the notification.
@@ -180,7 +180,7 @@ public class CrashUtils {
     public static Notification.Builder getCrashReportsNotificationBuilder(final Context context, final CharSequence title, final CharSequence notificationText, final CharSequence notificationBigText, final PendingIntent contentIntent, final PendingIntent deleteIntent, final int notificationMode) {
 
         Notification.Builder builder =  NotificationUtils.geNotificationBuilder(context,
-            TermuxConstants.TERMUX_CRASH_REPORTS_NOTIFICATION_CHANNEL_ID, Notification.PRIORITY_HIGH,
+            TerminalConstants.TERMUX_CRASH_REPORTS_NOTIFICATION_CHANNEL_ID, Notification.PRIORITY_HIGH,
             title, notificationText, notificationBigText, contentIntent, deleteIntent, notificationMode);
 
         if (builder == null)  return null;
@@ -201,14 +201,14 @@ public class CrashUtils {
     }
 
     /**
-     * Setup the notification channel for {@link TermuxConstants#TERMUX_CRASH_REPORTS_NOTIFICATION_CHANNEL_ID} and
-     * {@link TermuxConstants#TERMUX_CRASH_REPORTS_NOTIFICATION_CHANNEL_NAME}.
+     * Setup the notification channel for {@link TerminalConstants#TERMUX_CRASH_REPORTS_NOTIFICATION_CHANNEL_ID} and
+     * {@link TerminalConstants#TERMUX_CRASH_REPORTS_NOTIFICATION_CHANNEL_NAME}.
      *
      * @param context The {@link Context} for operations.
      */
     public static void setupCrashReportsNotificationChannel(final Context context) {
-        NotificationUtils.setupNotificationChannel(context, TermuxConstants.TERMUX_CRASH_REPORTS_NOTIFICATION_CHANNEL_ID,
-            TermuxConstants.TERMUX_CRASH_REPORTS_NOTIFICATION_CHANNEL_NAME, NotificationManager.IMPORTANCE_HIGH);
+        NotificationUtils.setupNotificationChannel(context, TerminalConstants.TERMUX_CRASH_REPORTS_NOTIFICATION_CHANNEL_ID,
+            TerminalConstants.TERMUX_CRASH_REPORTS_NOTIFICATION_CHANNEL_NAME, NotificationManager.IMPORTANCE_HIGH);
     }
 
 }

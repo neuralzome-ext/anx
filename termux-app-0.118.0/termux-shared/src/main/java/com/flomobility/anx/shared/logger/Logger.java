@@ -7,7 +7,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.flomobility.anx.shared.R;
-import com.flomobility.anx.shared.termux.TermuxConstants;
+import com.flomobility.anx.shared.terminal.TerminalConstants;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -18,7 +18,7 @@ import java.util.List;
 
 public class Logger {
 
-    public static final String DEFAULT_LOG_TAG = TermuxConstants.TERMUX_APP_NAME;
+    public static final String DEFAULT_LOG_TAG = TerminalConstants.TERMINAL_APP_NAME;
 
     public static final int LOG_LEVEL_OFF = 0; // log nothing
     public static final int LOG_LEVEL_NORMAL = 1; // start logging error, warn and info messages and stacktraces

@@ -14,16 +14,15 @@ import android.widget.ListView;
 
 import com.flomobility.anx.R;
 import com.flomobility.anx.hermes.daemon.EndlessService;
-import com.flomobility.anx.shared.shell.TermuxSession;
+import com.flomobility.anx.shared.shell.TerminalSession;
 import com.flomobility.anx.shared.interact.TextInputDialogUtils;
 import com.flomobility.anx.app.TerminalActivity;
-import com.flomobility.anx.shared.terminal.TermuxTerminalSessionClientBase;
-import com.flomobility.anx.shared.termux.TermuxConstants;
-import com.flomobility.anx.shared.settings.properties.TermuxPropertyConstants;
+import com.flomobility.anx.shared.terminal.TerminalSessionClientBase;
+import com.flomobility.anx.shared.terminal.TerminalConstants;
+import com.flomobility.anx.shared.settings.properties.TerminalPropertyConstants;
 import com.flomobility.anx.shared.terminal.io.BellHandler;
 import com.flomobility.anx.shared.logger.Logger;
 import com.flomobility.anx.terminal.TerminalColors;
-import com.flomobility.anx.terminal.TerminalSession;
 import com.flomobility.anx.terminal.TextStyle;
 
 import java.io.File;
@@ -31,7 +30,7 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.Properties;
 
-public class FloTerminalSessionClient extends TermuxTerminalSessionClientBase {
+public class FloTerminalSessionClient extends TerminalSessionClientBase {
 
     private final TerminalActivity mActivity;
 
@@ -108,14 +107,14 @@ public class FloTerminalSessionClient extends TermuxTerminalSessionClientBase {
 
 
     @Override
-    public void onTextChanged(TerminalSession changedSession) {
+    public void onTextChanged(com.flomobility.anx.terminal.TerminalSession changedSession) {
         if (!mActivity.isVisible()) return;
 
         if (mActivity.getCurrentSession() == changedSession) mActivity.getTerminalView().onScreenUpdated();
     }
 
     @Override
-    public void onTitleChanged(TerminalSession updatedSession) {
+    public void onTitleChanged(com.flomobility.anx.terminal.TerminalSession updatedSession) {
         if (!mActivity.isVisible()) return;
 
         if (updatedSession != mActivity.getCurrentSession()) {
@@ -129,7 +128,7 @@ public class FloTerminalSessionClient extends TermuxTerminalSessionClientBase {
     }
 
     @Override
-    public void onSessionFinished(final TerminalSession finishedSession) {
+    public void onSessionFinished(final com.flomobility.anx.terminal.TerminalSession finishedSession) {
         EndlessService service = mActivity.getEndlessService();
 
         if (service == null || service.wantsToStop()) {
@@ -144,9 +143,9 @@ public class FloTerminalSessionClient extends TermuxTerminalSessionClientBase {
         // and send the result back instead of waiting fo the user to press enter.
         // The plugin can handle/show errors itself.
         boolean isPluginExecutionCommandWithPendingResult = false;
-        TermuxSession termuxSession = service.getTermuxSession(index);
-        if (termuxSession != null) {
-            isPluginExecutionCommandWithPendingResult = termuxSession.getExecutionCommand().isPluginExecutionCommandWithPendingResult();
+        TerminalSession terminalSession = service.getTermuxSession(index);
+        if (terminalSession != null) {
+            isPluginExecutionCommandWithPendingResult = terminalSession.getExecutionCommand().isPluginExecutionCommandWithPendingResult();
             if (isPluginExecutionCommandWithPendingResult)
                 Logger.logVerbose(LOG_TAG, "The \"" + finishedSession.mSessionName + "\" session will be force finished automatically since result in pending.");
         }
@@ -174,7 +173,7 @@ public class FloTerminalSessionClient extends TermuxTerminalSessionClientBase {
     }
 
     @Override
-    public void onCopyTextToClipboard(TerminalSession session, String text) {
+    public void onCopyTextToClipboard(com.flomobility.anx.terminal.TerminalSession session, String text) {
         if (!mActivity.isVisible()) return;
 
         ClipboardManager clipboard = (ClipboardManager) mActivity.getSystemService(Context.CLIPBOARD_SERVICE);
@@ -182,7 +181,7 @@ public class FloTerminalSessionClient extends TermuxTerminalSessionClientBase {
     }
 
     @Override
-    public void onPasteTextFromClipboard(TerminalSession session) {
+    public void onPasteTextFromClipboard(com.flomobility.anx.terminal.TerminalSession session) {
         if (!mActivity.isVisible()) return;
 
         ClipboardManager clipboard = (ClipboardManager) mActivity.getSystemService(Context.CLIPBOARD_SERVICE);
@@ -194,24 +193,24 @@ public class FloTerminalSessionClient extends TermuxTerminalSessionClientBase {
     }
 
     @Override
-    public void onBell(TerminalSession session) {
+    public void onBell(com.flomobility.anx.terminal.TerminalSession session) {
         if (!mActivity.isVisible()) return;
 
         switch (mActivity.getProperties().getBellBehaviour()) {
-            case TermuxPropertyConstants.IVALUE_BELL_BEHAVIOUR_VIBRATE:
+            case TerminalPropertyConstants.IVALUE_BELL_BEHAVIOUR_VIBRATE:
                 BellHandler.getInstance(mActivity).doBell();
                 break;
-            case TermuxPropertyConstants.IVALUE_BELL_BEHAVIOUR_BEEP:
+            case TerminalPropertyConstants.IVALUE_BELL_BEHAVIOUR_BEEP:
                 getBellSoundPool().play(mBellSoundId, 1.f, 1.f, 1, 0, 1.f);
                 break;
-            case TermuxPropertyConstants.IVALUE_BELL_BEHAVIOUR_IGNORE:
+            case TerminalPropertyConstants.IVALUE_BELL_BEHAVIOUR_IGNORE:
                 // Ignore the bell character.
                 break;
         }
     }
 
     @Override
-    public void onColorsChanged(TerminalSession changedSession) {
+    public void onColorsChanged(com.flomobility.anx.terminal.TerminalSession changedSession) {
         if (mActivity.getCurrentSession() == changedSession)
             updateBackgroundColor();
     }
@@ -271,7 +270,7 @@ public class FloTerminalSessionClient extends TermuxTerminalSessionClientBase {
 
 
     /** Try switching to session. */
-    public void setCurrentSession(TerminalSession session) {
+    public void setCurrentSession(com.flomobility.anx.terminal.TerminalSession session) {
         if (session == null) return;
 
         if (mActivity.getTerminalView().attachSession(session)) {
@@ -289,7 +288,7 @@ public class FloTerminalSessionClient extends TermuxTerminalSessionClientBase {
         if (!mActivity.isVisible()) return;
 
         if (!mActivity.getProperties().areTerminalSessionChangeToastsDisabled()) {
-            TerminalSession session = mActivity.getCurrentSession();
+            com.flomobility.anx.terminal.TerminalSession session = mActivity.getCurrentSession();
             mActivity.showToast(toToastTitle(session), false);
         }
     }
@@ -298,7 +297,7 @@ public class FloTerminalSessionClient extends TermuxTerminalSessionClientBase {
         EndlessService service = mActivity.getEndlessService();
         if (service == null) return;
 
-        TerminalSession currentTerminalSession = mActivity.getCurrentSession();
+        com.flomobility.anx.terminal.TerminalSession currentTerminalSession = mActivity.getCurrentSession();
         int index = service.getIndexOfSession(currentTerminalSession);
         int size = service.getTermuxSessionsSize();
         if (forward) {
@@ -307,22 +306,22 @@ public class FloTerminalSessionClient extends TermuxTerminalSessionClientBase {
             if (--index < 0) index = size - 1;
         }
 
-        TermuxSession termuxSession = service.getTermuxSession(index);
-        if (termuxSession != null)
-            setCurrentSession(termuxSession.getTerminalSession());
+        TerminalSession terminalSession = service.getTermuxSession(index);
+        if (terminalSession != null)
+            setCurrentSession(terminalSession.getTerminalSession());
     }
 
     public void switchToSession(int index) {
         EndlessService service = mActivity.getEndlessService();
         if (service == null) return;
 
-        TermuxSession termuxSession = service.getTermuxSession(index);
-        if (termuxSession != null)
-            setCurrentSession(termuxSession.getTerminalSession());
+        TerminalSession terminalSession = service.getTermuxSession(index);
+        if (terminalSession != null)
+            setCurrentSession(terminalSession.getTerminalSession());
     }
 
     @SuppressLint("InflateParams")
-    public void renameSession(final TerminalSession sessionToRename) {
+    public void renameSession(final com.flomobility.anx.terminal.TerminalSession sessionToRename) {
         if (sessionToRename == null) return;
 
         TextInputDialogUtils.textInput(mActivity, R.string.title_rename_session, sessionToRename.mSessionName, R.string.action_rename_session_confirm, text -> {
@@ -339,7 +338,7 @@ public class FloTerminalSessionClient extends TermuxTerminalSessionClientBase {
             new AlertDialog.Builder(mActivity).setTitle(R.string.title_max_terminals_reached).setMessage(R.string.msg_max_terminals_reached)
                 .setPositiveButton(android.R.string.ok, null).show();
         } else {
-            TerminalSession currentSession = mActivity.getCurrentSession();
+            com.flomobility.anx.terminal.TerminalSession currentSession = mActivity.getCurrentSession();
 
             String workingDirectory;
             if (currentSession == null) {
@@ -348,10 +347,10 @@ public class FloTerminalSessionClient extends TermuxTerminalSessionClientBase {
                 workingDirectory = currentSession.getCwd();
             }
 
-            TermuxSession newTermuxSession = service.createTermuxSession(null, null, null, workingDirectory, isFailSafe, sessionName);
+            TerminalSession newTermuxSession = service.createTermuxSession(null, null, null, workingDirectory, isFailSafe, sessionName);
             if (newTermuxSession == null) return;
 
-            TerminalSession newTerminalSession = newTermuxSession.getTerminalSession();
+            com.flomobility.anx.terminal.TerminalSession newTerminalSession = newTermuxSession.getTerminalSession();
             setCurrentSession(newTerminalSession);
 
             mActivity.getDrawer().closeDrawers();
@@ -359,7 +358,7 @@ public class FloTerminalSessionClient extends TermuxTerminalSessionClientBase {
     }
 
     public void setCurrentStoredSession() {
-        TerminalSession currentSession = mActivity.getCurrentSession();
+        com.flomobility.anx.terminal.TerminalSession currentSession = mActivity.getCurrentSession();
         if (currentSession != null)
             mActivity.getPreferences().setCurrentSession(currentSession.mHandle);
         else
@@ -367,8 +366,8 @@ public class FloTerminalSessionClient extends TermuxTerminalSessionClientBase {
     }
 
     /** The current session as stored or the last one if that does not exist. */
-    public TerminalSession getCurrentStoredSessionOrLast() {
-        TerminalSession stored = getCurrentStoredSession();
+    public com.flomobility.anx.terminal.TerminalSession getCurrentStoredSessionOrLast() {
+        com.flomobility.anx.terminal.TerminalSession stored = getCurrentStoredSession();
 
         if (stored != null) {
             // If a stored session is in the list of currently running sessions, then return it
@@ -378,15 +377,15 @@ public class FloTerminalSessionClient extends TermuxTerminalSessionClientBase {
             EndlessService service = mActivity.getEndlessService();
             if (service == null) return null;
 
-            TermuxSession termuxSession = service.getLastTermuxSession();
-            if (termuxSession != null)
-                return termuxSession.getTerminalSession();
+            TerminalSession terminalSession = service.getLastTermuxSession();
+            if (terminalSession != null)
+                return terminalSession.getTerminalSession();
             else
                 return null;
         }
     }
 
-    private TerminalSession getCurrentStoredSession() {
+    private com.flomobility.anx.terminal.TerminalSession getCurrentStoredSession() {
         String sessionHandle = mActivity.getPreferences().getCurrentSession();
 
         // If no session is stored in shared preferences
@@ -400,7 +399,7 @@ public class FloTerminalSessionClient extends TermuxTerminalSessionClientBase {
         return service.getTerminalSessionForHandle(sessionHandle);
     }
 
-    public void removeFinishedSession(TerminalSession finishedSession) {
+    public void removeFinishedSession(com.flomobility.anx.terminal.TerminalSession finishedSession) {
         // Return pressed with finished session - remove it.
         EndlessService service = mActivity.getEndlessService();
         if (service == null) return;
@@ -415,9 +414,9 @@ public class FloTerminalSessionClient extends TermuxTerminalSessionClientBase {
             if (index >= size) {
                 index = size - 1;
             }
-            TermuxSession termuxSession = service.getTermuxSession(index);
-            if (termuxSession != null)
-                setCurrentSession(termuxSession.getTerminalSession());
+            TerminalSession terminalSession = service.getTermuxSession(index);
+            if (terminalSession != null)
+                setCurrentSession(terminalSession.getTerminalSession());
         }
     }
 
@@ -425,7 +424,7 @@ public class FloTerminalSessionClient extends TermuxTerminalSessionClientBase {
         mActivity.termuxSessionListNotifyUpdated();
     }
 
-    public void checkAndScrollToSession(TerminalSession session) {
+    public void checkAndScrollToSession(com.flomobility.anx.terminal.TerminalSession session) {
         if (!mActivity.isVisible()) return;
         EndlessService service = mActivity.getEndlessService();
         if (service == null) return;
@@ -441,7 +440,7 @@ public class FloTerminalSessionClient extends TermuxTerminalSessionClientBase {
     }
 
 
-    String toToastTitle(TerminalSession session) {
+    String toToastTitle(com.flomobility.anx.terminal.TerminalSession session) {
         EndlessService service = mActivity.getEndlessService();
         if (service == null) return null;
 
@@ -463,8 +462,8 @@ public class FloTerminalSessionClient extends TermuxTerminalSessionClientBase {
 
     public void checkForFontAndColors() {
         try {
-            File colorsFile = TermuxConstants.TERMUX_COLOR_PROPERTIES_FILE;
-            File fontFile = TermuxConstants.TERMUX_FONT_FILE;
+            File colorsFile = TerminalConstants.TERMUX_COLOR_PROPERTIES_FILE;
+            File fontFile = TerminalConstants.TERMUX_FONT_FILE;
 
             final Properties props = new Properties();
             if (colorsFile.isFile()) {
@@ -474,7 +473,7 @@ public class FloTerminalSessionClient extends TermuxTerminalSessionClientBase {
             }
 
             TerminalColors.COLOR_SCHEME.updateWith(props);
-            TerminalSession session = mActivity.getCurrentSession();
+            com.flomobility.anx.terminal.TerminalSession session = mActivity.getCurrentSession();
             if (session != null && session.getEmulator() != null) {
                 session.getEmulator().mColors.reset();
             }
@@ -489,7 +488,7 @@ public class FloTerminalSessionClient extends TermuxTerminalSessionClientBase {
 
     public void updateBackgroundColor() {
         if (!mActivity.isVisible()) return;
-        TerminalSession session = mActivity.getCurrentSession();
+        com.flomobility.anx.terminal.TerminalSession session = mActivity.getCurrentSession();
         if (session != null && session.getEmulator() != null) {
             mActivity.getWindow().getDecorView().setBackgroundColor(session.getEmulator().mColors.mCurrentColors[TextStyle.COLOR_INDEX_BACKGROUND]);
         }

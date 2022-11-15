@@ -216,6 +216,7 @@ android {
         release {
             minifyEnabled true
             shrinkResources true // Reproducible builds
+            debuggable true
             signingConfig signingConfigs.flo
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             debuggable false

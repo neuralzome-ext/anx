@@ -6,13 +6,9 @@ import android.os.Bundle;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
-import androidx.lifecycle.MutableLiveData;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
-import com.flomobility.anx.hermes.other.Event;
-import com.flomobility.anx.shared.termux.TermuxConstants.TERMUX_APP.TERMUX_SERVICE;
-
-import java.util.Map;
+import com.flomobility.anx.shared.terminal.TerminalConstants.TERMUX_APP.TERMUX_SERVICE;
 
 public class PluginResultsService extends IntentService {
 

@@ -1,7 +1,7 @@
 package com.flomobility.anx.shared.models;
 
 import com.flomobility.anx.shared.markdown.MarkdownUtils;
-import com.flomobility.anx.shared.termux.AndroidUtils;
+import com.flomobility.anx.shared.terminal.AndroidUtils;
 
 import java.io.Serializable;
 

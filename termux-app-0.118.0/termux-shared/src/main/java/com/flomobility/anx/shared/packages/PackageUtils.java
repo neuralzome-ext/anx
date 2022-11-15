@@ -17,7 +17,7 @@ import com.flomobility.anx.shared.R;
 import com.flomobility.anx.shared.data.DataUtils;
 import com.flomobility.anx.shared.interact.MessageDialogUtils;
 import com.flomobility.anx.shared.logger.Logger;
-import com.flomobility.anx.shared.termux.TermuxConstants;
+import com.flomobility.anx.shared.terminal.TerminalConstants;
 
 import java.security.MessageDigest;
 import java.util.List;
@@ -58,7 +58,7 @@ public class PackageUtils {
 
         if (packageContext == null && exitAppOnError) {
             String errorMessage = context.getString(R.string.error_get_package_context_failed_message,
-                packageName, TermuxConstants.TERMUX_GITHUB_REPO_URL);
+                packageName, TerminalConstants.TERMUX_GITHUB_REPO_URL);
             Logger.logError(LOG_TAG, errorMessage);
             MessageDialogUtils.exitAppWithErrorMessage(context,
                 context.getString(R.string.error_get_package_context_failed_title),

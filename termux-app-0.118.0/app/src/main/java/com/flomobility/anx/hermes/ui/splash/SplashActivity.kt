@@ -21,6 +21,7 @@ import com.flomobility.anx.hermes.ui.download.DownloadActivity
 import com.flomobility.anx.hermes.ui.home.HomeActivity
 import com.flomobility.anx.hermes.ui.login.LoginActivity
 import com.google.android.gms.location.*
+import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -169,7 +170,7 @@ class SplashActivity : AppCompatActivity() {
             delay(2000)
             when (true) {
                 !sharedPreferences.checkToken() -> LoginActivity.navigateToLogin(this@SplashActivity)
-                File("$FILE_PATH/${Constants.FILES_SYSTEM_FILE_NAME}").exists() && sharedPreferences.getIsInstalled() -> {
+                /*File("$FILE_PATH/${Constants.FILES_SYSTEM_FILE_NAME}").exists() && */sharedPreferences.getIsInstalled() -> {
                     HomeActivity.navigateToHome(
                         this@SplashActivity
                     )

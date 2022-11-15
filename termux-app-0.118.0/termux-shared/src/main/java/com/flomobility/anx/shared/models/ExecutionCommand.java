@@ -10,6 +10,7 @@ import com.flomobility.anx.shared.models.errors.Error;
 import com.flomobility.anx.shared.logger.Logger;
 import com.flomobility.anx.shared.markdown.MarkdownUtils;
 import com.flomobility.anx.shared.data.DataUtils;
+import com.flomobility.anx.shared.shell.TerminalTask;
 
 import java.util.Collections;
 import java.util.List;
@@ -20,7 +21,7 @@ public class ExecutionCommand {
     The {@link ExecutionState#SUCCESS} and {@link ExecutionState#FAILED} is defined based on
     successful execution of command without any internal errors or exceptions being raised.
     The shell command {@link #exitCode} being non-zero **does not** mean that execution command failed.
-    Only the {@link #errCode} being non-zero means that execution command failed from the Termux app
+    Only the {@link #errCode} being non-zero means that execution command failed from the Terminal app
     perspective.
     */
 
@@ -84,10 +85,10 @@ public class ExecutionCommand {
     public boolean isFailsafe;
 
     /**
-     * The {@link ExecutionCommand} custom log level for background {@link com.flomobility.anx.shared.shell.TermuxTask}
+     * The {@link ExecutionCommand} custom log level for background {@link TerminalTask}
      * commands. By default, @link com.flomobility.anx.shared.shell.StreamGobbler} only logs stdout and
      * stderr if {@link Logger} `CURRENT_LOG_LEVEL` is >= {@link Logger#LOG_LEVEL_VERBOSE} and
-     * {@link com.flomobility.anx.shared.shell.TermuxTask} only logs stdin if `CURRENT_LOG_LEVEL` is >=
+     * {@link TerminalTask} only logs stdin if `CURRENT_LOG_LEVEL` is >=
      * {@link Logger#LOG_LEVEL_DEBUG}.
      */
     public Integer backgroundCustomLogLevel;

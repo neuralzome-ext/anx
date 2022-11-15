@@ -13,7 +13,7 @@ import android.util.Log;
 import com.flomobility.anx.hermes.daemon.EndlessService;
 import com.flomobility.anx.shared.logger.Logger;
 import com.flomobility.anx.shared.models.ExecutionCommand;
-import com.flomobility.anx.shared.termux.TermuxConstants;
+import com.flomobility.anx.shared.terminal.TerminalConstants;
 
 public class TerminalCommandExecutor implements ServiceConnection {
 
@@ -68,7 +68,7 @@ public class TerminalCommandExecutor implements ServiceConnection {
         pluginResultsServiceIntent.putExtra(PluginResultsService.EXTRA_EXECUTION_ID, executionId);
         executionCommand.arguments = arguments;
         executionCommand.resultConfig.resultPendingIntent = PendingIntent.getService(context, executionId, pluginResultsServiceIntent, PendingIntent.FLAG_ONE_SHOT);
-        executionCommand.executableUri = new Uri.Builder().scheme(TermuxConstants.TERMUX_APP.TERMUX_SERVICE.URI_SCHEME_SERVICE_EXECUTE).path(executionCommand.executable).build();
+        executionCommand.executableUri = new Uri.Builder().scheme(TerminalConstants.TERMUX_APP.TERMUX_SERVICE.URI_SCHEME_SERVICE_EXECUTE).path(executionCommand.executable).build();
         mEndlessService.createTermuxTask(executionCommand);
         return 0;
     }

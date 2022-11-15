@@ -42,10 +42,10 @@ import com.flomobility.anx.shared.models.errors.Errno
 import com.flomobility.anx.shared.packages.PermissionUtils
 import com.flomobility.anx.shared.settings.preferences.FloAppSharedPreferences
 import com.flomobility.anx.shared.shell.*
-import com.flomobility.anx.shared.terminal.TermuxTerminalSessionClientBase
-import com.flomobility.anx.shared.termux.TermuxConstants
-import com.flomobility.anx.shared.termux.TermuxConstants.TERMUX_APP.TERMUX_ACTIVITY
-import com.flomobility.anx.shared.termux.TermuxConstants.TERMUX_APP.TERMUX_SERVICE
+import com.flomobility.anx.shared.terminal.TerminalSessionClientBase
+import com.flomobility.anx.shared.terminal.TerminalConstants
+import com.flomobility.anx.shared.terminal.TerminalConstants.TERMUX_APP.TERMUX_ACTIVITY
+import com.flomobility.anx.shared.terminal.TerminalConstants.TERMUX_APP.TERMUX_SERVICE
 import com.flomobility.anx.terminal.TerminalSession
 import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
@@ -55,7 +55,7 @@ import kotlin.collections.ArrayList
 import kotlin.system.exitProcess
 
 @AndroidEntryPoint
-class EndlessService : LifecycleService() , TermuxTask.TermuxTaskClient, TermuxSession.TermuxSessionClient {
+class EndlessService : LifecycleService() , TerminalTask.TermuxTaskClient, com.flomobility.anx.shared.shell.TerminalSession.TermuxSessionClient {
 
     private var isRunning = false
 
@@ -85,12 +85,12 @@ class EndlessService : LifecycleService() , TermuxTask.TermuxTaskClient, TermuxS
      * [ArrayAdapter.notifyDataSetChanged] }.
      */
 
-    val mTermuxSessions : MutableList<TermuxSession> = ArrayList()
+    val mTerminalSessions : MutableList<com.flomobility.anx.shared.shell.TerminalSession> = ArrayList()
 
     /**
      * The background TermuxTasks which this service manages.
      */
-    val mTermuxTasks: MutableList<TermuxTask> = ArrayList()
+    val mTerminalTasks: MutableList<TerminalTask> = ArrayList()
 
     /**
      * The pending plugin ExecutionCommands that have yet to be processed by this service.
@@ -107,7 +107,8 @@ class EndlessService : LifecycleService() , TermuxTask.TermuxTaskClient, TermuxS
     /** The basic implementation of the [TerminalSessionClient] interface to be used by [TerminalSession]
      * that does not hold activity references.
      */
-    val mTermuxTerminalSessionClientBase = TermuxTerminalSessionClientBase()
+    val mTerminalSessionClientBase =
+        TerminalSessionClientBase()
 
     /** The wake lock and wifi lock are always acquired and released together.  */
     private var mWakeLock: PowerManager.WakeLock? = null
@@ -155,15 +156,15 @@ class EndlessService : LifecycleService() , TermuxTask.TermuxTaskClient, TermuxS
                     Timber.d("Stopped service")
                     exitProcess(0)
                 }
- 		TermuxConstants.TERMUX_APP.TERMUX_SERVICE.ACTION_WAKE_LOCK -> {
+ 		TerminalConstants.TERMUX_APP.TERMUX_SERVICE.ACTION_WAKE_LOCK -> {
                     Logger.logDebug(LOG_TAG, "ACTION_WAKE_LOCK intent received");
                     actionAcquireWakeLock();
                 }
-                TermuxConstants.TERMUX_APP.TERMUX_SERVICE.ACTION_WAKE_UNLOCK -> {
+                TerminalConstants.TERMUX_APP.TERMUX_SERVICE.ACTION_WAKE_UNLOCK -> {
                     Logger.logDebug(LOG_TAG, "ACTION_WAKE_UNLOCK intent received");
                     actionReleaseWakeLock(true);
                 }
-                TermuxConstants.TERMUX_APP.TERMUX_SERVICE.ACTION_SERVICE_EXECUTE -> {
+                TerminalConstants.TERMUX_APP.TERMUX_SERVICE.ACTION_SERVICE_EXECUTE -> {
                     Logger.logDebug(LOG_TAG, "ACTION_SERVICE_EXECUTE intent received");
                     actionServiceExecute(intent);
                 }
@@ -180,7 +181,7 @@ class EndlessService : LifecycleService() , TermuxTask.TermuxTaskClient, TermuxS
         // Since we cannot rely on {@link TermuxActivity.onDestroy()} to always complete,
         // we unset clients here as well if it failed, so that we do not leave service and session
         // clients with references to the activity.
-        if (mFloTerminalSessionClient != null) unsetTermuxTerminalSessionClient()
+        if (mFloTerminalSessionClient != null) unsetTerminalSessionClient()
         return false
     }
 
@@ -277,7 +278,7 @@ class EndlessService : LifecycleService() , TermuxTask.TermuxTaskClient, TermuxS
     override fun onDestroy() {
         super.onDestroy()
         Logger.logVerbose(LOG_TAG, "onDestroy")
-        TermuxShellUtils.clearTermuxTMPDIR(true)
+        TerminalShellUtils.clearTermuxTMPDIR(true)
         actionReleaseWakeLock(false)
         if (!mWantsToStop) killAllTermuxExecutionCommands()
         runStopForeground()
@@ -323,19 +324,19 @@ class EndlessService : LifecycleService() , TermuxTask.TermuxTaskClient, TermuxS
         var processResult: Boolean
         Logger.logDebug(
             LOG_TAG,
-            "Killing TermuxSessions=" + (mTermuxSessions?.size ?:0) + ", TermuxTasks=" + mTermuxTasks.size + ", PendingPluginExecutionCommands=" + mPendingPluginExecutionCommands.size
+            "Killing TermuxSessions=" + (mTerminalSessions?.size ?:0) + ", TermuxTasks=" + mTerminalTasks.size + ", PendingPluginExecutionCommands=" + mPendingPluginExecutionCommands.size
         )
-        val termuxSessions: List<TermuxSession> = ArrayList(mTermuxSessions)
-        for (i in termuxSessions.indices) {
-            val executionCommand = termuxSessions[i].executionCommand
+        val terminalSessions: List<com.flomobility.anx.shared.shell.TerminalSession> = ArrayList(mTerminalSessions)
+        for (i in terminalSessions.indices) {
+            val executionCommand = terminalSessions[i].executionCommand
             processResult =
                 mWantsToStop || executionCommand.isPluginExecutionCommandWithPendingResult
-            termuxSessions[i].killIfExecuting(this, processResult)
+            terminalSessions[i].killIfExecuting(this, processResult)
         }
-        val termuxTasks: List<TermuxTask> = ArrayList(mTermuxTasks)
-        for (i in termuxTasks.indices) {
-            val executionCommand = termuxTasks[i].executionCommand
-            if (executionCommand.isPluginExecutionCommandWithPendingResult) termuxTasks[i].killIfExecuting(
+        val terminalTasks: List<TerminalTask> = ArrayList(mTerminalTasks)
+        for (i in terminalTasks.indices) {
+            val executionCommand = terminalTasks[i].executionCommand
+            if (executionCommand.isPluginExecutionCommandWithPendingResult) terminalTasks[i].killIfExecuting(
                 this,
                 true
             )
@@ -376,7 +377,7 @@ class EndlessService : LifecycleService() , TermuxTask.TermuxTaskClient, TermuxS
         Logger.logDebug(LOG_TAG, "Acquiring WakeLocks")
         val pm = getSystemService(POWER_SERVICE) as PowerManager
         mWakeLock = pm.newWakeLock(
-            PowerManager.PARTIAL_WAKE_LOCK, TermuxConstants.TERMUX_APP_NAME.lowercase(
+            PowerManager.PARTIAL_WAKE_LOCK, TerminalConstants.TERMINAL_APP_NAME.lowercase(
                 Locale.getDefault()
             ) + ":service-wakelock"
         )
@@ -385,7 +386,7 @@ class EndlessService : LifecycleService() , TermuxTask.TermuxTaskClient, TermuxS
         // http://tools.android.com/tech-docs/lint-in-studio-2-3#TOC-WifiManager-Leak
         val wm = applicationContext.getSystemService(WIFI_SERVICE) as WifiManager
         mWifiLock = wm.createWifiLock(
-            WifiManager.WIFI_MODE_FULL_HIGH_PERF, TermuxConstants.TERMUX_APP_NAME.lowercase(
+            WifiManager.WIFI_MODE_FULL_HIGH_PERF, TerminalConstants.TERMINAL_APP_NAME.lowercase(
                 Locale.getDefault()
             )
         )
@@ -487,7 +488,7 @@ class EndlessService : LifecycleService() , TermuxTask.TermuxTaskClient, TermuxS
     /** Update the shown foreground service notification after making any changes that affect it.  */
     @Synchronized
     private fun updateNotification() {
-        if (mWakeLock == null && mTermuxSessions.isEmpty() && mTermuxTasks.isEmpty()) {
+        if (mWakeLock == null && mTerminalSessions.isEmpty() && mTerminalTasks.isEmpty()) {
             // Exit if we are updating after the user disabled all locks with no sessions or tasks running.
             requestStopService()
         } else {
@@ -595,7 +596,7 @@ class EndlessService : LifecycleService() , TermuxTask.TermuxTaskClient, TermuxS
     }
 
 
-    /** Execute a shell command in background [TermuxTask].  */
+    /** Execute a shell command in background [TerminalTask].  */
     private fun executeTermuxTaskCommand(executionCommand: ExecutionCommand?) {
         if (executionCommand == null) return
         Logger.logDebug(
@@ -605,13 +606,13 @@ class EndlessService : LifecycleService() , TermuxTask.TermuxTaskClient, TermuxS
         val newTermuxTask = createTermuxTask(executionCommand)
     }
 
-    /** Create a [TermuxTask].  */
+    /** Create a [TerminalTask].  */
     fun createTermuxTask(
         executablePath: String?,
         arguments: Array<String?>?,
         stdin: String?,
         workingDirectory: String?
-    ): TermuxTask? {
+    ): TerminalTask? {
         return createTermuxTask(
             ExecutionCommand(
                 getNextExecutionId(),
@@ -625,9 +626,9 @@ class EndlessService : LifecycleService() , TermuxTask.TermuxTaskClient, TermuxS
         )
     }
 
-    /** Create a [TermuxTask].  */
+    /** Create a [TerminalTask].  */
     @Synchronized
-    fun createTermuxTask(executionCommand: ExecutionCommand?): TermuxTask? {
+    fun createTermuxTask(executionCommand: ExecutionCommand?): TerminalTask? {
         if (executionCommand == null) return null
         Logger.logDebug(
             LOG_TAG,
@@ -644,9 +645,10 @@ class EndlessService : LifecycleService() , TermuxTask.TermuxTaskClient, TermuxS
             LOG_TAG,
             executionCommand.toString()
         )
-        val newTermuxTask =
-            TermuxTask.execute(this, executionCommand, this, TermuxShellEnvironmentClient(), false)
-        if (newTermuxTask == null) {
+        val newTerminalTask =
+            TerminalTask.execute(this, executionCommand, this,
+                TerminalShellEnvironmentClient(), false)
+        if (newTerminalTask == null) {
             Logger.logError(
                 LOG_TAG,
                 """
@@ -664,7 +666,7 @@ class EndlessService : LifecycleService() , TermuxTask.TermuxTaskClient, TermuxS
             return null
         }
 
-        mTermuxTasks.add(newTermuxTask)
+        mTerminalTasks.add(newTerminalTask)
 
         // Remove the execution command from the pending plugin execution commands list since it has
         // now been processed
@@ -672,14 +674,14 @@ class EndlessService : LifecycleService() , TermuxTask.TermuxTaskClient, TermuxS
             executionCommand
         )
         updateNotification()
-        return newTermuxTask
+        return newTerminalTask
     }
 
-    /** Callback received when a [TermuxTask] finishes.  */
-    override fun onTermuxTaskExited(termuxTask: TermuxTask?) {
+    /** Callback received when a [TerminalTask] finishes.  */
+    override fun onTermuxTaskExited(terminalTask: TerminalTask?) {
         mHandler.post {
-            if (termuxTask != null) {
-                val executionCommand = termuxTask.executionCommand
+            if (terminalTask != null) {
+                val executionCommand = terminalTask.executionCommand
                 Logger.logVerbose(
                     LOG_TAG,
                     "The onTermuxTaskExited() callback called for \"" + executionCommand!!.commandIdAndLabelLogString + "\" TermuxTask command"
@@ -695,14 +697,14 @@ class EndlessService : LifecycleService() , TermuxTask.TermuxTaskClient, TermuxS
                     LOG_TAG,
                     "The onTermuxTaskExited() result callback : " + executionCommand.resultData.exitCode
                 )
-                mTermuxTasks.remove(termuxTask)
+                mTerminalTasks.remove(terminalTask)
             }
             updateNotification()
         }
     }
 
 
-    /** Execute a shell command in a foreground [TermuxSession].  */
+    /** Execute a shell command in a foreground [TerminalSession].  */
     private fun executeTermuxSessionCommand(executionCommand: ExecutionCommand?) {
         if (executionCommand == null) return
         Logger.logDebug(
@@ -727,8 +729,8 @@ class EndlessService : LifecycleService() , TermuxTask.TermuxTaskClient, TermuxS
     }
 
     /**
-     * Create a [TermuxSession].
-     * Currently called by [FloTerminalSessionClient.addNewSession] to add a new [TermuxSession].
+     * Create a [TerminalSession].
+     * Currently called by [FloTerminalSessionClient.addNewSession] to add a new [TerminalSession].
      */
     fun createTermuxSession(
         executablePath: String?,
@@ -737,7 +739,7 @@ class EndlessService : LifecycleService() , TermuxTask.TermuxTaskClient, TermuxS
         workingDirectory: String?,
         isFailSafe: Boolean,
         sessionName: String?
-    ): TermuxSession? {
+    ): com.flomobility.anx.shared.shell.TerminalSession? {
         return createTermuxSession(
             ExecutionCommand(
                 getNextExecutionId(),
@@ -751,12 +753,12 @@ class EndlessService : LifecycleService() , TermuxTask.TermuxTaskClient, TermuxS
         )
     }
 
-    /** Create a [TermuxSession].  */
+    /** Create a [TerminalSession].  */
     @Synchronized
     fun createTermuxSession(
         executionCommand: ExecutionCommand?,
         sessionName: String?
-    ): TermuxSession? {
+    ): com.flomobility.anx.shared.shell.TerminalSession? {
         if (executionCommand == null) return null
         Logger.logDebug(
             LOG_TAG,
@@ -778,16 +780,16 @@ class EndlessService : LifecycleService() , TermuxTask.TermuxTaskClient, TermuxS
         // Otherwise if command was manually started by the user like by adding a new terminal session,
         // then no need to set stdout
         executionCommand.terminalTranscriptRows = getTerminalTranscriptRows()
-        val newTermuxSession = TermuxSession.execute(
+        val newTerminalSession = com.flomobility.anx.shared.shell.TerminalSession.execute(
             this,
             executionCommand,
             getTermuxTerminalSessionClient()!!,
             this,
-            TermuxShellEnvironmentClient(),
+            TerminalShellEnvironmentClient(),
             sessionName,
             executionCommand.isPluginExecutionCommand
         )
-        if (newTermuxSession == null) {
+        if (newTerminalSession == null) {
             Logger.logError(
                 LOG_TAG,
                 """
@@ -805,7 +807,7 @@ class EndlessService : LifecycleService() , TermuxTask.TermuxTaskClient, TermuxS
             return null
         }
 
-        mTermuxSessions.add(newTermuxSession)
+        mTerminalSessions.add(newTerminalSession)
 
         // Remove the execution command from the pending plugin execution commands list since it has
         // now been processed
@@ -818,21 +820,21 @@ class EndlessService : LifecycleService() , TermuxTask.TermuxTaskClient, TermuxS
         if (mFloTerminalSessionClient != null) mFloTerminalSessionClient!!.termuxSessionListNotifyUpdated()
         updateNotification()
         TerminalActivity.updateTermuxActivityStyling(this)
-        return newTermuxSession
+        return newTerminalSession
     }
 
     /** Remove a TermuxSession.  */
     @Synchronized
     fun removeTermuxSession(sessionToRemove: TerminalSession): Int {
         val index: Int = getIndexOfSession(sessionToRemove)
-        if (index >= 0) mTermuxSessions[index].finish()
+        if (index >= 0) mTerminalSessions[index].finish()
         return index
     }
 
-    /** Callback received when a [TermuxSession] finishes.  */
-    override fun onTermuxSessionExited(termuxSession: TermuxSession?) {
-        if (termuxSession != null) {
-            val executionCommand = termuxSession.executionCommand
+    /** Callback received when a [TerminalSession] finishes.  */
+    override fun onTermuxSessionExited(terminalSession: com.flomobility.anx.shared.shell.TerminalSession?) {
+        if (terminalSession != null) {
+            val executionCommand = terminalSession.executionCommand
             Logger.logVerbose(
                 LOG_TAG,
                 "The onTermuxSessionExited() callback called for \"" + executionCommand!!.commandIdAndLabelLogString + "\" TermuxSession command"
@@ -845,7 +847,7 @@ class EndlessService : LifecycleService() , TermuxTask.TermuxTaskClient, TermuxS
                 executionCommand
             )
 
-            mTermuxSessions.remove(termuxSession)
+            mTerminalSessions.remove(terminalSession)
 
             // Notify {@link TermuxSessionsListViewController} that sessions list has been updated if
             // activity in is foreground
@@ -854,7 +856,7 @@ class EndlessService : LifecycleService() , TermuxTask.TermuxTaskClient, TermuxS
         updateNotification()
     }
 
-    /** Get the terminal transcript rows to be used for new [TermuxSession].  */
+    /** Get the terminal transcript rows to be used for new [TerminalSession].  */
     fun getTerminalTranscriptRows(): Int? {
         if (mTerminalTranscriptRows == null) setTerminalTranscriptRows()
         return mTerminalTranscriptRows
@@ -934,16 +936,16 @@ class EndlessService : LifecycleService() , TermuxTask.TermuxTaskClient, TermuxS
      * [TerminalSessionClient] interface.
      *
      * @return Returns the [FloTerminalSessionClient] if [TerminalActivity] has bound with
-     * [TermuxService], otherwise [TermuxTerminalSessionClientBase].
+     * [TermuxService], otherwise [TerminalSessionClientBase].
      */
     @Synchronized
-    fun getTermuxTerminalSessionClient(): TermuxTerminalSessionClientBase? {
-        return if (mFloTerminalSessionClient != null) mFloTerminalSessionClient else mTermuxTerminalSessionClientBase
+    fun getTermuxTerminalSessionClient(): TerminalSessionClientBase? {
+        return if (mFloTerminalSessionClient != null) mFloTerminalSessionClient else mTerminalSessionClientBase
     }
 
     /** This should be called when [TerminalActivity.onServiceConnected] is called to set the
      * [TermuxService.mTermuxTerminalSessionClient] variable and update the [TerminalSession]
-     * and [TerminalEmulator] clients in case they were passed [TermuxTerminalSessionClientBase]
+     * and [TerminalEmulator] clients in case they were passed [TerminalSessionClientBase]
      * earlier.
      *
      * @param floTerminalSessionClient The [FloTerminalSessionClient] object that fully
@@ -952,7 +954,7 @@ class EndlessService : LifecycleService() , TermuxTask.TermuxTaskClient, TermuxS
     @Synchronized
     fun setTermuxTerminalSessionClient(floTerminalSessionClient: FloTerminalSessionClient) {
         mFloTerminalSessionClient = floTerminalSessionClient
-        for (i in mTermuxSessions.indices) mTermuxSessions[i].terminalSession.updateTerminalSessionClient(
+        for (i in mTerminalSessions.indices) mTerminalSessions[i].terminalSession.updateTerminalSessionClient(
             mFloTerminalSessionClient
         )
     }
@@ -962,9 +964,9 @@ class EndlessService : LifecycleService() , TermuxTask.TermuxTaskClient, TermuxS
      * clients do not hold an activity references.
      */
     @Synchronized
-    fun unsetTermuxTerminalSessionClient() {
-        for (i in mTermuxSessions.indices) mTermuxSessions[i].terminalSession.updateTerminalSessionClient(
-            mTermuxTerminalSessionClientBase
+    fun unsetTerminalSessionClient() {
+        for (i in mTerminalSessions.indices) mTerminalSessions[i].terminalSession.updateTerminalSessionClient(
+            mTerminalSessionClientBase
         )
         mFloTerminalSessionClient = null
     }
@@ -978,33 +980,33 @@ class EndlessService : LifecycleService() , TermuxTask.TermuxTaskClient, TermuxS
 
     @Synchronized
     fun isTermuxSessionsEmpty(): Boolean {
-        return mTermuxSessions.isEmpty()
+        return mTerminalSessions.isEmpty()
     }
 
     @Synchronized
     fun getTermuxSessionsSize(): Int {
-        return mTermuxSessions.size
+        return mTerminalSessions.size
     }
 
     @Synchronized
-    fun getTermuxSessions(): List<TermuxSession?>? {
-        return mTermuxSessions
+    fun getTermuxSessions(): List<com.flomobility.anx.shared.shell.TerminalSession?>? {
+        return mTerminalSessions
     }
 
     @Synchronized
-    fun getTermuxSession(index: Int): TermuxSession? {
-        return if (index >= 0 && index < mTermuxSessions.size) mTermuxSessions[index] else null
+    fun getTermuxSession(index: Int): com.flomobility.anx.shared.shell.TerminalSession? {
+        return if (index >= 0 && index < mTerminalSessions.size) mTerminalSessions[index] else null
     }
 
     @Synchronized
-    fun getLastTermuxSession(): TermuxSession? {
-        return if (mTermuxSessions.isEmpty()) null else mTermuxSessions[mTermuxSessions.size - 1]
+    fun getLastTermuxSession(): com.flomobility.anx.shared.shell.TerminalSession? {
+        return if (mTerminalSessions.isEmpty()) null else mTerminalSessions[mTerminalSessions.size - 1]
     }
 
     @Synchronized
     fun getIndexOfSession(terminalSession: TerminalSession): Int {
-        for (i in mTermuxSessions.indices) {
-            if (mTermuxSessions[i].terminalSession == terminalSession) return i
+        for (i in mTerminalSessions.indices) {
+            if (mTerminalSessions[i].terminalSession == terminalSession) return i
         }
         return -1
     }
@@ -1013,9 +1015,9 @@ class EndlessService : LifecycleService() , TermuxTask.TermuxTaskClient, TermuxS
     fun getTerminalSessionForHandle(sessionHandle: String): TerminalSession? {
         var terminalSession: TerminalSession
         var i = 0
-        val len = mTermuxSessions.size
+        val len = mTerminalSessions.size
         while (i < len) {
-            terminalSession = mTermuxSessions[i].terminalSession
+            terminalSession = mTerminalSessions[i].terminalSession
             if (terminalSession.mHandle == sessionHandle) return terminalSession
             i++
         }

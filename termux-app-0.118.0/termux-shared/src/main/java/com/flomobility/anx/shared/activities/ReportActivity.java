@@ -22,7 +22,7 @@ import com.flomobility.anx.shared.file.FileUtils;
 import com.flomobility.anx.shared.file.filesystem.FileType;
 import com.flomobility.anx.shared.logger.Logger;
 import com.flomobility.anx.shared.models.errors.Error;
-import com.flomobility.anx.shared.termux.TermuxConstants;
+import com.flomobility.anx.shared.terminal.TerminalConstants;
 import com.flomobility.anx.shared.markdown.MarkdownUtils;
 import com.flomobility.anx.shared.interact.ShareUtils;
 import com.flomobility.anx.shared.models.ReportInfo;
@@ -146,7 +146,7 @@ public class ReportActivity extends AppCompatActivity {
             if (mReportInfo.reportTitle != null)
                 actionBar.setTitle(mReportInfo.reportTitle);
             else
-                actionBar.setTitle(TermuxConstants.TERMUX_APP_NAME + " App Report");
+                actionBar.setTitle(TerminalConstants.TERMINAL_APP_NAME + " App Report");
         }
 
 

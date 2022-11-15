@@ -8,7 +8,7 @@ import com.flomobility.anx.shared.file.FileUtils;
 import com.flomobility.anx.shared.logger.Logger;
 import com.flomobility.anx.shared.markdown.MarkdownUtils;
 import com.flomobility.anx.shared.models.errors.Error;
-import com.flomobility.anx.shared.termux.AndroidUtils;
+import com.flomobility.anx.shared.terminal.AndroidUtils;
 
 import java.nio.charset.Charset;
 

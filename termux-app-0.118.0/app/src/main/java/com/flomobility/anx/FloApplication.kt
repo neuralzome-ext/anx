@@ -4,7 +4,7 @@ import android.app.Application
 import android.content.Context
 import com.downloader.PRDownloader
 import com.downloader.PRDownloaderConfig
-import com.flomobility.anx.shared.crash.TermuxCrashUtils
+import com.flomobility.anx.shared.crash.TerminalCrashUtils
 import com.flomobility.anx.shared.logger.Logger
 import com.flomobility.anx.shared.settings.preferences.FloAppSharedPreferences
 import dagger.hilt.android.HiltAndroidApp
@@ -27,7 +27,7 @@ class FloApplication: Application() {
         Timber.plant(Timber.DebugTree())
 
         // Set crash handler for the app
-        TermuxCrashUtils.setCrashHandler(this)
+        TerminalCrashUtils.setCrashHandler(this)
 
         // Set log level for the app (Termux
         setLogLevel()

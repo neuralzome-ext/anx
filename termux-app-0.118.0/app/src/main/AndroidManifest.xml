@@ -139,7 +139,7 @@
         <activity
             android:name=".app.activities.SettingsActivity"
             android:exported="true"
-            android:label="@string/title_activity_termux_settings"
+            android:label="@string/title_activity_terminal_settings"
             android:theme="@style/Theme.AppCompat.Light.DarkActionBar" />
 
         <activity
@@ -149,7 +149,7 @@
             />
 
         <activity
-            android:name=".filepicker.TermuxFileReceiverActivity"
+            android:name=".filepicker.TerminalFileReceiverActivity"
             android:excludeFromRecents="true"
             android:label="@string/application_name"
             android:noHistory="true"
@@ -186,7 +186,7 @@
 
 
         <provider
-            android:name=".filepicker.TermuxDocumentsProvider"
+            android:name=".filepicker.TerminalDocumentsProvider"
             android:authorities="${TERMUX_PACKAGE_NAME}.documents"
             android:exported="true"
             android:grantUriPermissions="true"
@@ -197,14 +197,14 @@
         </provider>
 
         <provider
-            android:name=".app.TermuxOpenReceiver$ContentProvider"
+            android:name=".app.TerminalOpenReceiver$ContentProvider"
             android:authorities="${TERMUX_PACKAGE_NAME}.files"
             android:exported="true"
             android:grantUriPermissions="true"
             android:permission="${TERMUX_PACKAGE_NAME}.permission.RUN_COMMAND" />
 
 
-        <receiver android:name=".app.TermuxOpenReceiver" android:exported="false" />
+        <receiver android:name=".app.TerminalOpenReceiver" android:exported="false" />
 
         <receiver android:name=".shared.activities.ReportActivity$ReportActivityBroadcastReceiver" android:exported="false" />
 

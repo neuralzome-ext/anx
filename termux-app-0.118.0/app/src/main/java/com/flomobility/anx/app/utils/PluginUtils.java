@@ -11,29 +11,29 @@ import androidx.annotation.Nullable;
 import com.flomobility.anx.R;
 import com.flomobility.anx.shared.activities.ReportActivity;
 import com.flomobility.anx.shared.file.FileUtils;
-import com.flomobility.anx.shared.file.TermuxFileUtils;
+import com.flomobility.anx.shared.file.TerminalFileUtils;
 import com.flomobility.anx.shared.models.ResultConfig;
 import com.flomobility.anx.shared.models.ResultData;
 import com.flomobility.anx.shared.models.errors.Errno;
 import com.flomobility.anx.shared.models.errors.Error;
 import com.flomobility.anx.shared.notification.NotificationUtils;
-import com.flomobility.anx.shared.notification.TermuxNotificationUtils;
+import com.flomobility.anx.shared.notification.TerminalNotificationUtils;
 import com.flomobility.anx.shared.shell.ResultSender;
 import com.flomobility.anx.shared.shell.ShellUtils;
-import com.flomobility.anx.shared.termux.AndroidUtils;
-import com.flomobility.anx.shared.termux.TermuxConstants;
-import com.flomobility.anx.shared.termux.TermuxConstants.TERMUX_APP.TERMUX_SERVICE;
+import com.flomobility.anx.shared.terminal.AndroidUtils;
+import com.flomobility.anx.shared.terminal.TerminalConstants;
+import com.flomobility.anx.shared.terminal.TerminalConstants.TERMUX_APP.TERMUX_SERVICE;
 import com.flomobility.anx.shared.logger.Logger;
 import com.flomobility.anx.shared.settings.preferences.FloAppSharedPreferences;
-import com.flomobility.anx.shared.settings.preferences.TermuxPreferenceConstants.TERMUX_APP;
+import com.flomobility.anx.shared.settings.preferences.TerminalPreferenceConstants.TERMINAL_APP;
 import com.flomobility.anx.shared.settings.properties.SharedProperties;
-import com.flomobility.anx.shared.settings.properties.TermuxPropertyConstants;
+import com.flomobility.anx.shared.settings.properties.TerminalPropertyConstants;
 import com.flomobility.anx.shared.models.ReportInfo;
 import com.flomobility.anx.shared.models.ExecutionCommand;
 import com.flomobility.anx.app.models.UserAction;
 import com.flomobility.anx.shared.data.DataUtils;
 import com.flomobility.anx.shared.markdown.MarkdownUtils;
-import com.flomobility.anx.shared.termux.TerminalUtils;
+import com.flomobility.anx.shared.terminal.TerminalUtils;
 
 public class PluginUtils {
 
@@ -111,9 +111,9 @@ public class PluginUtils {
      * {@link ResultConfig#resultPendingIntent} or {@link ResultConfig#resultDirectoryPath}
      * is not {@code null}, then the errors of commands are sent back to the command caller.
      *
-     * Otherwise if the {@link TERMUX_APP#KEY_PLUGIN_ERROR_NOTIFICATIONS_ENABLED} is
+     * Otherwise if the {@link TERMINAL_APP#KEY_PLUGIN_ERROR_NOTIFICATIONS_ENABLED} is
      * enabled, then a flash and a notification will be shown for the error as well
-     * on the {@link TermuxConstants#TERMUX_PLUGIN_COMMAND_ERRORS_NOTIFICATION_CHANNEL_NAME} channel instead of just logging
+     * on the {@link TerminalConstants#TERMUX_PLUGIN_COMMAND_ERRORS_NOTIFICATION_CHANNEL_NAME} channel instead of just logging
      * the error.
      *
      * @param context The {@link Context} for operations.
@@ -121,7 +121,7 @@ public class PluginUtils {
      * @param executionCommand The {@link ExecutionCommand} that failed.
      * @param forceNotification If set to {@code true}, then a flash and notification will be shown
      *                          regardless of if pending intent is {@code null} or
-     *                          {@link TERMUX_APP#KEY_PLUGIN_ERROR_NOTIFICATIONS_ENABLED}
+     *                          {@link TERMINAL_APP#KEY_PLUGIN_ERROR_NOTIFICATIONS_ENABLED}
      *                          is {@code false}.
      */
     public static void processPluginExecutionCommandError(final Context context, String logTag, final ExecutionCommand executionCommand, boolean forceNotification) {
@@ -198,8 +198,8 @@ public class PluginUtils {
     public static void setPluginResultDirectoryVariables(ExecutionCommand executionCommand) {
         ResultConfig resultConfig = executionCommand.resultConfig;
 
-        resultConfig.resultDirectoryPath = TermuxFileUtils.getCanonicalPath(resultConfig.resultDirectoryPath, null, true);
-        resultConfig.resultDirectoryAllowedParentPath = TermuxFileUtils.getMatchedAllowedTermuxWorkingDirectoryParentPathForPath(resultConfig.resultDirectoryPath);
+        resultConfig.resultDirectoryPath = TerminalFileUtils.getCanonicalPath(resultConfig.resultDirectoryPath, null, true);
+        resultConfig.resultDirectoryAllowedParentPath = TerminalFileUtils.getMatchedAllowedTermuxWorkingDirectoryParentPathForPath(resultConfig.resultDirectoryPath);
 
         // Set default resultFileBasename if resultSingleFile is true to `<executable_basename>-<timestamp>.log`
         if (resultConfig.resultSingleFile && resultConfig.resultFileBasename == null)
@@ -209,8 +209,8 @@ public class PluginUtils {
 
 
     /**
-     * Send an error notification for {@link TermuxConstants#TERMUX_PLUGIN_COMMAND_ERRORS_NOTIFICATION_CHANNEL_ID}
-     * and {@link TermuxConstants#TERMUX_PLUGIN_COMMAND_ERRORS_NOTIFICATION_CHANNEL_NAME}.
+     * Send an error notification for {@link TerminalConstants#TERMUX_PLUGIN_COMMAND_ERRORS_NOTIFICATION_CHANNEL_ID}
+     * and {@link TerminalConstants#TERMUX_PLUGIN_COMMAND_ERRORS_NOTIFICATION_CHANNEL_NAME}.
      *
      * @param context The {@link Context} for operations.
      * @param executionCommand The {@link ExecutionCommand} that failed.
@@ -219,7 +219,7 @@ public class PluginUtils {
     public static void sendPluginCommandErrorNotification(Context context, String logTag, ExecutionCommand executionCommand, String notificationTextString) {
         // Send a notification to show the error which when clicked will open the ReportActivity
         // to show the details of the error
-        String title = TermuxConstants.TERMUX_APP_NAME + " Plugin Execution Command Error";
+        String title = TerminalConstants.TERMINAL_APP_NAME + " Plugin Execution Command Error";
 
         StringBuilder reportString = new StringBuilder();
 
@@ -233,11 +233,11 @@ public class PluginUtils {
                 reportString.toString(), null,true,
                 userActionName,
                 Environment.getExternalStorageDirectory() + "/" +
-                    FileUtils.sanitizeFileName(TermuxConstants.TERMUX_APP_NAME + "-" + userActionName + ".log", true, true)));
+                    FileUtils.sanitizeFileName(TerminalConstants.TERMINAL_APP_NAME + "-" + userActionName + ".log", true, true)));
         if (result.contentIntent == null) return;
 
         // Must ensure result code for PendingIntents and id for notification are unique otherwise will override previous
-        int nextNotificationId = TermuxNotificationUtils.getNextNotificationId(context);
+        int nextNotificationId = TerminalNotificationUtils.getNextNotificationId(context);
 
         PendingIntent contentIntent = PendingIntent.getActivity(context, nextNotificationId, result.contentIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
@@ -264,8 +264,8 @@ public class PluginUtils {
     }
 
     /**
-     * Get {@link Notification.Builder} for {@link TermuxConstants#TERMUX_PLUGIN_COMMAND_ERRORS_NOTIFICATION_CHANNEL_ID}
-     * and {@link TermuxConstants#TERMUX_PLUGIN_COMMAND_ERRORS_NOTIFICATION_CHANNEL_NAME}.
+     * Get {@link Notification.Builder} for {@link TerminalConstants#TERMUX_PLUGIN_COMMAND_ERRORS_NOTIFICATION_CHANNEL_ID}
+     * and {@link TerminalConstants#TERMUX_PLUGIN_COMMAND_ERRORS_NOTIFICATION_CHANNEL_NAME}.
      *
      * @param context The {@link Context} for operations.
      * @param title The title for the notification.
@@ -282,7 +282,7 @@ public class PluginUtils {
         final CharSequence notificationBigText, final PendingIntent contentIntent, final PendingIntent deleteIntent, final int notificationMode) {
 
         Notification.Builder builder =  NotificationUtils.geNotificationBuilder(context,
-            TermuxConstants.TERMUX_PLUGIN_COMMAND_ERRORS_NOTIFICATION_CHANNEL_ID, Notification.PRIORITY_HIGH,
+            TerminalConstants.TERMUX_PLUGIN_COMMAND_ERRORS_NOTIFICATION_CHANNEL_ID, Notification.PRIORITY_HIGH,
             title, notificationText, notificationBigText, contentIntent, deleteIntent, notificationMode);
 
         if (builder == null)  return null;
@@ -303,30 +303,30 @@ public class PluginUtils {
     }
 
     /**
-     * Setup the notification channel for {@link TermuxConstants#TERMUX_PLUGIN_COMMAND_ERRORS_NOTIFICATION_CHANNEL_ID} and
-     * {@link TermuxConstants#TERMUX_PLUGIN_COMMAND_ERRORS_NOTIFICATION_CHANNEL_NAME}.
+     * Setup the notification channel for {@link TerminalConstants#TERMUX_PLUGIN_COMMAND_ERRORS_NOTIFICATION_CHANNEL_ID} and
+     * {@link TerminalConstants#TERMUX_PLUGIN_COMMAND_ERRORS_NOTIFICATION_CHANNEL_NAME}.
      *
      * @param context The {@link Context} for operations.
      */
     public static void setupPluginCommandErrorsNotificationChannel(final Context context) {
-        NotificationUtils.setupNotificationChannel(context, TermuxConstants.TERMUX_PLUGIN_COMMAND_ERRORS_NOTIFICATION_CHANNEL_ID,
-            TermuxConstants.TERMUX_PLUGIN_COMMAND_ERRORS_NOTIFICATION_CHANNEL_NAME, NotificationManager.IMPORTANCE_HIGH);
+        NotificationUtils.setupNotificationChannel(context, TerminalConstants.TERMUX_PLUGIN_COMMAND_ERRORS_NOTIFICATION_CHANNEL_ID,
+            TerminalConstants.TERMUX_PLUGIN_COMMAND_ERRORS_NOTIFICATION_CHANNEL_NAME, NotificationManager.IMPORTANCE_HIGH);
     }
 
 
 
     /**
-     * Check if {@link TermuxConstants#PROP_ALLOW_EXTERNAL_APPS} property is not set to "true".
+     * Check if {@link TerminalConstants#PROP_ALLOW_EXTERNAL_APPS} property is not set to "true".
      *
      * @param context The {@link Context} to get error string.
      * @return Returns the {@code error} if policy is violated, otherwise {@code null}.
      */
     public static String checkIfAllowExternalAppsPolicyIsViolated(final Context context, String apiName) {
         String errmsg = null;
-        if (!SharedProperties.isPropertyValueTrue(context, TermuxPropertyConstants.getTermuxPropertiesFile(),
-            TermuxConstants.PROP_ALLOW_EXTERNAL_APPS, true)) {
+        if (!SharedProperties.isPropertyValueTrue(context, TerminalPropertyConstants.getTermuxPropertiesFile(),
+            TerminalConstants.PROP_ALLOW_EXTERNAL_APPS, true)) {
             errmsg = context.getString(R.string.error_allow_external_apps_ungranted, apiName,
-                TermuxFileUtils.getUnExpandedTermuxPath(TermuxConstants.TERMUX_PROPERTIES_PRIMARY_FILE_PATH));
+                TerminalFileUtils.getUnExpandedTerminalPath(TerminalConstants.TERMUX_PROPERTIES_PRIMARY_FILE_PATH));
         }
 
         return errmsg;

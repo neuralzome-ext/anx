@@ -25,19 +25,19 @@ import com.flomobility.anx.shared.file.FileUtils;
 import com.flomobility.anx.shared.interact.MessageDialogUtils;
 import com.flomobility.anx.shared.interact.ShareUtils;
 import com.flomobility.anx.shared.shell.ShellUtils;
-import com.flomobility.anx.shared.terminal.TermuxTerminalViewClientBase;
+import com.flomobility.anx.shared.terminal.TerminalViewClientBase;
 import com.flomobility.anx.shared.terminal.io.extrakeys.SpecialButton;
-import com.flomobility.anx.shared.termux.AndroidUtils;
-import com.flomobility.anx.shared.termux.TermuxConstants;
+import com.flomobility.anx.shared.terminal.AndroidUtils;
+import com.flomobility.anx.shared.terminal.TerminalConstants;
 import com.flomobility.anx.shared.activities.ReportActivity;
 import com.flomobility.anx.shared.models.ReportInfo;
 import com.flomobility.anx.app.models.UserAction;
 import com.flomobility.anx.app.terminal.io.KeyboardShortcut;
-import com.flomobility.anx.shared.settings.properties.TermuxPropertyConstants;
+import com.flomobility.anx.shared.settings.properties.TerminalPropertyConstants;
 import com.flomobility.anx.shared.data.DataUtils;
 import com.flomobility.anx.shared.logger.Logger;
 import com.flomobility.anx.shared.markdown.MarkdownUtils;
-import com.flomobility.anx.shared.termux.TerminalUtils;
+import com.flomobility.anx.shared.terminal.TerminalUtils;
 import com.flomobility.anx.shared.view.KeyboardUtils;
 import com.flomobility.anx.shared.view.ViewUtils;
 import com.flomobility.anx.terminal.KeyHandler;
@@ -51,7 +51,7 @@ import java.util.List;
 
 import androidx.drawerlayout.widget.DrawerLayout;
 
-public class FloTerminalViewClient extends TermuxTerminalViewClientBase {
+public class FloTerminalViewClient extends TerminalViewClientBase {
 
     final TerminalActivity mActivity;
 
@@ -459,16 +459,16 @@ public class FloTerminalViewClient extends TermuxTerminalViewClientBase {
                     KeyboardShortcut shortcut = shortcuts.get(i);
                     if (codePointLowerCase == shortcut.codePoint) {
                         switch (shortcut.shortcutAction) {
-                            case TermuxPropertyConstants.ACTION_SHORTCUT_CREATE_SESSION:
+                            case TerminalPropertyConstants.ACTION_SHORTCUT_CREATE_SESSION:
                                 mFloTerminalSessionClient.addNewSession(false, null);
                                 return true;
-                            case TermuxPropertyConstants.ACTION_SHORTCUT_NEXT_SESSION:
+                            case TerminalPropertyConstants.ACTION_SHORTCUT_NEXT_SESSION:
                                 mFloTerminalSessionClient.switchToSession(true);
                                 return true;
-                            case TermuxPropertyConstants.ACTION_SHORTCUT_PREVIOUS_SESSION:
+                            case TerminalPropertyConstants.ACTION_SHORTCUT_PREVIOUS_SESSION:
                                 mFloTerminalSessionClient.switchToSession(false);
                                 return true;
-                            case TermuxPropertyConstants.ACTION_SHORTCUT_RENAME_SESSION:
+                            case TerminalPropertyConstants.ACTION_SHORTCUT_RENAME_SESSION:
                                 mFloTerminalSessionClient.renameSession(mActivity.getCurrentSession());
                                 return true;
                         }
@@ -700,8 +700,8 @@ public class FloTerminalViewClient extends TermuxTerminalViewClientBase {
         final String transcriptText = ShellUtils.getTerminalSessionTranscriptText(session, false, true);
         if (transcriptText == null) return;
 
-        MessageDialogUtils.showMessage(mActivity, TermuxConstants.TERMUX_APP_NAME + " Report Issue",
-            mActivity.getString(R.string.msg_add_termux_debug_info),
+        MessageDialogUtils.showMessage(mActivity, TerminalConstants.TERMINAL_APP_NAME + " Report Issue",
+            mActivity.getString(R.string.msg_add_terminal_debug_info),
             mActivity.getString(R.string.action_yes), (dialog, which) -> reportIssueFromTranscript(transcriptText, true),
             mActivity.getString(R.string.action_no), (dialog, which) -> reportIssueFromTranscript(transcriptText, false),
             null);
@@ -715,7 +715,7 @@ public class FloTerminalViewClient extends TermuxTerminalViewClientBase {
             public void run() {
                 StringBuilder reportString = new StringBuilder();
 
-                String title = TermuxConstants.TERMUX_APP_NAME + " Report Issue";
+                String title = TerminalConstants.TERMINAL_APP_NAME + " Report Issue";
 
                 reportString.append("## Transcript\n");
                 reportString.append("\n").append(MarkdownUtils.getMarkdownCodeForString(transcriptText, true));
@@ -737,12 +737,12 @@ public class FloTerminalViewClient extends TermuxTerminalViewClientBase {
                 String userActionName = UserAction.REPORT_ISSUE_FROM_TRANSCRIPT.getName();
                 ReportActivity.startReportActivity(mActivity,
                     new ReportInfo(userActionName,
-                        TermuxConstants.TERMUX_APP.TERMUX_ACTIVITY_NAME, title, null,
+                        TerminalConstants.TERMUX_APP.TERMUX_ACTIVITY_NAME, title, null,
                         reportString.toString(), "\n\n" + TerminalUtils.getReportIssueMarkdownString(mActivity),
                         false,
                         userActionName,
                         Environment.getExternalStorageDirectory() + "/" +
-                            FileUtils.sanitizeFileName(TermuxConstants.TERMUX_APP_NAME + "-" + userActionName + ".log", true, true)));
+                            FileUtils.sanitizeFileName(TerminalConstants.TERMINAL_APP_NAME + "-" + userActionName + ".log", true, true)));
             }
         }.start();
     }

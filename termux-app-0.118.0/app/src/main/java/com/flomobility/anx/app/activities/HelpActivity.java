@@ -12,7 +12,7 @@ import android.webkit.WebViewClient;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 
-import com.flomobility.anx.shared.termux.TermuxConstants;
+import com.flomobility.anx.shared.terminal.TerminalConstants;
 
 /** Basic embedded browser for viewing help pages. */
 public final class HelpActivity extends Activity {
@@ -41,7 +41,7 @@ public final class HelpActivity extends Activity {
         mWebView.setWebViewClient(new WebViewClient() {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, String url) {
-                if (url.equals(TermuxConstants.TERMUX_WIKI_URL) || url.startsWith(TermuxConstants.TERMUX_WIKI_URL + "/")) {
+                if (url.equals(TerminalConstants.TERMUX_WIKI_URL) || url.startsWith(TerminalConstants.TERMUX_WIKI_URL + "/")) {
                     // Inline help.
                     setContentView(progressLayout);
                     return false;
@@ -62,7 +62,7 @@ public final class HelpActivity extends Activity {
                 setContentView(mWebView);
             }
         });
-        mWebView.loadUrl(TermuxConstants.TERMUX_WIKI_URL);
+        mWebView.loadUrl(TerminalConstants.TERMUX_WIKI_URL);
     }
 
     @Override

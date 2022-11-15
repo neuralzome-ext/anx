@@ -21,7 +21,7 @@ import com.flomobility.anx.hermes.other.viewutils.AlertDialog
 import com.flomobility.anx.hermes.ui.login.LoginActivity
 import com.flomobility.anx.hermes.ui.settings.SettingsActivity
 import com.flomobility.anx.databinding.ActivityHomeBinding
-import com.flomobility.anx.shared.termux.TermuxConstants
+import com.flomobility.anx.shared.terminal.TerminalConstants
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
@@ -79,7 +79,7 @@ class HomeActivity : AppCompatActivity() {
                      START_SSHD_EXECUTION_CODE -> {
                         result?.let {
                             val exitCode =
-                                result.getInt(TermuxConstants.TERMUX_APP.TERMUX_SERVICE.EXTRA_PLUGIN_RESULT_BUNDLE_EXIT_CODE)
+                                result.getInt(TerminalConstants.TERMUX_APP.TERMUX_SERVICE.EXTRA_PLUGIN_RESULT_BUNDLE_EXIT_CODE)
                             if (exitCode == 0) {
                                 Timber.i("SSH server on port 2222 started successfully")
                                 return

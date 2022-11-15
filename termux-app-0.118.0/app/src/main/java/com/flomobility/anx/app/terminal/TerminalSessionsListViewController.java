@@ -20,19 +20,18 @@ import androidx.core.content.ContextCompat;
 
 import com.flomobility.anx.R;
 import com.flomobility.anx.app.TerminalActivity;
-import com.flomobility.anx.shared.shell.TermuxSession;
-import com.flomobility.anx.terminal.TerminalSession;
+import com.flomobility.anx.shared.shell.TerminalSession;
 
 import java.util.List;
 
-public class TerminalSessionsListViewController extends ArrayAdapter<TermuxSession> implements AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener {
+public class TerminalSessionsListViewController extends ArrayAdapter<TerminalSession> implements AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener {
 
     final TerminalActivity mActivity;
 
     final StyleSpan boldSpan = new StyleSpan(Typeface.BOLD);
     final StyleSpan italicSpan = new StyleSpan(Typeface.ITALIC);
 
-    public TerminalSessionsListViewController(TerminalActivity activity, List<TermuxSession> sessionList) {
+    public TerminalSessionsListViewController(TerminalActivity activity, List<TerminalSession> sessionList) {
         super(activity.getApplicationContext(), R.layout.item_terminal_sessions_list, sessionList);
         this.mActivity = activity;
     }
@@ -49,7 +48,7 @@ public class TerminalSessionsListViewController extends ArrayAdapter<TermuxSessi
 
         TextView sessionTitleView = sessionRowView.findViewById(R.id.session_title);
 
-        TerminalSession sessionAtRow = getItem(position).getTerminalSession();
+        com.flomobility.anx.terminal.TerminalSession sessionAtRow = getItem(position).getTerminalSession();
         if (sessionAtRow == null) {
             sessionTitleView.setText("null session");
             return sessionRowView;
@@ -92,14 +91,14 @@ public class TerminalSessionsListViewController extends ArrayAdapter<TermuxSessi
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        TermuxSession clickedSession = getItem(position);
+        TerminalSession clickedSession = getItem(position);
         mActivity.getTermuxTerminalSessionClient().setCurrentSession(clickedSession.getTerminalSession());
         mActivity.getDrawer().closeDrawers();
     }
 
     @Override
     public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-        final TermuxSession selectedSession = getItem(position);
+        final TerminalSession selectedSession = getItem(position);
         mActivity.getTermuxTerminalSessionClient().renameSession(selectedSession.getTerminalSession());
         return true;
     }

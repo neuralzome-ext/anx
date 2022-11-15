@@ -16,8 +16,8 @@ import com.flomobility.anx.shared.models.ResultConfig;
 import com.flomobility.anx.shared.models.ResultData;
 import com.flomobility.anx.shared.models.errors.FunctionErrno;
 import com.flomobility.anx.shared.models.errors.ResultSenderErrno;
-import com.flomobility.anx.shared.termux.AndroidUtils;
-import com.flomobility.anx.shared.termux.TermuxConstants.RESULT_SENDER;
+import com.flomobility.anx.shared.terminal.AndroidUtils;
+import com.flomobility.anx.shared.terminal.TerminalConstants.RESULT_SENDER;
 
 public class ResultSender {
 

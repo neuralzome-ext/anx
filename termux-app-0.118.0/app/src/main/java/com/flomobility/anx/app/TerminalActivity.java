@@ -38,8 +38,8 @@ import com.flomobility.anx.app.terminal.TerminalActivityRootView;
 import com.flomobility.anx.hermes.daemon.EndlessService;
 import com.flomobility.anx.shared.activities.ReportActivity;
 import com.flomobility.anx.shared.packages.PermissionUtils;
-import com.flomobility.anx.shared.termux.TermuxConstants;
-import com.flomobility.anx.shared.termux.TermuxConstants.TERMUX_APP.TERMUX_ACTIVITY;
+import com.flomobility.anx.shared.terminal.TerminalConstants;
+import com.flomobility.anx.shared.terminal.TerminalConstants.TERMUX_APP.TERMUX_ACTIVITY;
 import com.flomobility.anx.app.activities.HelpActivity;
 import com.flomobility.anx.app.activities.SettingsActivity;
 import com.flomobility.anx.shared.settings.preferences.FloAppSharedPreferences;
@@ -51,7 +51,7 @@ import com.flomobility.anx.shared.terminal.io.extrakeys.ExtraKeysView;
 import com.flomobility.anx.app.settings.properties.FloAppSharedProperties;
 import com.flomobility.anx.shared.interact.TextInputDialogUtils;
 import com.flomobility.anx.shared.logger.Logger;
-import com.flomobility.anx.shared.termux.TerminalUtils;
+import com.flomobility.anx.shared.terminal.TerminalUtils;
 import com.flomobility.anx.shared.view.ViewUtils;
 import com.flomobility.anx.terminal.TerminalSession;
 import com.flomobility.anx.terminal.TerminalSessionClient;
@@ -197,7 +197,7 @@ public final class TerminalActivity extends Activity implements ServiceConnectio
 
         super.onCreate(savedInstanceState);
 
-        setContentView(R.layout.activity_termux);
+        setContentView(R.layout.activity_terminal);
 
         // Load termux shared preferences
         // This will also fail if TermuxConstants.TERMUX_PACKAGE_NAME does not equal applicationId
@@ -210,9 +210,9 @@ public final class TerminalActivity extends Activity implements ServiceConnectio
 
         setMargins();
 
-        mTerminalActivityRootView = findViewById(R.id.activity_termux_root_view);
+        mTerminalActivityRootView = findViewById(R.id.activity_terminal_root_view);
         mTerminalActivityRootView.setActivity(this);
-        mTerminalActivityBottomSpaceView = findViewById(R.id.activity_termux_bottom_space_view);
+        mTerminalActivityBottomSpaceView = findViewById(R.id.activity_terminal_bottom_space_view);
         mTerminalActivityRootView.setOnApplyWindowInsetsListener(new TerminalActivityRootView.WindowInsetsListener());
 
         View content = findViewById(android.R.id.content);
@@ -353,9 +353,9 @@ public final class TerminalActivity extends Activity implements ServiceConnectio
         if (mFloTerminalViewClient != null)
             mFloTerminalViewClient.onStop();
 
-        removeTermuxActivityRootViewGlobalLayoutListener();
+        removeTerminalActivityRootViewGlobalLayoutListener();
 
-        unregisterTermuxActivityBroadcastReceiever();
+        unregisterTerminalActivityBroadcastReceiever();
         getDrawer().closeDrawers();
     }
 
@@ -369,7 +369,7 @@ public final class TerminalActivity extends Activity implements ServiceConnectio
 
         if (mEndlessService != null) {
             // Do not leave service and session clients with references to activity.
-            mEndlessService.unsetTermuxTerminalSessionClient();
+            mEndlessService.unsetTerminalSessionClient();
             mEndlessService = null;
         }
 
@@ -406,7 +406,7 @@ public final class TerminalActivity extends Activity implements ServiceConnectio
 
         if (mEndlessService.isTermuxSessionsEmpty()) {
             if (mIsVisible) {
-                TermuxInstaller.setupBootstrapIfNeeded(TerminalActivity.this, () -> {
+                TerminalInstaller.setupBootstrapIfNeeded(TerminalActivity.this, () -> {
                     if (mEndlessService == null) return; // Activity might have been destroyed.
                     try {
                         Bundle bundle = getIntent().getExtras();
@@ -455,9 +455,9 @@ public final class TerminalActivity extends Activity implements ServiceConnectio
 
     private void setActivityTheme() {
         if (mProperties.isUsingBlackUI()) {
-            this.setTheme(R.style.Theme_Termux_Black);
+            this.setTheme(R.style.Theme_Terminal_Black);
         } else {
-            this.setTheme(R.style.Theme_Termux);
+            this.setTheme(R.style.Theme_Terminal);
         }
     }
 
@@ -470,7 +470,7 @@ public final class TerminalActivity extends Activity implements ServiceConnectio
     }
 
     private void setMargins() {
-        RelativeLayout relativeLayout = findViewById(R.id.activity_termux_root_relative_layout);
+        RelativeLayout relativeLayout = findViewById(R.id.activity_terminal_root_relative_layout);
         int marginHorizontal = mProperties.getTerminalMarginHorizontal();
         int marginVertical = mProperties.getTerminalMarginVertical();
         ViewUtils.setLayoutMarginsInDp(relativeLayout, marginHorizontal, marginVertical, marginHorizontal, marginVertical);
@@ -482,7 +482,7 @@ public final class TerminalActivity extends Activity implements ServiceConnectio
         getTermuxActivityRootView().getViewTreeObserver().addOnGlobalLayoutListener(getTermuxActivityRootView());
     }
 
-    public void removeTermuxActivityRootViewGlobalLayoutListener() {
+    public void removeTerminalActivityRootViewGlobalLayoutListener() {
         if (getTermuxActivityRootView() != null)
             getTermuxActivityRootView().getViewTreeObserver().removeOnGlobalLayoutListener(getTermuxActivityRootView());
     }
@@ -729,14 +729,14 @@ public final class TerminalActivity extends Activity implements ServiceConnectio
 
     private void showStylingDialog() {
         Intent stylingIntent = new Intent();
-        stylingIntent.setClassName(TermuxConstants.TERMUX_STYLING_PACKAGE_NAME, TermuxConstants.TERMUX_STYLING.TERMUX_STYLING_ACTIVITY_NAME);
+        stylingIntent.setClassName(TerminalConstants.TERMUX_STYLING_PACKAGE_NAME, TerminalConstants.TERMUX_STYLING.TERMUX_STYLING_ACTIVITY_NAME);
         try {
             startActivity(stylingIntent);
         } catch (ActivityNotFoundException | IllegalArgumentException e) {
             // The startActivity() call is not documented to throw IllegalArgumentException.
             // However, crash reporting shows that it sometimes does, so catch it here.
             new AlertDialog.Builder(this).setMessage(getString(R.string.error_styling_not_installed))
-                .setPositiveButton(R.string.action_styling_install, (dialog, which) -> startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(TermuxConstants.TERMUX_STYLING_FDROID_PACKAGE_URL)))).setNegativeButton(android.R.string.cancel, null).show();
+                .setPositiveButton(R.string.action_styling_install, (dialog, which) -> startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(TerminalConstants.TERMUX_STYLING_FDROID_PACKAGE_URL)))).setNegativeButton(android.R.string.cancel, null).show();
         }
     }
     private void toggleKeepScreenOn() {
@@ -777,7 +777,7 @@ public final class TerminalActivity extends Activity implements ServiceConnectio
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (requestCode == PermissionUtils.REQUEST_GRANT_STORAGE_PERMISSION && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             Logger.logInfo(LOG_TAG, "Storage permission granted by user on request.");
-            TermuxInstaller.setupStorageSymlinks(this);
+            TerminalInstaller.setupStorageSymlinks(this);
         } else {
             Logger.logInfo(LOG_TAG, "Storage permission denied by user on request.");
         }
@@ -886,7 +886,7 @@ public final class TerminalActivity extends Activity implements ServiceConnectio
         registerReceiver(mTermuxActivityBroadcastReceiver, intentFilter);
     }
 
-    private void unregisterTermuxActivityBroadcastReceiever() {
+    private void unregisterTerminalActivityBroadcastReceiever() {
         unregisterReceiver(mTermuxActivityBroadcastReceiver);
     }
 
@@ -912,7 +912,7 @@ public final class TerminalActivity extends Activity implements ServiceConnectio
                     case TERMUX_ACTIVITY.ACTION_REQUEST_PERMISSIONS:
                         Logger.logDebug(LOG_TAG, "Received intent to request storage permissions");
                         if (ensureStoragePermissionGranted())
-                            TermuxInstaller.setupStorageSymlinks(TerminalActivity.this);
+                            TerminalInstaller.setupStorageSymlinks(TerminalActivity.this);
                         return;
                     case TERMUX_ACTIVITY.ACTION_RELOAD_STYLE:
                         Logger.logDebug(LOG_TAG, "Received intent to reload styling");

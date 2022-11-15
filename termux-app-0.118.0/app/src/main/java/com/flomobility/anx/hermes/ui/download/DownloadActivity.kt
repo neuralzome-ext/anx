@@ -18,14 +18,14 @@ import com.flomobility.anx.R
 import com.flomobility.anx.app.PluginResultsService
 import com.flomobility.anx.app.TerminalCommandExecutor
 import com.flomobility.anx.app.TerminalCommandExecutor.ITerminalCommandExecutor
-import com.flomobility.anx.app.TermuxInstaller
+import com.flomobility.anx.app.TerminalInstaller
 import com.flomobility.anx.databinding.ActivityUbuntuSetupBinding
 import com.flomobility.anx.hermes.other.clear
 import com.flomobility.anx.hermes.other.setIsInstalled
 import com.flomobility.anx.hermes.other.viewutils.AlertDialog
 import com.flomobility.anx.hermes.ui.home.HomeActivity
 import com.flomobility.anx.hermes.ui.login.LoginActivity
-import com.flomobility.anx.shared.termux.TermuxConstants
+import com.flomobility.anx.shared.terminal.TerminalConstants
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
@@ -135,7 +135,7 @@ echo "done"
                     INSTALL_FS_EXECUTION_CODE -> {
                         result?.let {
                             val exitCode =
-                                result.getInt(TermuxConstants.TERMUX_APP.TERMUX_SERVICE.EXTRA_PLUGIN_RESULT_BUNDLE_EXIT_CODE)
+                                result.getInt(TerminalConstants.TERMUX_APP.TERMUX_SERVICE.EXTRA_PLUGIN_RESULT_BUNDLE_EXIT_CODE)
                             if (exitCode == 0) {
                                 viewModel.setInstallStatus(DownloadViewModel.InstallStatus.Success)
                                 return
@@ -181,7 +181,7 @@ echo "done"
     }
 
     private fun createInstallScript() {
-        TermuxInstaller.setupBootstrapIfNeeded(this@DownloadActivity, Runnable {
+        TerminalInstaller.setupBootstrapIfNeeded(this@DownloadActivity, Runnable {
             try {
                 val dirPath = "/data/data/com.flomobility.anx/files/home/"
                 val installScriptFile = "install.sh"

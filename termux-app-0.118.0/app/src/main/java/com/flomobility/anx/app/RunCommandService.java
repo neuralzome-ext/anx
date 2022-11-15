@@ -13,13 +13,13 @@ import com.flomobility.anx.R;
 import com.flomobility.anx.hermes.daemon.EndlessService;
 import com.flomobility.anx.shared.data.DataUtils;
 import com.flomobility.anx.shared.data.IntentUtils;
-import com.flomobility.anx.shared.file.TermuxFileUtils;
+import com.flomobility.anx.shared.file.TerminalFileUtils;
 import com.flomobility.anx.shared.file.filesystem.FileType;
 import com.flomobility.anx.shared.models.errors.Errno;
 import com.flomobility.anx.shared.models.errors.Error;
-import com.flomobility.anx.shared.termux.TermuxConstants;
-import com.flomobility.anx.shared.termux.TermuxConstants.TERMUX_APP.RUN_COMMAND_SERVICE;
-import com.flomobility.anx.shared.termux.TermuxConstants.TERMUX_APP.TERMUX_SERVICE;
+import com.flomobility.anx.shared.terminal.TerminalConstants;
+import com.flomobility.anx.shared.terminal.TerminalConstants.TERMUX_APP.RUN_COMMAND_SERVICE;
+import com.flomobility.anx.shared.terminal.TerminalConstants.TERMUX_APP.TERMUX_SERVICE;
 import com.flomobility.anx.shared.file.FileUtils;
 import com.flomobility.anx.shared.logger.Logger;
 import com.flomobility.anx.shared.notification.NotificationUtils;
@@ -94,9 +94,9 @@ public class RunCommandService extends Service {
         if (replaceCommaAlternativeCharsInArguments) {
             String commaAlternativeCharsInArguments = IntentUtils.getStringExtraIfSet(intent, RUN_COMMAND_SERVICE.EXTRA_COMMA_ALTERNATIVE_CHARS_IN_ARGUMENTS, null);
             if (commaAlternativeCharsInArguments == null)
-                commaAlternativeCharsInArguments = TermuxConstants.COMMA_ALTERNATIVE;
+                commaAlternativeCharsInArguments = TerminalConstants.COMMA_ALTERNATIVE;
             // Replace any commaAlternativeCharsInArguments characters with normal commas
-            DataUtils.replaceSubStringsInStringArrayItems(executionCommand.arguments, commaAlternativeCharsInArguments, TermuxConstants.COMMA_NORMAL);
+            DataUtils.replaceSubStringsInStringArrayItems(executionCommand.arguments, commaAlternativeCharsInArguments, TerminalConstants.COMMA_NORMAL);
         }
 
         executionCommand.stdin = IntentUtils.getStringExtraIfSet(intent, RUN_COMMAND_SERVICE.EXTRA_STDIN, null);
@@ -141,7 +141,7 @@ public class RunCommandService extends Service {
         }
 
         // Get canonical path of executable
-        executionCommand.executable = TermuxFileUtils.getCanonicalPath(executionCommand.executable, null, true);
+        executionCommand.executable = TerminalFileUtils.getCanonicalPath(executionCommand.executable, null, true);
 
         // If executable is not a regular file, or is not readable or executable, then just return
         // Setting of missing read and execute permissions is not done
@@ -159,14 +159,14 @@ public class RunCommandService extends Service {
         // If workingDirectory is not null or empty
         if (executionCommand.workingDirectory != null && !executionCommand.workingDirectory.isEmpty()) {
             // Get canonical path of workingDirectory
-            executionCommand.workingDirectory = TermuxFileUtils.getCanonicalPath(executionCommand.workingDirectory, null, true);
+            executionCommand.workingDirectory = TerminalFileUtils.getCanonicalPath(executionCommand.workingDirectory, null, true);
 
             // If workingDirectory is not a directory, or is not readable or writable, then just return
             // Creation of missing directory and setting of read, write and execute permissions are only done if workingDirectory is
             // under allowed termux working directory paths.
             // We try to set execute permissions, but ignore if they are missing, since only read and write permissions are required
             // for working directories.
-            error = TermuxFileUtils.validateDirectoryFileExistenceAndPermissions("working", executionCommand.workingDirectory,
+            error = TerminalFileUtils.validateDirectoryFileExistenceAndPermissions("working", executionCommand.workingDirectory,
                 true, true, true,
                 false, true);
             if (error != null) {
@@ -180,7 +180,7 @@ public class RunCommandService extends Service {
         // use it instead of the canonical path above since otherwise arguments would be passed to
         // coreutils/busybox instead and command would fail. Broken symlinks would already have been
         // validated so it should be fine to use it.
-        executableExtra = TermuxFileUtils.getExpandedTermuxPath(executableExtra);
+        executableExtra = TerminalFileUtils.getExpandedTerminalPath(executableExtra);
 
         if (FileUtils.getFileType(executableExtra, false) == FileType.SYMLINK) {
             Logger.logVerbose(LOG_TAG, "The executableExtra path \"" + executableExtra + "\" is a symlink so using it instead of the canonical path \"" + executionCommand.executable + "\"");
@@ -232,7 +232,7 @@ public class RunCommandService extends Service {
     private void runStartForeground() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             setupNotificationChannel();
-            startForeground(TermuxConstants.TERMUX_RUN_COMMAND_NOTIFICATION_ID, buildNotification());
+            startForeground(TerminalConstants.TERMUX_RUN_COMMAND_NOTIFICATION_ID, buildNotification());
         }
     }
 
@@ -245,8 +245,8 @@ public class RunCommandService extends Service {
     private Notification buildNotification() {
         // Build the notification
         Notification.Builder builder =  NotificationUtils.geNotificationBuilder(this,
-            TermuxConstants.TERMUX_RUN_COMMAND_NOTIFICATION_CHANNEL_ID, Notification.PRIORITY_LOW,
-            TermuxConstants.TERMUX_RUN_COMMAND_NOTIFICATION_CHANNEL_NAME, null, null,
+            TerminalConstants.TERMUX_RUN_COMMAND_NOTIFICATION_CHANNEL_ID, Notification.PRIORITY_LOW,
+            TerminalConstants.TERMUX_RUN_COMMAND_NOTIFICATION_CHANNEL_NAME, null, null,
             null, null, NotificationUtils.NOTIFICATION_MODE_SILENT);
         if (builder == null)  return null;
 
@@ -265,8 +265,8 @@ public class RunCommandService extends Service {
     private void setupNotificationChannel() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return;
 
-        NotificationUtils.setupNotificationChannel(this, TermuxConstants.TERMUX_RUN_COMMAND_NOTIFICATION_CHANNEL_ID,
-            TermuxConstants.TERMUX_RUN_COMMAND_NOTIFICATION_CHANNEL_NAME, NotificationManager.IMPORTANCE_LOW);
+        NotificationUtils.setupNotificationChannel(this, TerminalConstants.TERMUX_RUN_COMMAND_NOTIFICATION_CHANNEL_ID,
+            TerminalConstants.TERMUX_RUN_COMMAND_NOTIFICATION_CHANNEL_NAME, NotificationManager.IMPORTANCE_LOW);
     }
 
 }
