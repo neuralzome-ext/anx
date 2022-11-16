@@ -62,6 +62,8 @@
         <!-- Customize your theme here. -->
         <item name="android:navigationBarColor">@color/navigationBackground</item>
 
+        <item name="snackbarStyle">@style/Flo.Snackbar</item>
+
         <!--        <item name="android:windowActivityTransitions">true</item>-->
 
         <!-- specify enter and exit transitions -->
@@ -114,6 +116,10 @@
 
     <style name="Flo.Button" parent="Widget.MaterialComponents.Button.TextButton">
         <item name="android:backgroundTint">@drawable/button_color</item>
+    </style>
+
+    <style name="Flo.Snackbar" parent="Widget.MaterialComponents.Snackbar">
+        <item name="android:layout_margin">16dp</item>
     </style>
 
 </resources>
