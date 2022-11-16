@@ -112,4 +112,8 @@
         <item name="android:textColor">@color/progressColor</item>
     </style>
 
+    <style name="Flo.Button" parent="Widget.MaterialComponents.Button.TextButton">
+        <item name="android:backgroundTint">@drawable/button_color</item>
+    </style>
+
 </resources>

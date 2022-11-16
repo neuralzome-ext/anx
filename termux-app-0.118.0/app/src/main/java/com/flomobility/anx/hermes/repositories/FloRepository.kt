@@ -11,4 +11,6 @@ interface FloRepository {
     suspend fun login(loginRequest: LoginRequest): Resource<LoginResponse>
 
     suspend fun getInfo(infoRequest: InfoRequest): Resource<InfoResponse>
+
+    suspend fun getEula(url: String): Resource<String>
 }

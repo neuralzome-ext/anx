@@ -26,8 +26,11 @@ object Constants {
     const val DEVICE_EXPIRY = "deviceExpiry"
     const val INSTALL_STATUS = "installStatus"
     const val ON_BOOT = "onBoot"
+    const val KEY_ACCEPT_LICENSE = "KEY_ACCEPT_LICENSE"
 
     const val FILES_SYSTEM_FILE_NAME = "ubuntu-latest.tar.gz"
+
+    const val EULA_URL = "https://raw.githubusercontent.com/flomobility/anx_docs/master/eula.md"
 
     val BASE_URL: String = when (BUILD_TYPE) {
         FloApplication.BuildType.DEV -> FLO_DEVELOPMENT_URL

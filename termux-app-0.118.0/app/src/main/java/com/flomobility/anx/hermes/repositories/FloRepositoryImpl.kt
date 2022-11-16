@@ -14,13 +14,12 @@ import kotlinx.coroutines.withContext
 import retrofit2.Response
 import timber.log.Timber
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class FloRepositoryImpl @Inject constructor(
     private val floApi: FloApiService,
     private val sharedPreferences: SharedPreferences
-//    private val sharedPreferences: SharedPreferences,
-//    private val tokenManager: TokenManager,
-//    private val floConnectivityManager: FloConnectivityManager
 ) : FloRepository {
 
     override suspend fun login(loginRequest: LoginRequest) = handleApiResponse {
@@ -32,7 +31,9 @@ class FloRepositoryImpl @Inject constructor(
         floApi.getInfo(authToken, infoRequest)
     }
 
-
+    override suspend fun getEula(url: String) = handleApiResponse {
+        floApi.getEula(url)
+    }
 }
 
 suspend inline fun <reified T> handleApiResponse(

@@ -11,14 +11,12 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.lifecycleScope
 import com.flomobility.anx.databinding.ActivitySplashBinding
-import com.flomobility.anx.hermes.other.Constants
-import com.flomobility.anx.hermes.other.checkToken
-import com.flomobility.anx.hermes.other.clear
-import com.flomobility.anx.hermes.other.getIsInstalled
+import com.flomobility.anx.hermes.other.*
 import com.flomobility.anx.hermes.other.viewutils.AlertDialog
 import com.flomobility.anx.hermes.phone.Device
 import com.flomobility.anx.hermes.ui.download.DownloadActivity
 import com.flomobility.anx.hermes.ui.home.HomeActivity
+import com.flomobility.anx.hermes.ui.license.LicenseActivity
 import com.flomobility.anx.hermes.ui.login.LoginActivity
 import com.google.android.gms.location.*
 import com.google.android.material.snackbar.Snackbar
@@ -168,7 +166,10 @@ class SplashActivity : AppCompatActivity() {
     private fun checkConditions() {
         lifecycleScope.launch {
             delay(2000)
-            when (true) {
+            when {
+                !sharedPreferences.getAcceptLicense() -> {
+                    LicenseActivity.navigateToLicense(this@SplashActivity)
+                }
                 !sharedPreferences.checkToken() -> LoginActivity.navigateToLogin(this@SplashActivity)
                 /*File("$FILE_PATH/${Constants.FILES_SYSTEM_FILE_NAME}").exists() && */sharedPreferences.getIsInstalled() -> {
                     HomeActivity.navigateToHome(

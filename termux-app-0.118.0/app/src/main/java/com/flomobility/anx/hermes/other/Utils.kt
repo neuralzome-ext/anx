@@ -4,6 +4,7 @@ import android.content.SharedPreferences
 import com.flomobility.anx.hermes.other.Constants.DEVICE_EXPIRY
 import com.flomobility.anx.hermes.other.Constants.DEVICE_ID
 import com.flomobility.anx.hermes.other.Constants.INSTALL_STATUS
+import com.flomobility.anx.hermes.other.Constants.KEY_ACCEPT_LICENSE
 import com.flomobility.anx.hermes.other.Constants.ON_BOOT
 import com.flomobility.anx.hermes.other.Constants.USER_TOKEN
 import timber.log.Timber
@@ -225,6 +226,14 @@ fun SharedPreferences.setIsOnBoot(isOnBoot: Boolean) {
 
 fun SharedPreferences.getIsOnBoot(): Boolean {
     return this.getBoolean(ON_BOOT, false)
+}
+
+fun SharedPreferences.setAcceptLicense(accept: Boolean) {
+    this.edit().putBoolean(KEY_ACCEPT_LICENSE, accept).apply()
+}
+
+fun SharedPreferences.getAcceptLicense(): Boolean {
+    return this.getBoolean(KEY_ACCEPT_LICENSE, false)
 }
 
 fun SharedPreferences.clear() {

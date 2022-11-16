@@ -38,14 +38,13 @@
     <uses-permission android:name="android.permission.TETHER_PRIVILEGED" />
     <uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS" />
     <uses-permission android:name="android.permission.WRITE_SETTINGS" />
-    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE"/>
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.READ_PHONE_NUMBERS" />
     <uses-permission android:name="android.permission.READ_SMS" /> <!-- <uses-permission android:name="android.permission.DEVICE_POWER"/> -->
     <uses-feature android:name="android.hardware.usb.host" />
-
-
     <uses-feature android:name="android.hardware.usb.host" />
+
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
@@ -58,9 +57,10 @@
     <uses-permission android:name="android.permission.DUMP" />
     <uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS" />
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
-    <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS" tools:ignore="ProtectedPermissions" />
-
-    <uses-permission android:name="com.flomobility.anx.permission.RUN_COMMAND"  />
+    <uses-permission
+        android:name="android.permission.PACKAGE_USAGE_STATS"
+        tools:ignore="ProtectedPermissions" />
+    <uses-permission android:name="com.flomobility.anx.permission.RUN_COMMAND" />
 
     <application
         android:name=".FloApplication"
@@ -70,8 +70,11 @@
         android:label="@string/application_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="false"
-        android:usesCleartextTraffic="true"
-        android:theme="@style/Theme.Flo">
+        android:theme="@style/Theme.Flo"
+        android:usesCleartextTraffic="true">
+        <activity
+            android:name=".hermes.ui.license.LicenseActivity"
+            android:exported="false" />
 
         <activity
             android:name=".app.TerminalActivity"
@@ -84,6 +87,19 @@
                 android:resource="@xml/shortcuts" />
         </activity>
 
+        <activity-alias
+            android:name=".HomeActivity"
+            android:targetActivity=".app.TerminalActivity">
+
+            <!-- Launch activity automatically on boot on Android Things devices -->
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.IOT_LAUNCHER" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity-alias>
+
         <activity android:name=".hermes.ui.settings.SettingsActivity" />
         <activity
             android:name=".hermes.ui.splash.SplashActivity"
@@ -91,10 +107,10 @@
             android:theme="@style/SplashTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <activity android:name=".hermes.ui.login.LoginActivity" />
         <activity android:name=".hermes.ui.download.DownloadActivity" />
         <activity android:name=".hermes.ui.home.HomeActivity" />
@@ -115,19 +131,6 @@
             </intent-filter>
         </receiver>
 
-        <activity-alias
-            android:name=".HomeActivity"
-            android:targetActivity=".app.TerminalActivity">
-
-            <!-- Launch activity automatically on boot on Android Things devices -->
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.IOT_LAUNCHER" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </activity-alias>
-
         <activity
             android:name=".app.activities.HelpActivity"
             android:exported="false"
@@ -135,19 +138,15 @@
             android:parentActivityName=".app.TerminalActivity"
             android:resizeableActivity="true"
             android:theme="@android:style/Theme.Material.Light.DarkActionBar" />
-
         <activity
             android:name=".app.activities.SettingsActivity"
             android:exported="true"
             android:label="@string/title_activity_terminal_settings"
             android:theme="@style/Theme.AppCompat.Light.DarkActionBar" />
-
         <activity
             android:name=".shared.activities.ReportActivity"
-            android:theme="@style/Theme.AppCompat.TerminalReportActivity"
             android:documentLaunchMode="intoExisting"
-            />
-
+            android:theme="@style/Theme.AppCompat.TerminalReportActivity" />
         <activity
             android:name=".filepicker.TerminalFileReceiverActivity"
             android:excludeFromRecents="true"
@@ -184,7 +183,6 @@
             </intent-filter>
         </activity>
 
-
         <provider
             android:name=".filepicker.TerminalDocumentsProvider"
             android:authorities="${TERMINAL_PACKAGE_NAME}.documents"
@@ -195,7 +193,6 @@
                 <action android:name="android.content.action.DOCUMENTS_PROVIDER" />
             </intent-filter>
         </provider>
-
         <provider
             android:name=".app.TerminalOpenReceiver$ContentProvider"
             android:authorities="${TERMINAL_PACKAGE_NAME}.files"
@@ -203,16 +200,14 @@
             android:grantUriPermissions="true"
             android:permission="${TERMINAL_PACKAGE_NAME}.permission.RUN_COMMAND" />
 
-
-        <receiver android:name=".app.TerminalOpenReceiver" android:exported="false" />
-
-        <receiver android:name=".shared.activities.ReportActivity$ReportActivityBroadcastReceiver" android:exported="false" />
-
-
-<!--        <service-->
-<!--            android:name=".app.TerminalService"-->
-<!--            android:exported="false" />-->
-
+        <receiver
+            android:name=".app.TerminalOpenReceiver"
+            android:exported="false" />
+        <receiver
+            android:name=".shared.activities.ReportActivity$ReportActivityBroadcastReceiver"
+            android:exported="false" /> <!-- <service -->
+        <!-- android:name=".app.TerminalService" -->
+        <!-- android:exported="false" /> -->
         <service
             android:name=".app.RunCommandService"
             android:exported="true"
@@ -221,11 +216,11 @@
                 <action android:name="${TERMINAL_PACKAGE_NAME}.RUN_COMMAND" />
             </intent-filter>
         </service>
-
         <service android:name="com.flomobility.anx.app.PluginResultsService" />
-
-        <!-- This (or rather, value 2.1 or higher) is needed to make the Samsung Galaxy S8 mark the
-        app with "This app is optimized to run in full screen." -->
+        <!--
+ This (or rather, value 2.1 or higher) is needed to make the Samsung Galaxy S8 mark the
+        app with "This app is optimized to run in full screen."
+        -->
         <meta-data
             android:name="android.max_aspect"
             android:value="10.0" />
@@ -235,7 +230,6 @@
         <meta-data
             android:name="com.samsung.android.multidisplay.keep_process_alive"
             android:value="true" />
-
     </application>
 
 </manifest>

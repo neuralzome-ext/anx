@@ -1,15 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<!DOCTYPE resources [
-    <!ENTITY TERMINAL_PACKAGE_NAME "com.flomobility.anx">
-    <!ENTITY TERMINAL_APP_NAME "anx">
-    <!ENTITY TERMINAL_API_APP_NAME "Terminal:API">
-    <!ENTITY TERMINAL_BOOT_APP_NAME "Terminal:Boot">
-    <!ENTITY TERMINAL_FLOAT_APP_NAME "Terminal:Float">
-    <!ENTITY TERMINAL_STYLING_APP_NAME "Terminal:Styling">
-    <!ENTITY TERMINAL_TASKER_APP_NAME "Terminal:Tasker">
-    <!ENTITY TERMINAL_WIDGET_APP_NAME "Terminal:Widget">
-    ]>
+<!DOCTYPE resources [<!ENTITY TERMINAL_PACKAGE_NAME "com.flomobility.anx"><!ENTITY TERMINAL_APP_NAME "anx"><!ENTITY TERMINAL_API_APP_NAME "Terminal:API"><!ENTITY TERMINAL_BOOT_APP_NAME "Terminal:Boot"><!ENTITY TERMINAL_FLOAT_APP_NAME "Terminal:Float"><!ENTITY TERMINAL_STYLING_APP_NAME "Terminal:Styling"><!ENTITY TERMINAL_TASKER_APP_NAME "Terminal:Tasker"><!ENTITY TERMINAL_WIDGET_APP_NAME "Terminal:Widget">]>
 
 <resources>
 
@@ -17,12 +8,10 @@
     <string name="shared_user_label">&TERMINAL_APP_NAME; user</string>
 
 
-
     <!-- Terminal RUN_COMMAND permission -->
     <string name="permission_run_command_label">Run commands in &TERMINAL_APP_NAME; environment</string>
     <string name="permission_run_command_description">execute arbitrary commands within &TERMINAL_APP_NAME;
         environment and access files</string>
-
 
 
     <!-- Terminal Bootstrap Packages Installation -->
@@ -34,7 +23,6 @@
     <string name="bootstrap_error_not_primary_user_message">&TERMINAL_APP_NAME; can only be run as the primary user.
         \nBootstrap binaries compiled for &TERMINAL_APP_NAME; have hardcoded $PREFIX path and cannot be installed
         under any path other than %1$s.</string>
-
 
 
     <!-- Terminal Sidebar and Shortcuts -->
@@ -52,7 +40,6 @@
 
     <string name="msg_enabling_terminal_toolbar">Enabling Terminal Toolbar</string>
     <string name="msg_disabling_terminal_toolbar">Disabling Terminal Toolbar</string>
-
 
 
     <!-- Terminal Popup -->
@@ -86,12 +73,10 @@
     <string name="action_styling_install">Install</string>
 
 
-
     <!-- Terminal Notifications -->
     <string name="notification_action_exit">Exit</string>
     <string name="notification_action_wake_lock">Acquire wakelock</string>
     <string name="notification_action_wake_unlock">Release wakelock</string>
-
 
 
     <!-- TerminalService -->
@@ -100,12 +85,10 @@
         Grants it from Settings -> Apps -> &TERMINAL_APP_NAME; -> Advanced</string>
 
 
-
     <!-- Terminal RunCommandService -->
     <string name="error_run_command_service_invalid_intent_action">Invalid intent action to RunCommandService: `%1$s`</string>
     <string name="error_run_command_service_mandatory_extra_missing">Mandatory extra missing to RunCommandService: \"%1$s\"</string>
     <string name="error_run_command_service_api_help">Visit %1$s for more info on RUN_COMMAND Intent usage.</string>
-
 
 
     <!-- Terminal File Receiver -->
@@ -114,11 +97,9 @@
     <string name="action_file_received_open_directory">Open directory</string>
 
 
-
     <!-- Miscellaneous -->
     <string name="error_allow_external_apps_ungranted">%1$s requires `allow-external-apps`
         property to be set to `true` in `%2$s` file.</string>
-
 
 
     <!-- Terminal Settings -->
@@ -128,67 +109,66 @@
     <string name="terminal_preferences_title">&TERMINAL_APP_NAME;</string>
     <string name="terminal_preferences_summary">Preferences for &TERMINAL_APP_NAME; app</string>
 
-        <!-- Debugging Preferences -->
-        <string name="terminal_debugging_preferences_title">Debugging</string>
-        <string name="terminal_debugging_preferences_summary">Preferences for debugging</string>
+    <!-- Debugging Preferences -->
+    <string name="terminal_debugging_preferences_title">Debugging</string>
+    <string name="terminal_debugging_preferences_summary">Preferences for debugging</string>
 
-            <!-- Logging Category -->
-            <string name="terminal_logging_header">Logging</string>
+    <!-- Logging Category -->
+    <string name="terminal_logging_header">Logging</string>
 
-                <!-- Log Level -->
-                <string name="terminal_log_level_title">Log Level</string>
+    <!-- Log Level -->
+    <string name="terminal_log_level_title">Log Level</string>
 
-                <!-- Terminal View Key Logging -->
-                <string name="terminal_view_key_logging_enabled_title">Terminal View Key Logging</string>
-                <string name="terminal_view_key_logging_enabled_off">Logs will not have entries for terminal view keys. (Default)</string>
-                <string name="terminal_view_key_logging_enabled_on">Logcat logs will have entries for terminal view keys.
+    <!-- Terminal View Key Logging -->
+    <string name="terminal_view_key_logging_enabled_title">Terminal View Key Logging</string>
+    <string name="terminal_view_key_logging_enabled_off">Logs will not have entries for terminal view keys. (Default)</string>
+    <string name="terminal_view_key_logging_enabled_on">Logcat logs will have entries for terminal view keys.
                     These are very verbose and should be disabled under normal circumstances or will cause performance issues.</string>
 
-                <!-- Plugin Error Notifications -->
-                <string name="terminal_plugin_error_notifications_enabled_title">Plugin Error Notifications</string>
-                <string name="terminal_plugin_error_notifications_enabled_off">Disable flashes and notifications for plugin errors.</string>
-                <string name="terminal_plugin_error_notifications_enabled_on">Show flashes and notifications for plugin errors. (Default)</string>
+    <!-- Plugin Error Notifications -->
+    <string name="terminal_plugin_error_notifications_enabled_title">Plugin Error Notifications</string>
+    <string name="terminal_plugin_error_notifications_enabled_off">Disable flashes and notifications for plugin errors.</string>
+    <string name="terminal_plugin_error_notifications_enabled_on">Show flashes and notifications for plugin errors. (Default)</string>
 
-                <!-- Crash Report Notifications -->
-                <string name="terminal_crash_report_notifications_enabled_title">Crash Report Notifications</string>
-                <string name="terminal_crash_report_notifications_enabled_off">Disable notifications for crash reports.</string>
-                <string name="terminal_crash_report_notifications_enabled_on">Show notifications for crash reports. (Default)</string>
+    <!-- Crash Report Notifications -->
+    <string name="terminal_crash_report_notifications_enabled_title">Crash Report Notifications</string>
+    <string name="terminal_crash_report_notifications_enabled_off">Disable notifications for crash reports.</string>
+    <string name="terminal_crash_report_notifications_enabled_on">Show notifications for crash reports. (Default)</string>
 
 
-        <!-- Terminal IO Preferences -->
-        <string name="terminal_io_preferences_title">Terminal I/O</string>
-        <string name="terminal_io_preferences_summary">Preferences for terminal I/O</string>
+    <!-- Terminal IO Preferences -->
+    <string name="terminal_io_preferences_title">Terminal I/O</string>
+    <string name="terminal_io_preferences_summary">Preferences for terminal I/O</string>
 
-            <!-- Keyboard Category -->
-            <string name="terminal_keyboard_header">Keyboard</string>
+    <!-- Keyboard Category -->
+    <string name="terminal_keyboard_header">Keyboard</string>
 
-                <!-- Soft Keyboard -->
-                <string name="terminal_soft_keyboard_enabled_title">Soft Keyboard Enabled</string>
-                <string name="terminal_soft_keyboard_enabled_off">Soft keyboard will be disabled.</string>
-                <string name="terminal_soft_keyboard_enabled_on">Soft keyboard will be enabled. (Default)</string>
+    <!-- Soft Keyboard -->
+    <string name="terminal_soft_keyboard_enabled_title">Soft Keyboard Enabled</string>
+    <string name="terminal_soft_keyboard_enabled_off">Soft keyboard will be disabled.</string>
+    <string name="terminal_soft_keyboard_enabled_on">Soft keyboard will be enabled. (Default)</string>
 
-                <!-- Soft Keyboard Only If No Hardware-->
-                <string name="terminal_soft_keyboard_enabled_only_if_no_hardware_title">Soft Keyboard Only If No Hardware</string>
-                <string name="terminal_soft_keyboard_enabled_only_if_no_hardware_off">Soft keyboard will be enabled even if
+    <!-- Soft Keyboard Only If No Hardware-->
+    <string name="terminal_soft_keyboard_enabled_only_if_no_hardware_title">Soft Keyboard Only If No Hardware</string>
+    <string name="terminal_soft_keyboard_enabled_only_if_no_hardware_off">Soft keyboard will be enabled even if
                     hardware keyboard is connected. (Default)</string>
-                <string name="terminal_soft_keyboard_enabled_only_if_no_hardware_on">Soft keyboard will be enabled only if
+    <string name="terminal_soft_keyboard_enabled_only_if_no_hardware_on">Soft keyboard will be enabled only if
                     no hardware keyboard is connected.</string>
 
 
-        <!-- Terminal View Preferences -->
-        <string name="terminal_view_preferences_title">Terminal View</string>
-        <string name="terminal_view_preferences_summary">Preferences for terminal view</string>
+    <!-- Terminal View Preferences -->
+    <string name="terminal_view_preferences_title">Terminal View</string>
+    <string name="terminal_view_preferences_summary">Preferences for terminal view</string>
 
-            <!-- View Category -->
-            <string name="terminal_view_view_header">View</string>
+    <!-- View Category -->
+    <string name="terminal_view_view_header">View</string>
 
-                <!-- Terminal View Margin Adjustment -->
-                <string name="terminal_view_terminal_margin_adjustment_title">Terminal Margin Adjustment</string>
-                <string name="terminal_view_terminal_margin_adjustment_off">Terminal margin adjustment will be disabled.</string>
-                <string name="terminal_view_terminal_margin_adjustment_on">Terminal margin adjustment will be enabled.
+    <!-- Terminal View Margin Adjustment -->
+    <string name="terminal_view_terminal_margin_adjustment_title">Terminal Margin Adjustment</string>
+    <string name="terminal_view_terminal_margin_adjustment_off">Terminal margin adjustment will be disabled.</string>
+    <string name="terminal_view_terminal_margin_adjustment_on">Terminal margin adjustment will be enabled.
                     It should be enabled to try to fix the issue where soft keyboard covers part of extra keys/terminal view.
                     If it causes screen flickering on your devices, then disable it. (Default)</string>
-
 
 
     <!-- Terminal:API App Preferences -->
@@ -196,23 +176,21 @@
     <string name="terminal_api_preferences_summary">Preferences for &TERMINAL_API_APP_NAME; app</string>
 
 
-
     <!-- Terminal:Float App Preferences -->
     <string name="terminal_float_preferences_title">&TERMINAL_FLOAT_APP_NAME;</string>
     <string name="terminal_float_preferences_summary">Preferences for &TERMINAL_FLOAT_APP_NAME; app</string>
 
 
-
     <!-- Terminal:Tasker App Preferences -->
     <string name="terminal_tasker_preferences_title">&TERMINAL_TASKER_APP_NAME;</string>
-    <string name="terminal_tasker_preferences_summary">Preferences for &TERMINAL_TASKER_APP_NAME; app</string>
-
+    <string name="terminal_tasker_preferences_summary">Preferences for &TERMINAL_TASKER_APP_NAME;
+        app</string>
 
 
     <!-- Terminal:Widget App Preferences -->
     <string name="terminal_widget_preferences_title">&TERMINAL_WIDGET_APP_NAME;</string>
-    <string name="terminal_widget_preferences_summary">Preferences for &TERMINAL_WIDGET_APP_NAME; app</string>
-
+    <string name="terminal_widget_preferences_summary">Preferences for &TERMINAL_WIDGET_APP_NAME;
+        app</string>
 
 
     <!-- About Preference -->
@@ -230,5 +208,9 @@
     <string name="actions">Actions</string>
     <string name="start_on_boot">Start on boot</string>
     <string name="logout">Logout</string>
+    <string name="try_again">Try Again</string>
+    <string name="end_user_license_agreement">End User License Agreement</string>
+    <string name="i_understand_and_agree_to_the_above_agreement">I understand and agree to the above agreement.</string>
+    <string name="proceed">Proceed</string>
 
 </resources>
