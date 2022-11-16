@@ -36,7 +36,7 @@ object AppModule {
     ) = NotificationCompat.Builder(app, NOTIFICATION_CHANNEL_ID)
         .setAutoCancel(false)
         .setOngoing(true)
-        .setSmallIcon(R.drawable.ic_launcher_foreground)
+        .setSmallIcon(R.drawable.ic_flo)
         .setContentTitle("anx service")
         .setContentText("No active session.")
 

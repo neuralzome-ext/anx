@@ -52,9 +52,9 @@ class LoginActivity : ComponentActivity() {
                 Identity.getSignInClient(this@LoginActivity).getPhoneNumberFromIntent(result.data)
             bind.deviceId.text = "DEVICE ID: $phoneNumber"
             sharedPreferences.putDeviceID(phoneNumber)
-            Timber.d("AYUSTARK $phoneNumber")
         } catch (e: Exception) {
             Timber.e("Phone Number Hint failed")
+
         }
     }
 
@@ -63,7 +63,6 @@ class LoginActivity : ComponentActivity() {
         binding = ActivityLoginBinding.inflate(layoutInflater)
         viewModel = ViewModelProvider(this@LoginActivity)[LoginViewModel::class.java]
         setContentView(binding?.root)
-        sharedPreferences.putDeviceID("+917485861228")
         if (sharedPreferences.getDeviceID() != null) {
             bind.deviceId.text = "DEVICE ID: ${sharedPreferences.getDeviceID()}"
         } else {

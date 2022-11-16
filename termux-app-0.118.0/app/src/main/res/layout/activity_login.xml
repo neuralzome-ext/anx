@@ -13,7 +13,7 @@
         android:layout_marginTop="10dp"
         android:layout_marginEnd="10dp"
         android:src="@drawable/ic_help"
-        android:visibility="gone"/>
+        android:visibility="gone" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -21,11 +21,11 @@
         android:gravity="center"
         android:orientation="vertical"
         android:padding="15dp">
-        
+
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/ic_flo"/>
+            android:src="@drawable/ic_flo" />
 
         <TextView
             android:id="@+id/deviceId"
@@ -33,12 +33,16 @@
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="20dp"
             android:layout_marginTop="40dp"
+            android:clickable="true"
+            android:focusable="true"
             android:fontFamily="@font/metropolis_regular_webfont"
-            android:text="Click to select Device ID"
+            android:foreground="?attr/selectableItemBackgroundBorderless"
             android:gravity="center"
+            android:padding="8dp"
+            android:text="Click to select Device ID"
             android:textColor="@color/white"
-            android:textSize="18sp"/>
-        
+            android:textSize="18sp" />
+
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/emailLayout"
             style="@style/Widget.SignIN.TextInputLayout"

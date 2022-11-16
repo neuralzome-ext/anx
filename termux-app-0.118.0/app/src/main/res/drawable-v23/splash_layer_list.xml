@@ -6,7 +6,7 @@
     <item
         android:width="198dp"
         android:height="120dp"
-        android:drawable="@drawable/ic_flo_logo"
+        android:drawable="@drawable/ic_flo_mobility"
         android:gravity="center" />
 
 
