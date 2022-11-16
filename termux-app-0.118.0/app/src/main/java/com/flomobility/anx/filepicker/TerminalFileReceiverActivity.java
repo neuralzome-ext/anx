@@ -214,7 +214,7 @@ public class TerminalFileReceiverActivity extends Activity {
     void handleUrlAndFinish(final String url) {
         final File urlOpenerProgramFile = new File(URL_OPENER_PROGRAM);
         if (!urlOpenerProgramFile.isFile()) {
-            showErrorDialogAndQuit("The following file does not exist:\n$HOME/bin/termux-url-opener\n\n"
+            showErrorDialogAndQuit("The following file does not exist:\n$HOME/bin/terminal-url-opener\n\n"
                 + "Create this file as a script or a symlink - it will be called with the shared URL as the first argument.");
             return;
         }

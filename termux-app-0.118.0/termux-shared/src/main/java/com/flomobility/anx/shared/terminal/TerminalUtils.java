@@ -420,7 +420,7 @@ public class TerminalUtils {
             return null;
         }
 
-        aptInfoScript = aptInfoScript.replaceAll(Pattern.quote("@TERMUX_PREFIX@"), TerminalConstants.TERMINAL_PREFIX_DIR_PATH);
+        aptInfoScript = aptInfoScript.replaceAll(Pattern.quote("@TERMINAL_PREFIX@"), TerminalConstants.TERMINAL_PREFIX_DIR_PATH);
 
         ExecutionCommand executionCommand = new ExecutionCommand(1, TerminalConstants.TERMINAL_BIN_PREFIX_DIR_PATH + "/bash", null, aptInfoScript, null, true, false);
         executionCommand.commandLabel = "APT Info Command";

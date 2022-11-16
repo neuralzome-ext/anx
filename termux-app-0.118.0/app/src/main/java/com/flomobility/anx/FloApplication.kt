@@ -27,7 +27,7 @@ class FloApplication: Application() {
         Timber.plant(Timber.DebugTree())
 
         // Set crash handler for the app
-        TerminalCrashUtils.setCrashHandler(this)
+//        TerminalCrashUtils.setCrashHandler(this)
 
         // Set log level for the app (Terminal
         setLogLevel()

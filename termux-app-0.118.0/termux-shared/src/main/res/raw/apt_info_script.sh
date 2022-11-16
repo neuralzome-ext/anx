@@ -2,7 +2,7 @@
 
 subscribed_repositories() {
 	local main_sources
-	main_sources=$(grep -P '^\s*deb\s' "@TERMUX_PREFIX@/etc/apt/sources.list")
+	main_sources=$(grep -P '^\s*deb\s' "@TERMINAL_PREFIX@/etc/apt/sources.list")
 
 	if [ -n "$main_sources" ]; then
 		echo "#### sources.list"
@@ -22,7 +22,7 @@ subscribed_repositories() {
 			fi
 			echo "\`$supl_sources\`  "
 		fi
-	done < <(find "@TERMUX_PREFIX@/etc/apt/sources.list.d" -maxdepth 1 ! -type d)
+	done < <(find "@TERMINAL_PREFIX@/etc/apt/sources.list.d" -maxdepth 1 ! -type d)
 }
 
 updatable_packages() {

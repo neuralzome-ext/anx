@@ -99,10 +99,6 @@ fi
 EOM
 echo "The start script has been successfully created!"
 
-echo "Fixing shebang of ${'$'}{START}, please wait..."
-termux-fix-shebang ${'$'}bin
-echo "Successfully fixed shebang of startubuntu.sh!"
-
 echo "Making startubuntu.sh executable please wait..."
 chmod +x ${'$'}START
 echo "Successfully made start.sh executable"

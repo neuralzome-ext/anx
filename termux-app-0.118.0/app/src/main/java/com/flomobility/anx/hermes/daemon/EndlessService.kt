@@ -322,10 +322,10 @@ class EndlessService : LifecycleService() , TerminalTask.TermuxTaskClient, com.f
     @Synchronized
     private fun killAllTermuxExecutionCommands() {
         var processResult: Boolean
-        Logger.logDebug(
+        /*Logger.logDebug(
             LOG_TAG,
-            "Killing TermuxSessions=" + (mTerminalSessions?.size ?:0) + ", TermuxTasks=" + mTerminalTasks.size + ", PendingPluginExecutionCommands=" + mPendingPluginExecutionCommands.size
-        )
+            "Killing TerminalSessions=" + (mTerminalSessions?.size ?:0) + ", TerminalTasks=" + mTerminalTasks.size + ", PendingPluginExecutionCommands=" + mPendingPluginExecutionCommands.size
+        )*/
         val terminalSessions: List<com.flomobility.anx.shared.shell.TerminalSession> = ArrayList(mTerminalSessions)
         for (i in terminalSessions.indices) {
             val executionCommand = terminalSessions[i].executionCommand
@@ -420,7 +420,7 @@ class EndlessService : LifecycleService() , TerminalTask.TermuxTaskClient, com.f
 
 
         // Set notification text
-        val sessionCount = getTermuxSessionsSize()
+        val sessionCount = getTerminalSessionsSize()
         val taskCount = mTermuxTasks.size
         var notificationText =
             sessionCount.toString() + " session" + if (sessionCount == 1) "" else "s"
@@ -454,7 +454,7 @@ class EndlessService : LifecycleService() , TerminalTask.TermuxTaskClient, com.f
         // Set background color for small notification icon
         builder.setColor(-0x9f8275)
 
-        // TermuxSessions are always ongoing
+        // TerminalSessions are always ongoing
         builder.setOngoing(true)
 
 
@@ -599,10 +599,10 @@ class EndlessService : LifecycleService() , TerminalTask.TermuxTaskClient, com.f
     /** Execute a shell command in background [TerminalTask].  */
     private fun executeTermuxTaskCommand(executionCommand: ExecutionCommand?) {
         if (executionCommand == null) return
-        Logger.logDebug(
+        /*Logger.logDebug(
             LOG_TAG,
-            "Executing background \"" + executionCommand.commandIdAndLabelLogString + "\" TermuxTask command"
-        )
+            "Executing background \"" + executionCommand.commandIdAndLabelLogString + "\" TerminalTask command"
+        )*/
         val newTermuxTask = createTermuxTask(executionCommand)
     }
 
@@ -630,15 +630,15 @@ class EndlessService : LifecycleService() , TerminalTask.TermuxTaskClient, com.f
     @Synchronized
     fun createTermuxTask(executionCommand: ExecutionCommand?): TerminalTask? {
         if (executionCommand == null) return null
-        Logger.logDebug(
+        /*Logger.logDebug(
             LOG_TAG,
-            "Creating \"" + executionCommand.commandIdAndLabelLogString + "\" TermuxTask"
-        )
+            "Creating \"" + executionCommand.commandIdAndLabelLogString + "\" TerminalTask"
+        )*/
         if (!executionCommand.inBackground) {
-            Logger.logDebug(
-                LOG_TAG,
-                "Ignoring a foreground execution command passed to createTermuxTask()"
-            )
+//            Logger.logDebug(
+//                LOG_TAG,
+//                "Ignoring a foreground execution command passed to createTerminalTask()"
+//            )
             return null
         }
         if (Logger.getLogLevel() >= Logger.LOG_LEVEL_VERBOSE) Logger.logVerboseExtended(
@@ -649,13 +649,13 @@ class EndlessService : LifecycleService() , TerminalTask.TermuxTaskClient, com.f
             TerminalTask.execute(this, executionCommand, this,
                 TerminalShellEnvironmentClient(), false)
         if (newTerminalTask == null) {
-            Logger.logError(
+            /*Logger.logError(
                 LOG_TAG,
                 """
-                Failed to execute new TermuxTask command for:
+                Failed to execute new TerminalTask command for:
                 ${executionCommand.commandIdAndLabelLogString}
                 """.trimIndent()
-            )
+            )*/
             // If the execution command was started for a plugin, then process the error
             if (executionCommand.isPluginExecutionCommand) PluginUtils.processPluginExecutionCommandError(
                 this,
@@ -682,10 +682,10 @@ class EndlessService : LifecycleService() , TerminalTask.TermuxTaskClient, com.f
         mHandler.post {
             if (terminalTask != null) {
                 val executionCommand = terminalTask.executionCommand
-                Logger.logVerbose(
+                /*Logger.logVerbose(
                     LOG_TAG,
-                    "The onTermuxTaskExited() callback called for \"" + executionCommand!!.commandIdAndLabelLogString + "\" TermuxTask command"
-                )
+                    "The onTerminalTaskExited() callback called for \"" + executionCommand!!.commandIdAndLabelLogString + "\" TerminalTask command"
+                )*/
 
                 // If the execution command was started for a plugin, then process the results
                 if (executionCommand != null && executionCommand.isPluginExecutionCommand) PluginUtils.processPluginExecutionCommandResult(
@@ -693,10 +693,10 @@ class EndlessService : LifecycleService() , TerminalTask.TermuxTaskClient, com.f
                     LOG_TAG,
                     executionCommand
                 )
-                Logger.logVerbose(
-                    LOG_TAG,
-                    "The onTermuxTaskExited() result callback : " + executionCommand.resultData.exitCode
-                )
+//                Logger.logVerbose(
+//                    LOG_TAG,
+//                    "The onTerminalTaskExited() result callback : " + executionCommand.resultData.exitCode
+//                )
                 mTerminalTasks.remove(terminalTask)
             }
             updateNotification()
@@ -707,10 +707,10 @@ class EndlessService : LifecycleService() , TerminalTask.TermuxTaskClient, com.f
     /** Execute a shell command in a foreground [TerminalSession].  */
     private fun executeTermuxSessionCommand(executionCommand: ExecutionCommand?) {
         if (executionCommand == null) return
-        Logger.logDebug(
+        /*Logger.logDebug(
             LOG_TAG,
-            "Executing foreground \"" + executionCommand.commandIdAndLabelLogString + "\" TermuxSession command"
-        )
+            "Executing foreground \"" + executionCommand.commandIdAndLabelLogString + "\" TerminalSession command"
+        )*/
         var sessionName: String? = null
 
         // Transform executable path to session name, e.g. "/bin/do-something.sh" => "do something.sh".
@@ -718,13 +718,13 @@ class EndlessService : LifecycleService() , TerminalTask.TermuxTaskClient, com.f
             sessionName =
                 ShellUtils.getExecutableBasename(executionCommand.executable).replace('-', ' ')
         }
-        val newTermuxSession = createTermuxSession(executionCommand, sessionName) ?: return
+        val terminalSession = createTermuxSession(executionCommand, sessionName) ?: return
         handleSessionAction(
             DataUtils.getIntFromString(
                 executionCommand.sessionAction,
                 TERMUX_SERVICE.VALUE_EXTRA_SESSION_ACTION_SWITCH_TO_NEW_SESSION_AND_OPEN_ACTIVITY
             ),
-            newTermuxSession.terminalSession
+            terminalSession.terminalSession
         )
     }
 
@@ -760,15 +760,15 @@ class EndlessService : LifecycleService() , TerminalTask.TermuxTaskClient, com.f
         sessionName: String?
     ): com.flomobility.anx.shared.shell.TerminalSession? {
         if (executionCommand == null) return null
-        Logger.logDebug(
+        /*Logger.logDebug(
             LOG_TAG,
-            "Creating \"" + executionCommand.commandIdAndLabelLogString + "\" TermuxSession"
-        )
+            "Creating \"" + executionCommand.commandIdAndLabelLogString + "\" TerminalSession"
+        )*/
         if (executionCommand.inBackground) {
-            Logger.logDebug(
+            /*Logger.logDebug(
                 LOG_TAG,
-                "Ignoring a background execution command passed to createTermuxSession()"
-            )
+                "Ignoring a background execution command passed to createTerminalSession()"
+            )*/
             return null
         }
         if (Logger.getLogLevel() >= Logger.LOG_LEVEL_VERBOSE) Logger.logVerboseExtended(
@@ -790,13 +790,13 @@ class EndlessService : LifecycleService() , TerminalTask.TermuxTaskClient, com.f
             executionCommand.isPluginExecutionCommand
         )
         if (newTerminalSession == null) {
-            Logger.logError(
+            /*Logger.logError(
                 LOG_TAG,
                 """
-                Failed to execute new TermuxSession command for:
+                Failed to execute new TerminalSession command for:
                 ${executionCommand.commandIdAndLabelLogString}
                 """.trimIndent()
-            )
+            )*/
             // If the execution command was started for a plugin, then process the error
             if (executionCommand.isPluginExecutionCommand) PluginUtils.processPluginExecutionCommandError(
                 this,
@@ -835,10 +835,10 @@ class EndlessService : LifecycleService() , TerminalTask.TermuxTaskClient, com.f
     override fun onTermuxSessionExited(terminalSession: com.flomobility.anx.shared.shell.TerminalSession?) {
         if (terminalSession != null) {
             val executionCommand = terminalSession.executionCommand
-            Logger.logVerbose(
+            /*Logger.logVerbose(
                 LOG_TAG,
-                "The onTermuxSessionExited() callback called for \"" + executionCommand!!.commandIdAndLabelLogString + "\" TermuxSession command"
-            )
+                "The onTerminalSessionExited() callback called for \"" + executionCommand!!.commandIdAndLabelLogString + "\" TerminalSession command"
+            )*/
 
             // If the execution command was started for a plugin, then process the results
             if (executionCommand != null && executionCommand.isPluginExecutionCommand) PluginUtils.processPluginExecutionCommandResult(
@@ -849,7 +849,7 @@ class EndlessService : LifecycleService() , TerminalTask.TermuxTaskClient, com.f
 
             mTerminalSessions.remove(terminalSession)
 
-            // Notify {@link TermuxSessionsListViewController} that sessions list has been updated if
+            // Notify {@link TerminalSessionsListViewController} that sessions list has been updated if
             // activity in is foreground
             if (mFloTerminalSessionClient != null) mFloTerminalSessionClient!!.termuxSessionListNotifyUpdated()
         }

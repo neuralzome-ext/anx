@@ -36,7 +36,7 @@ object AppModule {
         .setAutoCancel(false)
         .setOngoing(true)
         .setSmallIcon(R.drawable.ic_launcher_foreground)
-        .setContentTitle("Hermes service")
+        .setContentTitle("anx service")
         .setContentText("No active session.")
 
     @Singleton
