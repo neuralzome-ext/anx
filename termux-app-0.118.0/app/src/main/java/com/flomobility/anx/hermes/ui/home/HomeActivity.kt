@@ -11,8 +11,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.downloader.PRDownloader
 import com.flomobility.anx.app.PluginResultsService
 import com.flomobility.anx.app.TerminalCommandExecutor
-import com.flomobility.anx.hermes.adapter.IpAdapter
-import com.flomobility.anx.hermes.adapter.AssetAdapter
+import com.flomobility.anx.hermes.ui.adapter.IpAdapter
+import com.flomobility.anx.hermes.ui.adapter.AssetAdapter
 import com.flomobility.anx.hermes.assets.AssetManager
 import com.flomobility.anx.hermes.daemon.EndlessService
 import com.flomobility.anx.hermes.other.*

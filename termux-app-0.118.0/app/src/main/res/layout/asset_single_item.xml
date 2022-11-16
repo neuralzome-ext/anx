@@ -34,7 +34,7 @@
         android:layout_marginHorizontal="5dp"
         android:layout_marginTop="5dp"
         android:visibility="gone"
-        tools:listitem="@layout/sensor_status_single_item" />
+        tools:listitem="@layout/asset_status_single_item" />
 
     <TextView
         android:id="@+id/sensorAvailability"

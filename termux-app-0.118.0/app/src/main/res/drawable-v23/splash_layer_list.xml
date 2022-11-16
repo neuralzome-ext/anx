@@ -3,10 +3,11 @@
 
     <item android:drawable="@color/greyBackground" />
 
-    <item>
-        <bitmap
-            android:gravity="center"
-            android:src="@drawable/flo_mobility" />
-    </item>
+    <item
+        android:width="198dp"
+        android:height="120dp"
+        android:drawable="@drawable/ic_flo_logo"
+        android:gravity="center" />
+
 
 </layer-list>

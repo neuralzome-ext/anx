@@ -1,4 +1,4 @@
-package com.flomobility.anx.hermes.adapter
+package com.flomobility.anx.hermes.ui.adapter
 
 import android.content.Context
 import android.view.LayoutInflater

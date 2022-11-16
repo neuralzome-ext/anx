@@ -10,17 +10,19 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:layout_marginTop="10dp"
+        android:padding="8dp"
         android:orientation="horizontal">
 
         <ImageView
-            android:layout_width="82dp"
-            android:layout_height="32dp"
+            android:layout_width="65dp"
+            android:layout_height="26dp"
             android:layout_alignParentStart="true"
             android:layout_centerVertical="true"
-            android:layout_marginStart="10dp"
-            android:layout_marginTop="10dp"
-            android:src="@drawable/flo_logo_2" />
+            android:layout_marginStart="12dp"
+            android:layout_marginTop="12dp"
+            android:layout_marginEnd="12dp"
+            android:layout_marginBottom="12dp"
+            android:src="@drawable/ic_flo" />
 
         <ImageView
             android:id="@+id/exit"

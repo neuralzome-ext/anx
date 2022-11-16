@@ -1,4 +1,4 @@
-package com.flomobility.anx.hermes.adapter
+package com.flomobility.anx.hermes.ui.adapter
 
 import android.content.Context
 import android.view.LayoutInflater
@@ -13,7 +13,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.flomobility.anx.R
 import com.flomobility.anx.hermes.assets.AssetType
 import com.flomobility.anx.hermes.assets.BaseAsset
-import com.flomobility.anx.databinding.SensorSingleItemBinding
+import com.flomobility.anx.databinding.AssetSingleItemBinding
 import com.flomobility.anx.hermes.model.AssetUI
 
 class AssetAdapter(
@@ -38,12 +38,12 @@ class AssetAdapter(
         set(value) = differ.submitList(value)
         get() = differ.currentList
 
-    inner class AssetViewHolder(val bind: SensorSingleItemBinding) :
+    inner class AssetViewHolder(val bind: AssetSingleItemBinding) :
         RecyclerView.ViewHolder(bind.root)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AssetViewHolder {
         return AssetViewHolder(
-            SensorSingleItemBinding.inflate(
+            AssetSingleItemBinding.inflate(
                 LayoutInflater.from(context),
                 parent,
                 false

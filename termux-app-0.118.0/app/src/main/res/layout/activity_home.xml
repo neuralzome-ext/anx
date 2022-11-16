@@ -14,11 +14,14 @@
         android:padding="8dp">
 
         <ImageView
-            android:layout_width="82dp"
-            android:layout_height="32dp"
+            android:layout_width="65dp"
+            android:layout_height="26dp"
             android:layout_alignParentStart="true"
             android:layout_centerVertical="true"
-            android:layout_margin="12dp"
+            android:layout_marginStart="12dp"
+            android:layout_marginTop="12dp"
+            android:layout_marginEnd="12dp"
+            android:layout_marginBottom="12dp"
             android:src="@drawable/ic_flo" />
 
         <ImageView
@@ -141,5 +144,5 @@
         android:layout_margin="10dp"
         android:layout_gravity="center_horizontal"
         android:padding="10dp"
-        tools:listitem="@layout/sensor_single_item" />
+        tools:listitem="@layout/asset_single_item" />
 </LinearLayout>
