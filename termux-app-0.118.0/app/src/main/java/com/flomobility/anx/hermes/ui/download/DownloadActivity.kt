@@ -272,6 +272,7 @@ echo "done"
         bind.progress.visibility = View.INVISIBLE
         bind.progressIndeterminate.visibility = View.VISIBLE
         bind.progressPercent.text = ""
+        viewModel.setInstallStatus(DownloadViewModel.InstallStatus.Installing)
         lifecycleScope.launch {
             // Install here
             val terminalCommandExecutor =
@@ -415,12 +416,24 @@ echo "done"
             .registerReceiver(receiver, IntentFilter(PluginResultsService.RESULT_BROADCAST_INTENT))
     }
 
-    override fun onStop() {
-        super.onStop()
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(receiver)
+    override fun onBackPressed() {
+        if(viewModel.installStatus.value?.peekContent() == DownloadViewModel.InstallStatus.Installing) {
+            AlertDialog.getInstance(
+                "Leaving?",
+                "All progress so far will be lost",
+                "Ok",
+                "Cancel",
+                cancellable = true,
+                yesListener = {
+                    finishAffinity()
+                }
+            ).show(supportFragmentManager, AlertDialog.TAG)
+        }
     }
 
+
     override fun onDestroy() {
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(receiver)
         super.onDestroy()
     }
 }
