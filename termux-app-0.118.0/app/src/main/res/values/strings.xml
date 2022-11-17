@@ -1,10 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-
-<!DOCTYPE resources [<!ENTITY TERMINAL_PACKAGE_NAME "com.flomobility.anx"><!ENTITY TERMINAL_APP_NAME "anx"><!ENTITY TERMINAL_API_APP_NAME "Terminal:API"><!ENTITY TERMINAL_BOOT_APP_NAME "Terminal:Boot"><!ENTITY TERMINAL_FLOAT_APP_NAME "Terminal:Float"><!ENTITY TERMINAL_STYLING_APP_NAME "Terminal:Styling"><!ENTITY TERMINAL_TASKER_APP_NAME "Terminal:Tasker"><!ENTITY TERMINAL_WIDGET_APP_NAME "Terminal:Widget">]>
+<!DOCTYPE
+    resources[
+        <!ENTITY TERMINAL_PACKAGE_NAME "com.flomobility.anx">
+        <!ENTITY TERMINAL_APP_NAME "anx">
+        <!ENTITY TERMINAL_API_APP_NAME "Terminal:API">
+        <!ENTITY TERMINAL_BOOT_APP_NAME "Terminal:Boot">
+        <!ENTITY TERMINAL_FLOAT_APP_NAME "Terminal:Float">
+        <!ENTITY TERMINAL_STYLING_APP_NAME "Terminal:Styling">
+        <!ENTITY TERMINAL_TASKER_APP_NAME "Terminal:Tasker">
+        <!ENTITY TERMINAL_WIDGET_APP_NAME "Terminal:Widget">
+    ]>
 
 <resources>
 
-    <string name="application_name">&TERMINAL_APP_NAME;</string>
     <string name="shared_user_label">&TERMINAL_APP_NAME; user</string>
 
 

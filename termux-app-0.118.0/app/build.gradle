@@ -211,7 +211,7 @@ android {
             minifyEnabled false
             signingConfig signingConfigs.flo
             versionNameSuffix "-dev"
-            resValue "string", "app_name", "(D)anx"
+            resValue "string", "application_name", "(D)anx"
         }
         release {
             minifyEnabled true
@@ -220,6 +220,7 @@ android {
             signingConfig signingConfigs.flo
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             debuggable false
+            resValue "string", "application_name", "anx"
         }
 
         debug {
@@ -227,6 +228,7 @@ android {
             debuggable true
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            resValue "string", "application_name", "(Debug)anx"
         }
     }
 
