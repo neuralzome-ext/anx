@@ -21,7 +21,6 @@ import com.google.android.gms.auth.api.identity.Identity
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
-import java.io.File
 import javax.inject.Inject
 
 
@@ -54,7 +53,7 @@ class LoginActivity : ComponentActivity() {
             sharedPreferences.putDeviceID(phoneNumber)
         } catch (e: Exception) {
             Timber.e("Phone Number Hint failed")
-
+            showSnackBarWithAction("Couldn't get device ID", indefinite = true, actionText = "Ok")
         }
     }
 
@@ -107,7 +106,7 @@ class LoginActivity : ComponentActivity() {
                 }
                 is Resource.Success -> {
                     if (isExpired(it.peekContent().data?.robot?.expiry)) {
-                        showSnack("Your subscription has expired")
+                        showSnackBar("Your subscription has expired")
                         bind.spinKitLogin.visibility = View.GONE
                         bind.btnLogin.visibility = View.VISIBLE
                         return@observe
@@ -130,18 +129,18 @@ class LoginActivity : ComponentActivity() {
                             var error = it.peekContent().message
                             if (error?.contains("Failed to connect to") == true)
                                 error = "Failed to connect to server"
-                            showSnack(error)
+                            showSnackBar(error)
                             return@observe
                         }
                         "Missing required request parameter" -> {
-                            showSnack("Login Failed! Try Again")
+                            showSnackBar("Login Failed! Try Again")
                         }
                         "Invalid Credentials" -> {
-                            showSnack("Incorrect Credentials!!")
+                            showSnackBar("Incorrect Credentials!!")
                         }
                         else -> {
                             val error = it.peekContent().errorData?.message
-                            showSnack(error)
+                            showSnackBar(error)
                         }
                     }
                 }
@@ -188,10 +187,48 @@ class LoginActivity : ComponentActivity() {
         }
     }
 
-    private fun showSnack(msg: String?) {
+    private fun showSnackBar(
+        msg: String?,
+        indefinite: Boolean = false
+    ) {
         runOnUiThread {
-            if (msg != null)
-                Snackbar.make(bind.root, msg, Snackbar.LENGTH_LONG).show()
+            if (msg != null) {
+                Snackbar.make(
+                    bind.root,
+                    msg,
+                    if (indefinite) Snackbar.LENGTH_INDEFINITE else Snackbar.LENGTH_LONG
+                ).show()
+            }
+        }
+    }
+
+    private fun showSnackBarWithAction(
+        msg: String?,
+        indefinite: Boolean = false,
+        actionText: String? = null,
+        action: (() -> Unit)? = null
+    ) {
+        runOnUiThread {
+            if (msg != null) {
+                action?.let {
+                    Snackbar.make(
+                        bind.root,
+                        msg,
+                        if (indefinite) Snackbar.LENGTH_INDEFINITE else Snackbar.LENGTH_LONG
+                    ).apply {
+                        setAction(actionText) {
+                            action.invoke()
+                            dismiss()
+                        }
+                    }.show()
+                    return@runOnUiThread
+                }
+                Snackbar.make(
+                    bind.root,
+                    msg,
+                    if (indefinite) Snackbar.LENGTH_INDEFINITE else Snackbar.LENGTH_LONG
+                ).show()
+            }
         }
     }
 
