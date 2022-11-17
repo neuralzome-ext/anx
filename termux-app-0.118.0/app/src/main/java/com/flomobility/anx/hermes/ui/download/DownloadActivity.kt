@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
@@ -268,7 +269,8 @@ echo "done"
     }
 
     private fun checkInstalled() {
-        bind.downloading1.text = "INSTALLING FILE SYSTEM"
+        bind.tvInfoText.text = "INSTALLING FILE SYSTEM"
+        bind.tvInfoText2.isVisible = true
         bind.progress.visibility = View.INVISIBLE
         bind.progressIndeterminate.visibility = View.VISIBLE
         bind.progressPercent.text = ""
@@ -296,8 +298,9 @@ echo "done"
     private fun onInstallSuccess() {
         lifecycleScope.launch {
             sharedPreferences.setIsInstalled(true)
+            bind.tvInfoText2.isVisible = false
             bind.progressIndeterminate.visibility = View.GONE
-            bind.downloading1.text = "YOU'RE ALL SET!"
+            bind.tvInfoText.text = "YOU'RE ALL SET!"
             bind.checkAnim.visibility = View.VISIBLE
             delay(2000)
             HomeActivity.navigateToHome(this@DownloadActivity)

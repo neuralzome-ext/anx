@@ -212,5 +212,6 @@
     <string name="end_user_license_agreement">End User License Agreement</string>
     <string name="i_understand_and_agree_to_the_above_agreement">I understand and agree to the above agreement.</string>
     <string name="proceed">Proceed</string>
+    <string name="do_not_press_back_or_exit_from_here">Do not press back or exit from here.</string>
 
 </resources>
