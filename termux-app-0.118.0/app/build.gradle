@@ -13,7 +13,8 @@ ext {
     // Bootstrap of a different variant must not be manually installed by the user after app installation
     // by replacing $PREFIX since app code is dependant on the variant used to build the APK.
     // Currently supported values are: [ "apt-android-7" "apt-android-5" ]
-    packageVariant = System.getenv("TERMUX_PACKAGE_VARIANT") ?: "apt-android-7" // Default: "apt-android-7"
+    packageVariant = System.getenv("TERMUX_PACKAGE_VARIANT") ?: "apt-android-7"
+    // Default: "apt-android-7"
 
 }
 
@@ -23,11 +24,12 @@ android {
     def appVersionName = System.getenv("TERMUX_APP_VERSION_NAME") ?: ""
     def apkVersionTag = System.getenv("TERMUX_APK_VERSION_TAG") ?: ""
     def splitAPKsForDebugBuilds = System.getenv("TERMUX_SPLIT_APKS_FOR_DEBUG_BUILDS") ?: "1"
-    def splitAPKsForReleaseBuilds = System.getenv("TERMUX_SPLIT_APKS_FOR_RELEASE_BUILDS") ?: "0" // F-Droid does not support split APKs #1904
+    def splitAPKsForReleaseBuilds = System.getenv("TERMUX_SPLIT_APKS_FOR_RELEASE_BUILDS") ?: "0"
+    // F-Droid does not support split APKs #1904
 
     dependencies {
         implementation "androidx.annotation:annotation:1.3.0"
-        implementation ("androidx.core:core:1.6.0") {
+        implementation("androidx.core:core:1.6.0") {
             exclude module: 'support-v4'
         }
         implementation "androidx.drawerlayout:drawerlayout:1.1.1"
@@ -140,15 +142,16 @@ android {
         def FLO_STAGING_URL = "FLO_STAGING_URL"
         def FLO_PRODUCTION_URL = "FLO_PRODUCTION_URL"
 
-        buildConfigField("String","FLO_DEVELOPMENT_URL",properties.getProperty(FLO_DEVELOPMENT_URL))
-        buildConfigField("String","FLO_STAGING_URL",properties.getProperty(FLO_STAGING_URL))
-        buildConfigField("String","FLO_PRODUCTION_URL",properties.getProperty(FLO_PRODUCTION_URL))
+        buildConfigField("String", "FLO_DEVELOPMENT_URL", properties.getProperty(FLO_DEVELOPMENT_URL))
+        buildConfigField("String", "FLO_STAGING_URL", properties.getProperty(FLO_STAGING_URL))
+        buildConfigField("String", "FLO_PRODUCTION_URL", properties.getProperty(FLO_PRODUCTION_URL))
 
 
         if (appVersionName) versionName = appVersionName
         validateVersionName(versionName)
 
-        buildConfigField "String", "TERMUX_PACKAGE_VARIANT", "\"" + project.ext.packageVariant + "\"" // Used by TermuxApplication class
+        buildConfigField "String", "TERMUX_PACKAGE_VARIANT", "\"" + project.ext.packageVariant + "\""
+        // Used by TermuxApplication class
 
         manifestPlaceholders.TERMINAL_PACKAGE_NAME = "com.flomobility.anx"
         manifestPlaceholders.TERMINAL_APP_NAME = "anx"
@@ -264,12 +267,16 @@ android {
 
     applicationVariants.all { variant ->
         variant.outputs.all { output ->
-            if (variant.buildType.name == "debug") {
-                def abi = output.getFilter(com.android.build.OutputFile.ABI)
-                outputFileName = new File("anx-app_" + (apkVersionTag ? apkVersionTag : project.ext.packageVariant + "-" + "debug") + "_" + (abi ? abi : "universal") + ".apk")
-            } else if (variant.buildType.name == "release") {
-                def abi = output.getFilter(com.android.build.OutputFile.ABI)
-                outputFileName = new File("anx-app_" + (apkVersionTag ? apkVersionTag : project.ext.packageVariant + "-" + "release") + "_" + (abi ? abi : "universal") + ".apk")
+            switch (variant.buildType.name) {
+                case "dev":
+                    outputFileName = new File("anx-app_dev_v" + defaultConfig.versionName + ".apk")
+                    break
+                case "debug":
+                    outputFileName = new File("anx-app_debug_v" + defaultConfig.versionName + ".apk")
+                    break
+                case "release":
+                    outputFileName = new File("anx-app_release_v" + defaultConfig.versionName + ".apk")
+                    break
             }
         }
     }
@@ -309,7 +316,7 @@ def validateVersionName(String versionName) {
     // https://semver.org/spec/v2.0.0.html#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
     // ^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$
     if (!java.util.regex.Pattern.matches("^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?\$", versionName))
-        throw new GradleException("The versionName '"  + versionName + "' is not a valid version as per semantic version '2.0.0' spec in the format 'major.minor.patch(-prerelease)(+buildmetadata)'. https://semver.org/spec/v2.0.0.html.")
+        throw new GradleException("The versionName '" + versionName + "' is not a valid version as per semantic version '2.0.0' spec in the format 'major.minor.patch(-prerelease)(+buildmetadata)'. https://semver.org/spec/v2.0.0.html.")
 }
 
 def downloadBootstrap(String arch, String expectedChecksum, String version) {
@@ -326,7 +333,9 @@ def downloadBootstrap(String arch, String expectedChecksum, String version) {
             digest.update(buffer, 0, readBytes)
         }
         def checksum = new BigInteger(1, digest.digest()).toString(16)
-        while (checksum.length() < 64) { checksum = "0" + checksum }
+        while (checksum.length() < 64) {
+            checksum = "0" + checksum
+        }
         if (checksum == expectedChecksum) {
             return
         } else {
@@ -348,7 +357,9 @@ def downloadBootstrap(String arch, String expectedChecksum, String version) {
     out.close()
 
     def checksum = new BigInteger(1, digest.digest()).toString(16)
-    while (checksum.length() < 64) { checksum = "0" + checksum }
+    while (checksum.length() < 64) {
+        checksum = "0" + checksum
+    }
     if (checksum != expectedChecksum) {
         file.delete()
         throw new GradleException("Wrong checksum for " + remoteUrl + ": expected: " + expectedChecksum + ", actual: " + checksum)
