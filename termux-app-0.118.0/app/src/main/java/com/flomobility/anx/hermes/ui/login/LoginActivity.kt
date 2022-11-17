@@ -210,24 +210,19 @@ class LoginActivity : ComponentActivity() {
     ) {
         runOnUiThread {
             if (msg != null) {
-                action?.let {
+                actionText?.let {
                     Snackbar.make(
                         bind.root,
                         msg,
                         if (indefinite) Snackbar.LENGTH_INDEFINITE else Snackbar.LENGTH_LONG
                     ).apply {
                         setAction(actionText) {
-                            action.invoke()
+                            action?.invoke()
                             dismiss()
                         }
                     }.show()
                     return@runOnUiThread
                 }
-                Snackbar.make(
-                    bind.root,
-                    msg,
-                    if (indefinite) Snackbar.LENGTH_INDEFINITE else Snackbar.LENGTH_LONG
-                ).show()
             }
         }
     }
