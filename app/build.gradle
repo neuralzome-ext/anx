@@ -224,6 +224,7 @@ android {
             signingConfig signingConfigs.flo
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             debuggable false
+            manifestPlaceholders.TERMINAL_PACKAGE_NAME = "com.flomobility.anx"
             resValue "string", "application_name", "anx"
         }
 
