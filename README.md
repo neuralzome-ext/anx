@@ -4,7 +4,7 @@
 ### Terminology
 > Asset - an entity of the phone for which access is granted via an API.
 
-Refer [anx docs](https://github.com/flomobility/anx_docs)
+Refer [anx docs wiki](https://github.com/flomobility/anx_docs/wiki)
 
 ### Style guide
 - [Kotlin style guide](https://developer.android.com/kotlin/style-guide)
