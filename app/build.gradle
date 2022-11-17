@@ -3,6 +3,8 @@ plugins {
     id 'com.android.application'
     id 'dagger.hilt.android.plugin'
     id 'org.jetbrains.kotlin.android'
+    id 'com.google.gms.google-services'
+    id 'com.google.firebase.crashlytics'
 }
 
 
@@ -97,6 +99,11 @@ android {
         implementation 'com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava'
 
         def camerax_version = "1.1.0"
+
+        // Import the BoM for the Firebase platform
+        implementation platform('com.google.firebase:firebase-bom:31.0.3')
+        implementation 'com.google.firebase:firebase-crashlytics-ktx'
+        implementation 'com.google.firebase:firebase-analytics-ktx'
 
         // CameraX core library using camera2 implementation
         implementation "androidx.camera:camera-camera2:$camerax_version"
@@ -213,6 +220,9 @@ android {
             minifyEnabled false
             signingConfig signingConfigs.flo
             manifestPlaceholders.TERMINAL_PACKAGE_NAME = "com.flomobility.anx.dev"
+            firebaseCrashlytics {
+                mappingFileUploadEnabled false
+            }
             versionNameSuffix "-dev"
             applicationIdSuffix ".dev"
             resValue "string", "application_name", "(D)anx"
@@ -224,6 +234,9 @@ android {
             signingConfig signingConfigs.flo
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             debuggable false
+            firebaseCrashlytics {
+                mappingFileUploadEnabled true
+            }
             resValue "string", "application_name", "anx"
         }
 
@@ -232,6 +245,9 @@ android {
             debuggable true
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            firebaseCrashlytics {
+                mappingFileUploadEnabled false
+            }
             manifestPlaceholders.TERMINAL_PACKAGE_NAME = "com.flomobility.anx.debug"
             applicationIdSuffix ".debug"
             resValue "string", "application_name", "(Debug)anx"

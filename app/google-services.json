@@ -1,0 +1,47 @@
+{
+    "project_info": {
+        "project_number": "135286524902",
+        "project_id": "anx-debug",
+        "storage_bucket": "anx-debug.appspot.com"
+    },
+    "client": [
+        {
+            "client_info": {
+                "mobilesdk_app_id": "1:135286524902:android:a250d360d2a84d9a192427",
+                "android_client_info": {
+                    "package_name": "com.flomobility.anx.debug"
+                }
+            },
+            "oauth_client": [
+                {
+                    "client_id": "135286524902-6ujds6gqua9n33jdbc37jah8mdc5572q.apps.googleusercontent.com",
+                    "client_type": 1,
+                    "android_info": {
+                        "package_name": "com.flomobility.anx.debug",
+                        "certificate_hash": "efb58ef2f320c78a183d2ac43cb26e1e75bd302e"
+                    }
+                },
+                {
+                    "client_id": "135286524902-1fp6rkecetijrhjicso1q5f355maqq77.apps.googleusercontent.com",
+                    "client_type": 3
+                }
+            ],
+            "api_key": [
+                {
+                    "current_key": "AIzaSyBBYzlUA2Pizd8ob7QgE1G102v_VE8ARQM"
+                }
+            ],
+            "services": {
+                "appinvite_service": {
+                    "other_platform_oauth_client": [
+                        {
+                            "client_id": "135286524902-1fp6rkecetijrhjicso1q5f355maqq77.apps.googleusercontent.com",
+                            "client_type": 3
+                        }
+                    ]
+                }
+            }
+        }
+    ],
+    "configuration_version": "1"
+}

@@ -10,11 +10,11 @@ import androidx.activity.ComponentActivity
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.ViewModelProvider
+import com.flomobility.anx.databinding.ActivityLoginBinding
 import com.flomobility.anx.hermes.network.requests.LoginRequest
 import com.flomobility.anx.hermes.other.*
-import com.flomobility.anx.hermes.ui.home.HomeActivity
-import com.flomobility.anx.databinding.ActivityLoginBinding
 import com.flomobility.anx.hermes.ui.download.DownloadActivity
+import com.flomobility.anx.hermes.ui.home.HomeActivity
 import com.github.ybq.android.spinkit.style.ThreeBounce
 import com.google.android.gms.auth.api.identity.GetPhoneNumberHintIntentRequest
 import com.google.android.gms.auth.api.identity.Identity
