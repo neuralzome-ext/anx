@@ -156,8 +156,6 @@ echo "done"
         viewModel = ViewModelProvider(this@DownloadActivity)[DownloadViewModel::class.java]
         setContentView(binding?.root)
         FILE_PATH = filesDir.absolutePath
-        Timber.d("File path : $FILE_PATH")
-
         createInstallScript()
         setEventListeners()
         subscribeToObservers()
@@ -269,6 +267,13 @@ echo "done"
     }
 
     private fun checkInstalled() {
+/*
+        if (sharedPreferences.getIsInstalled()){
+            HomeActivity.navigateToHome(this@DownloadActivity)
+            finish()
+            return
+        }
+*/
         bind.tvInfoText.text = "INSTALLING FILE SYSTEM"
         bind.tvInfoText2.isVisible = true
         bind.progress.visibility = View.INVISIBLE

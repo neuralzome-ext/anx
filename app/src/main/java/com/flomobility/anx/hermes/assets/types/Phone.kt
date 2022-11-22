@@ -3,7 +3,7 @@ package com.flomobility.anx.hermes.assets.types
 import android.content.Context
 import android.os.Build
 import androidx.annotation.RequiresApi
-import com.flomobility.anx.hermes.api.model.PhoneState
+import com.flomobility.anx.hermes.api.model.PhoneStates
 import com.flomobility.anx.hermes.assets.AssetState
 import com.flomobility.anx.hermes.assets.AssetType
 import com.flomobility.anx.hermes.assets.BaseAsset
@@ -104,18 +104,24 @@ class Phone @Inject constructor(
                         try {
                             val chargingStatus = phoneManager.getChargingStatus()
                             val cpuRam = phoneManager.getMemoryInfo()
-                            val cpuTemp = phoneManager.getCPUTemperature()
-                            val cpuUsage = phoneManager.getCpu()
+                            val storage = phoneManager.getStorage()
+                            val thermals = phoneManager.getThermals()
+                            val processorName = phoneManager.getCPUInfo()
+                            val cpuFreq = phoneManager.getCurrentCpu()
                             val gpuUsage = phoneManager.getGpuUsage()
-                            val phoneState = PhoneState(
-                                charging = chargingStatus,
-                                cpuRamUsage = cpuRam,
-                                cpuTemp = cpuTemp,
-                                cpuUsage = cpuUsage,
-                                gpuUsage = gpuUsage,
-                                gpuVramUsage = -1.0
+                            val uptime = phoneManager.getSystemUptime()
+                            val phoneStates = PhoneStates(
+                                chargingStatus,
+                                PhoneStates.Cpu(processor = processorName, cpuFreq = cpuFreq),
+                                gpuUsage,
+                                0.0,
+                                cpuRam,
+                                storage,
+                                thermals,
+                                uptime
                             )
-                            socket.send(gson.toJson(phoneState).toByteArray(ZMQ.CHARSET), 0)
+                            Timber.d("FLO ${gson.toJson(phoneStates)}")
+                            socket.send(gson.toJson(phoneStates).toByteArray(ZMQ.CHARSET), 0)
                             sleep(1000L / _config.fps.value)
                         } catch (e: InterruptedException) {
                             break
