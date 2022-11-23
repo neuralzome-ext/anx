@@ -199,7 +199,11 @@ class HomeActivity : AppCompatActivity() {
             this@HomeActivity,
             this@HomeActivity
         )
-        (bind.assetRecycler.adapter as AssetAdapter).setupAssetsList()
+        (bind.assetRecycler.adapter as AssetAdapter).apply {
+            doOnItemClicked { assetUI ->
+                // TODO : navigate to asset debug view
+            }
+        }.setupAssetsList()
     }
 
     private fun sendCommandToService(action: String, serviceClass: Class<*>) {
