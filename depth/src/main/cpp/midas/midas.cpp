@@ -80,7 +80,9 @@ cv::Mat Midas::forward(cv::Mat input_img){
     resize(output_img_scaled, output_img,
         cv::Size(input_img.cols, input_img.rows),
         0, 0, cv::INTER_CUBIC);
-    
+
+    applyColorMap(output_img, output_img, cv::COLORMAP_MAGMA);
+    cvtColor(output_img, output_img, cv::COLOR_RGB2BGR);
     return output_img;
 }
 

@@ -153,7 +153,7 @@ Java_com_flomobility_depth_NativeLib_initMidas(
 
     if (!(env->IsSameObject(assetManager, NULL))) {
         AAssetManager *mgr = AAssetManager_fromJava(env, assetManager);
-        AAsset *asset = AAssetManager_open(mgr, "model_opt.tflite", AASSET_MODE_UNKNOWN);
+        AAsset *asset = AAssetManager_open(mgr, "model_packnet_trained.tflite", AASSET_MODE_UNKNOWN);
         assert(asset != nullptr);
 
         size = AAsset_getLength(asset);
