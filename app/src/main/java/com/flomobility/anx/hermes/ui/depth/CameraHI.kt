@@ -3,10 +3,7 @@ package com.flomobility.anx.hermes.ui.depth
 import android.Manifest
 import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.camera.core.Camera
-import androidx.camera.core.CameraSelector
-import androidx.camera.core.ImageAnalysis
-import androidx.camera.core.ImageProxy
+import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
@@ -18,6 +15,12 @@ class CameraHI(private val activity: ComponentActivity) {
     private val imageAnalysis = ImageAnalysis.Builder()
         .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
         .build()
+
+    private val previewCamera = ImageAnalysis.Builder()
+        .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+        .build()
+
+    private val previewExecutor = Executors.newSingleThreadExecutor()
 
     private val cameraProvider = cameraProviderFuture.get()
 
@@ -42,6 +45,12 @@ class CameraHI(private val activity: ComponentActivity) {
         imageCallback = callback
     }
 
+    private var preview: ((ImageProxy) -> Unit)? = null
+
+    fun previewImage(callback: (ImageProxy) -> Unit) {
+        preview = callback
+    }
+
     init{
         activityResultLauncher.launch(Manifest.permission.CAMERA)
 
@@ -50,11 +59,14 @@ class CameraHI(private val activity: ComponentActivity) {
                 imageCallback?.invoke(image)
                 image.close()
             })
-
+            previewCamera.setAnalyzer(previewExecutor, ImageAnalysis.Analyzer { image ->
+                preview?.invoke(image)
+                image.close()
+            })
         }, ContextCompat.getMainExecutor(activity))
 
         activity.runOnUiThread {
-            camera = cameraProvider.bindToLifecycle(activity as LifecycleOwner, cameraSelector, imageAnalysis)
+            camera = cameraProvider.bindToLifecycle(activity as LifecycleOwner, cameraSelector, imageAnalysis, previewCamera)
         }
     }
 }

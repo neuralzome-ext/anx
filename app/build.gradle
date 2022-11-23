@@ -117,6 +117,7 @@ android {
 
         implementation project(':usbCameraCommon')
         implementation project(':libuvccamera')
+        implementation project(':depth')
 
         //Location
         implementation 'com.google.android.gms:play-services-location:20.0.0'

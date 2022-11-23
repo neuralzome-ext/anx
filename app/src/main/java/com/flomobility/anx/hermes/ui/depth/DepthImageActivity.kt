@@ -5,10 +5,15 @@ import android.graphics.*
 import android.media.Image
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.lifecycle.lifecycleScope
 import com.flomobility.anx.R
 import com.flomobility.anx.databinding.ActivityDepthImageBinding
+import com.flomobility.depth.NativeLib
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.*
+import timber.log.Timber
 import java.io.ByteArrayOutputStream
+import java.util.concurrent.Executors
 
 @SuppressLint("UnsafeOptInUsageError")
 @AndroidEntryPoint
@@ -19,37 +24,47 @@ class DepthImageActivity : ComponentActivity() {
     private var _binding: ActivityDepthImageBinding? = null
     private val binding get() = _binding!!
 
+    var midasAddr = 0L
+
+    private lateinit var nativeLib: NativeLib
+
+    private var bitmap: Bitmap? = null
+
+    private var dispatcher = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         _binding = ActivityDepthImageBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        nativeLib = NativeLib()
+        midasAddr = nativeLib.initMidas(assets, "")
         cameraHI = CameraHI(this)
         cameraHI.onImage { image ->
-            binding.imgOriginal
-
-            var bitmap = rotate(toBitmap(image.image!!), image.imageInfo.rotationDegrees.toFloat())
-            /*if (resizeSwitch.isChecked){
-                var desBitmap = Bitmap.createBitmap(500, 500, Bitmap.Config.ARGB_8888)
-                resize(bitmap, desBitmap, 500, 500)
-                bitmap = desBitmap
-            }
-            if (blurSwitch.isChecked){
-                blur(bitmap, bitmap, 5.0)
-            }
-            if(bwSwitch.isChecked){
-                val begin = System.currentTimeMillis()
-                depthMidas(midasAddr, bitmap, bitmap)
+            val original =
+                rotate(toBitmap(image.image!!), image.imageInfo.rotationDegrees.toFloat())
+            bitmap = original.copy(Bitmap.Config.ARGB_8888, true)
+            bitmap?.let {
+                val start = System.currentTimeMillis()
+                nativeLib.depthMidas(midasAddr, it, it)
                 val end = System.currentTimeMillis()
-                runOnUiThread{
-                    latencyView.text = "${end-begin}ms"
+                runOnUiThread {
+                    binding.imgDepth.setImageBitmap(it)
+                    binding.tvInferenceTime.text = "Inference time : ${end - start} ms"
                 }
-//            bw(bitmap, bitmap)
-            }*/
-            runOnUiThread{
-                binding.imgOriginal.setImageBitmap(bitmap)
             }
         }
+        cameraHI.previewImage { image ->
+            val original =
+                rotate(toBitmap(image.image!!), image.imageInfo.rotationDegrees.toFloat())
+            runOnUiThread {
+                binding.imgOriginal.setImageBitmap(original)
+            }
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        nativeLib.destroyMidas(midasAddr)
     }
 
     fun rotate(bitmap: Bitmap, degrees: Float): Bitmap {
