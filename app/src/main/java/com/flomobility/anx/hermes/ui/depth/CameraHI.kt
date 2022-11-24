@@ -24,7 +24,7 @@ class CameraHI(private val activity: ComponentActivity) {
 
     private val cameraProvider = cameraProviderFuture.get()
 
-    private val cameraSelector = CameraSelector.Builder()
+    private var cameraSelector = CameraSelector.Builder()
         .requireLensFacing(CameraSelector.LENS_FACING_BACK)
         .build()
 
@@ -35,13 +35,14 @@ class CameraHI(private val activity: ComponentActivity) {
 
     private val activityResultLauncher =
         activity.registerForActivityResult(
-            ActivityResultContracts.RequestPermission()){ isGranted ->
+            ActivityResultContracts.RequestPermission()
+        ) { isGranted ->
             available = isGranted
         }
 
     private var imageCallback: ((ImageProxy) -> Unit)? = null
 
-    fun onImage(callback : (ImageProxy) -> Unit) {
+    fun onImage(callback: (ImageProxy) -> Unit) {
         imageCallback = callback
     }
 
@@ -51,7 +52,7 @@ class CameraHI(private val activity: ComponentActivity) {
         preview = callback
     }
 
-    init{
+    init {
         activityResultLauncher.launch(Manifest.permission.CAMERA)
 
         cameraProviderFuture.addListener(Runnable {
@@ -66,7 +67,27 @@ class CameraHI(private val activity: ComponentActivity) {
         }, ContextCompat.getMainExecutor(activity))
 
         activity.runOnUiThread {
-            camera = cameraProvider.bindToLifecycle(activity as LifecycleOwner, cameraSelector, imageAnalysis, previewCamera)
+            camera = cameraProvider.bindToLifecycle(
+                activity as LifecycleOwner,
+                cameraSelector,
+                imageAnalysis,
+                previewCamera
+            )
+        }
+    }
+
+    fun changeCamera(back: Boolean) {
+        cameraProvider.unbindAll()
+        cameraSelector = CameraSelector.Builder()
+            .requireLensFacing(if (back) CameraSelector.LENS_FACING_BACK else CameraSelector.LENS_FACING_FRONT)
+            .build()
+        activity.runOnUiThread {
+            camera = cameraProvider.bindToLifecycle(
+                activity as LifecycleOwner,
+                cameraSelector,
+                imageAnalysis,
+                previewCamera
+            )
         }
     }
 }

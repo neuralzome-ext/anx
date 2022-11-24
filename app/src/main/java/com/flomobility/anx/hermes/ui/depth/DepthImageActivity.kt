@@ -37,7 +37,9 @@ class DepthImageActivity : ComponentActivity() {
     private var midasAddr: Long? = null
     private var isRunning = false
 
-    private var models = hashMapOf("Outdoors" to "model_packnet.tflite", "Indoors" to "model_midas.tflite")
+    private val models = hashMapOf("Outdoors" to "model_packnet.tflite", "Indoors" to "model_midas.tflite")
+
+    private val cameras = listOf("back", "front")
 
     private lateinit var nativeLib: NativeLib
 
@@ -53,6 +55,64 @@ class DepthImageActivity : ComponentActivity() {
         setContentView(binding.root)
         nativeLib = NativeLib()
 
+        setupUI()
+
+        cameraHI = CameraHI(this)
+        cameraHI.onImage { image ->
+            val original =
+                rotate(toBitmap(image.image!!), image.imageInfo.rotationDegrees.toFloat())
+            bitmap = original.copy(Bitmap.Config.ARGB_8888, true)
+            bitmap?.let {
+                mutex.lock()
+                if (midasAddr == null || !isRunning) return@onImage
+
+                val start = System.currentTimeMillis()
+                nativeLib.depthMidas(midasAddr!!, it, it)
+                val end = System.currentTimeMillis()
+                mutex.unlock()
+                runOnUiThread {
+                    binding.imgDepth.setImageBitmap(it)
+                    binding.tvInferenceTime.text = "Inference time : ${end - start} ms"
+                }
+            }
+        }
+        cameraHI.previewImage { image ->
+            val original =
+                rotate(toBitmap(image.image!!), image.imageInfo.rotationDegrees.toFloat())
+            runOnUiThread {
+                binding.imgOriginal.setImageBitmap(original)
+            }
+        }
+    }
+
+    private fun setupUI() {
+        binding.cameraSelector.apply {
+            adapter = ArrayAdapter(
+                this@DepthImageActivity,
+                android.R.layout.simple_spinner_item,
+                cameras
+            ).apply {
+                onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+                    override fun onItemSelected(
+                        parent: AdapterView<*>?,
+                        view: View?,
+                        position: Int,
+                        id: Long
+                    ) {
+                        (parent?.getChildAt(0) as TextView).setTextColor(Color.WHITE)
+                        val camera = cameras[position]
+                        cameraHI.changeCamera(camera == "back")
+                    }
+
+                    override fun onNothingSelected(parent: AdapterView<*>?) {
+                        /*NO-OP*/
+                    }
+                }
+                setDropDownViewResource(
+                    android.R.layout.simple_spinner_dropdown_item)
+            }
+
+        }
         binding.modelSelector.apply {
             adapter = ArrayAdapter<String>(
                 this@DepthImageActivity,
@@ -90,33 +150,6 @@ class DepthImageActivity : ComponentActivity() {
 
         binding.backBtn.setOnClickListener {
             onBackPressed()
-        }
-
-        cameraHI = CameraHI(this)
-        cameraHI.onImage { image ->
-            val original =
-                rotate(toBitmap(image.image!!), image.imageInfo.rotationDegrees.toFloat())
-            bitmap = original.copy(Bitmap.Config.ARGB_8888, true)
-            bitmap?.let {
-                mutex.lock()
-                if (midasAddr == null || !isRunning) return@onImage
-
-                val start = System.currentTimeMillis()
-                nativeLib.depthMidas(midasAddr!!, it, it)
-                val end = System.currentTimeMillis()
-                mutex.unlock()
-                runOnUiThread {
-                    binding.imgDepth.setImageBitmap(it)
-                    binding.tvInferenceTime.text = "Inference time : ${end - start} ms"
-                }
-            }
-        }
-        cameraHI.previewImage { image ->
-            val original =
-                rotate(toBitmap(image.image!!), image.imageInfo.rotationDegrees.toFloat())
-            runOnUiThread {
-                binding.imgOriginal.setImageBitmap(original)
-            }
         }
     }
 
