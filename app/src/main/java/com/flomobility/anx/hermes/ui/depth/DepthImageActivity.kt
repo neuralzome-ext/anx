@@ -6,16 +6,18 @@ import android.content.Intent
 import android.graphics.*
 import android.media.Image
 import android.os.Bundle
+import android.view.View
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
+import android.widget.TextView
 import androidx.activity.ComponentActivity
-import androidx.lifecycle.lifecycleScope
-import com.flomobility.anx.R
 import com.flomobility.anx.databinding.ActivityDepthImageBinding
 import com.flomobility.depth.NativeLib
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
-import timber.log.Timber
 import java.io.ByteArrayOutputStream
 import java.util.concurrent.Executors
+import java.util.concurrent.locks.ReentrantLock
 
 @SuppressLint("UnsafeOptInUsageError")
 @AndroidEntryPoint
@@ -32,7 +34,10 @@ class DepthImageActivity : ComponentActivity() {
     private var _binding: ActivityDepthImageBinding? = null
     private val binding get() = _binding!!
 
-    var midasAddr = 0L
+    private var midasAddr: Long? = null
+    private var isRunning = false
+
+    private var models = hashMapOf("Outdoors" to "model_packnet.tflite", "Indoors" to "model_midas.tflite")
 
     private lateinit var nativeLib: NativeLib
 
@@ -40,21 +45,66 @@ class DepthImageActivity : ComponentActivity() {
 
     private var dispatcher = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
 
+    private val mutex = ReentrantLock(true)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         _binding = ActivityDepthImageBinding.inflate(layoutInflater)
         setContentView(binding.root)
         nativeLib = NativeLib()
-        midasAddr = nativeLib.initMidas(assets, "")
+
+        binding.modelSelector.apply {
+            adapter = ArrayAdapter<String>(
+                this@DepthImageActivity,
+                android.R.layout.simple_spinner_item,
+                models.keys.toList()
+            ).apply {
+                onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+                    override fun onItemSelected(
+                        parent: AdapterView<*>?,
+                        view: View?,
+                        position: Int,
+                        id: Long
+                    ) {
+                        (parent?.getChildAt(0) as TextView).setTextColor(Color.WHITE)
+                        mutex.lock()
+                        if(isRunning) {
+                            isRunning = false
+                            nativeLib.destroyMidas(midasAddr!!)
+                            midasAddr = null
+                        }
+                        val model = models.keys.toList()[position]
+                        midasAddr = nativeLib.initMidas(assets, models[model]!!)
+                        isRunning = true
+                        mutex.unlock()
+                    }
+
+                    override fun onNothingSelected(parent: AdapterView<*>?) {
+                        /*NO-OP*/
+                    }
+                }
+                setDropDownViewResource(
+                    android.R.layout.simple_spinner_dropdown_item)
+            }
+        }
+
+        binding.backBtn.setOnClickListener {
+            onBackPressed()
+        }
+
         cameraHI = CameraHI(this)
         cameraHI.onImage { image ->
             val original =
                 rotate(toBitmap(image.image!!), image.imageInfo.rotationDegrees.toFloat())
             bitmap = original.copy(Bitmap.Config.ARGB_8888, true)
             bitmap?.let {
+                mutex.lock()
+                if (midasAddr == null || !isRunning) return@onImage
+
                 val start = System.currentTimeMillis()
-                nativeLib.depthMidas(midasAddr, it, it)
+                nativeLib.depthMidas(midasAddr!!, it, it)
                 val end = System.currentTimeMillis()
+                mutex.unlock()
                 runOnUiThread {
                     binding.imgDepth.setImageBitmap(it)
                     binding.tvInferenceTime.text = "Inference time : ${end - start} ms"
@@ -72,7 +122,7 @@ class DepthImageActivity : ComponentActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        nativeLib.destroyMidas(midasAddr)
+        midasAddr?.let { nativeLib.destroyMidas(it) }
     }
 
     fun rotate(bitmap: Bitmap, degrees: Float): Bitmap {

@@ -11,22 +11,20 @@
 #include <fstream>
 #include <jni.h>
 
-void bitmapToMat(JNIEnv *env, jobject bitmap, cv::Mat& dst, jboolean needUnPremultiplyAlpha)
-{
-    AndroidBitmapInfo  info;
-    void*              pixels = 0;
+void bitmapToMat(JNIEnv *env, jobject bitmap, cv::Mat &dst, jboolean needUnPremultiplyAlpha) {
+    AndroidBitmapInfo info;
+    void *pixels = 0;
 
     try {
-        CV_Assert( AndroidBitmap_getInfo(env, bitmap, &info) >= 0 );
-        CV_Assert( info.format == ANDROID_BITMAP_FORMAT_RGBA_8888 ||
-                   info.format == ANDROID_BITMAP_FORMAT_RGB_565 );
-        CV_Assert( AndroidBitmap_lockPixels(env, bitmap, &pixels) >= 0 );
-        CV_Assert( pixels );
+        CV_Assert(AndroidBitmap_getInfo(env, bitmap, &info) >= 0);
+        CV_Assert(info.format == ANDROID_BITMAP_FORMAT_RGBA_8888 ||
+                  info.format == ANDROID_BITMAP_FORMAT_RGB_565);
+        CV_Assert(AndroidBitmap_lockPixels(env, bitmap, &pixels) >= 0);
+        CV_Assert(pixels);
         dst.create(info.height, info.width, CV_8UC4);
-        if( info.format == ANDROID_BITMAP_FORMAT_RGBA_8888 )
-        {
+        if (info.format == ANDROID_BITMAP_FORMAT_RGBA_8888) {
             cv::Mat tmp(info.height, info.width, CV_8UC4, pixels);
-            if(needUnPremultiplyAlpha) cvtColor(tmp, dst, cv::COLOR_mRGBA2RGBA);
+            if (needUnPremultiplyAlpha) cvtColor(tmp, dst, cv::COLOR_mRGBA2RGBA);
             else tmp.copyTo(dst);
         } else {
             // info.format == ANDROID_BITMAP_FORMAT_RGB_565
@@ -35,7 +33,7 @@ void bitmapToMat(JNIEnv *env, jobject bitmap, cv::Mat& dst, jboolean needUnPremu
         }
         AndroidBitmap_unlockPixels(env, bitmap);
         return;
-    } catch(const cv::Exception& e) {
+    } catch (const cv::Exception &e) {
         AndroidBitmap_unlockPixels(env, bitmap);
         jclass je = env->FindClass("java/lang/Exception");
         env->ThrowNew(je, e.what());
@@ -48,46 +46,43 @@ void bitmapToMat(JNIEnv *env, jobject bitmap, cv::Mat& dst, jboolean needUnPremu
     }
 }
 
-void matToBitmap(JNIEnv* env, cv::Mat src, jobject bitmap, jboolean needPremultiplyAlpha)
-{
-    AndroidBitmapInfo  info;
-    void*              pixels = 0;
+void matToBitmap(JNIEnv *env, cv::Mat src, jobject bitmap, jboolean needPremultiplyAlpha) {
+    AndroidBitmapInfo info;
+    void *pixels = 0;
 
     try {
-        CV_Assert( AndroidBitmap_getInfo(env, bitmap, &info) >= 0 );
-        CV_Assert( info.format == ANDROID_BITMAP_FORMAT_RGBA_8888 ||
-                   info.format == ANDROID_BITMAP_FORMAT_RGB_565 );
-        CV_Assert( src.dims == 2 && info.height == (uint32_t)src.rows && info.width == (uint32_t)src.cols );
-        CV_Assert( src.type() == CV_8UC1 || src.type() == CV_8UC3 || src.type() == CV_8UC4 );
-        CV_Assert( AndroidBitmap_lockPixels(env, bitmap, &pixels) >= 0 );
-        CV_Assert( pixels );
-        if( info.format == ANDROID_BITMAP_FORMAT_RGBA_8888 )
-        {
+        CV_Assert(AndroidBitmap_getInfo(env, bitmap, &info) >= 0);
+        CV_Assert(info.format == ANDROID_BITMAP_FORMAT_RGBA_8888 ||
+                  info.format == ANDROID_BITMAP_FORMAT_RGB_565);
+        CV_Assert(src.dims == 2 && info.height == (uint32_t) src.rows &&
+                  info.width == (uint32_t) src.cols);
+        CV_Assert(src.type() == CV_8UC1 || src.type() == CV_8UC3 || src.type() == CV_8UC4);
+        CV_Assert(AndroidBitmap_lockPixels(env, bitmap, &pixels) >= 0);
+        CV_Assert(pixels);
+        if (info.format == ANDROID_BITMAP_FORMAT_RGBA_8888) {
             cv::Mat tmp(info.height, info.width, CV_8UC4, pixels);
-            if(src.type() == CV_8UC1)
-            {
+            if (src.type() == CV_8UC1) {
                 cvtColor(src, tmp, cv::COLOR_GRAY2RGBA);
-            } else if(src.type() == CV_8UC3){
+            } else if (src.type() == CV_8UC3) {
                 cvtColor(src, tmp, cv::COLOR_RGB2RGBA);
-            } else if(src.type() == CV_8UC4){
-                if(needPremultiplyAlpha) cvtColor(src, tmp, cv::COLOR_RGBA2mRGBA);
+            } else if (src.type() == CV_8UC4) {
+                if (needPremultiplyAlpha) cvtColor(src, tmp, cv::COLOR_RGBA2mRGBA);
                 else src.copyTo(tmp);
             }
         } else {
             // info.format == ANDROID_BITMAP_FORMAT_RGB_565
             cv::Mat tmp(info.height, info.width, CV_8UC2, pixels);
-            if(src.type() == CV_8UC1)
-            {
+            if (src.type() == CV_8UC1) {
                 cvtColor(src, tmp, cv::COLOR_GRAY2BGR565);
-            } else if(src.type() == CV_8UC3){
+            } else if (src.type() == CV_8UC3) {
                 cvtColor(src, tmp, cv::COLOR_RGB2BGR565);
-            } else if(src.type() == CV_8UC4){
+            } else if (src.type() == CV_8UC4) {
                 cvtColor(src, tmp, cv::COLOR_RGBA2BGR565);
             }
         }
         AndroidBitmap_unlockPixels(env, bitmap);
         return;
-    } catch(const cv::Exception& e) {
+    } catch (const cv::Exception &e) {
         AndroidBitmap_unlockPixels(env, bitmap);
         jclass je = env->FindClass("java/lang/Exception");
         env->ThrowNew(je, e.what());
@@ -102,7 +97,7 @@ void matToBitmap(JNIEnv* env, cv::Mat src, jobject bitmap, jboolean needPremulti
 
 extern "C" JNIEXPORT void JNICALL
 Java_com_flomobility_depth_NativeLib_blur(
-        JNIEnv* env,
+        JNIEnv *env,
         jobject /* this */,
         jobject bitmapIn,
         jobject bitmapOut,
@@ -115,7 +110,7 @@ Java_com_flomobility_depth_NativeLib_blur(
 
 extern "C" JNIEXPORT void JNICALL
 Java_com_flomobility_depth_NativeLib_bw(
-        JNIEnv* env,
+        JNIEnv *env,
         jobject /* this */,
         jobject bitmapIn,
         jobject bitmapOut) {
@@ -127,7 +122,7 @@ Java_com_flomobility_depth_NativeLib_bw(
 
 extern "C" JNIEXPORT void JNICALL
 Java_com_flomobility_depth_NativeLib_resize(
-        JNIEnv* env,
+        JNIEnv *env,
         jobject /* this */,
         jobject bitmapIn,
         jobject bitmapOut,
@@ -141,7 +136,7 @@ Java_com_flomobility_depth_NativeLib_resize(
 
 extern "C" JNIEXPORT jlong JNICALL
 Java_com_flomobility_depth_NativeLib_initMidas(
-        JNIEnv* env,
+        JNIEnv *env,
         jobject p_this,
         jobject assetManager,
         jstring modelName) {
@@ -149,11 +144,11 @@ Java_com_flomobility_depth_NativeLib_initMidas(
     char *buffer = nullptr;
     long size = 0;
 
-    const char* model_path = env->GetStringUTFChars(modelName, NULL);
+    const char *model_path = env->GetStringUTFChars(modelName, NULL);
 
     if (!(env->IsSameObject(assetManager, NULL))) {
         AAssetManager *mgr = AAssetManager_fromJava(env, assetManager);
-        AAsset *asset = AAssetManager_open(mgr, "model_packnet_trained.tflite", AASSET_MODE_UNKNOWN);
+        AAsset *asset = AAssetManager_open(mgr, model_path, AASSET_MODE_UNKNOWN);
         assert(asset != nullptr);
 
         size = AAsset_getLength(asset);
@@ -162,7 +157,15 @@ Java_com_flomobility_depth_NativeLib_initMidas(
         AAsset_close(asset);
     }
 
-    jlong res = (jlong) new Midas(buffer, size);
+    auto *midas = new Midas(buffer, size);
+    if (strcmp(model_path, "model_midas.tflite") == 0) {
+        midas->INPUT_IMAGE_WIDTH = 256;
+        midas->INPUT_IMAGE_HEIGHT = 256;
+    } else if (strcmp(model_path, "model_packnet.tflite") == 0) {
+        midas->INPUT_IMAGE_WIDTH = 640;
+        midas->INPUT_IMAGE_HEIGHT = 192;
+    }
+    jlong res = (jlong) midas;
     free(buffer); // Midas duplicate it
     return res;
 
@@ -198,16 +201,16 @@ Java_com_flomobility_depth_NativeLib_initMidas(
 
 extern "C" JNIEXPORT void JNICALL
 Java_com_flomobility_depth_NativeLib_destroyMidas(
-        JNIEnv* env,
+        JNIEnv *env,
         jobject p_this,
         jlong midas_ptr) {
     if (midas_ptr)
-        delete (Midas*) midas_ptr;
+        delete (Midas *) midas_ptr;
 }
 
 extern "C" JNIEXPORT void JNICALL
 Java_com_flomobility_depth_NativeLib_depthMidas(
-        JNIEnv* env,
+        JNIEnv *env,
         jobject p_this,
         jlong midas_ptr,
         jobject bitmapIn,
@@ -215,7 +218,7 @@ Java_com_flomobility_depth_NativeLib_depthMidas(
     cv::Mat input_img;
     bitmapToMat(env, bitmapIn, input_img, false);
 
-    Midas* midas = (Midas*) midas_ptr;
+    Midas *midas = (Midas *) midas_ptr;
     cv::Mat output_image = midas->forward(input_img);
     matToBitmap(env, output_image, bitmapOut, false);
 }
