@@ -99,6 +99,7 @@
                 app:layout_constraintTop_toTopOf="parent" />
 
             <TextView
+                android:id="@+id/btn_view_meta"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:clickable="true"
@@ -324,6 +325,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:visibility="gone"
+        android:clickable="true"
+        android:focusable="true"
         android:background="@color/greyTransparent"
         android:orientation="vertical">
 
@@ -334,29 +337,37 @@
             android:layout_gravity="end"
             android:layout_margin="12dp"
             android:background="@android:color/transparent"
-            android:src="@drawable/ic_close"
-            app:tint="@color/white" />
+            android:src="@drawable/ic_close_white"
+            />
 
     </LinearLayout>
 
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:id="@+id/container_asset_meta"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
         android:background="@drawable/square_rounded_1"
-        android:padding="8dp"
+        android:padding="24dp"
         android:visibility="gone"
+        android:layout_marginHorizontal="32dp"
         app:layout_constraintBottom_toTopOf="@id/guideline2"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/guideline1">
 
-        <TextView
+        <ScrollView
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:fontFamily="@font/metropolis_regular_webfont"
-            android:textColor="@color/white"
-            android:isScrollContainer="true"
-            android:id="@+id/tv_meta"/>
+            android:layout_height="match_parent">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/metropolis_regular_webfont"
+                android:textColor="@color/white"
+                android:isScrollContainer="true"
+                android:id="@+id/tv_meta"/>
+
+        </ScrollView>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

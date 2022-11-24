@@ -6,10 +6,12 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.annotation.DrawableRes
 import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
+import androidx.lifecycle.ViewModelProvider
+import com.flomobility.anx.R
 import com.flomobility.anx.databinding.ActivityAssetDebugBinding
-import com.flomobility.anx.hermes.assets.AssetManager
-import com.flomobility.anx.hermes.assets.AssetType
-import com.flomobility.anx.hermes.assets.getAssetTypeFromAlias
+import com.flomobility.anx.hermes.assets.*
+import com.google.gson.Gson
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -18,6 +20,11 @@ class AssetDebugActivity : ComponentActivity() {
 
     @Inject
     lateinit var assetManager: AssetManager
+
+    @Inject
+    lateinit var baseGson: Gson
+
+    lateinit var viewModel: AssetDebugViewModel
 
     companion object {
         fun navigateToAssetDebugActivity(context: Context, assetData: Bundle) {
@@ -34,30 +41,33 @@ class AssetDebugActivity : ComponentActivity() {
     private var _binding: ActivityAssetDebugBinding? = null
     private val binding get() = _binding!!
 
-    private var _assetTypeAlias: String? = null
-    private var _assetType: AssetType = AssetType.UNK
+    private var assetTypeAlias: String? = null
+    private var assetType: AssetType = AssetType.UNK
 
     @DrawableRes
-    private var _assetImgRes: Int? = null
+    private var assetImgRes: Int? = null
+
+    private val gson: Gson by lazy {
+        baseGson.newBuilder()
+            .setPrettyPrinting()
+            .create()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         _binding = ActivityAssetDebugBinding.inflate(layoutInflater)
-        _assetTypeAlias = intent.getBundleExtra(KEY_ASSET_DATA)?.getString(KEY_ASSET_TYPE)
-        _assetType = getAssetTypeFromAlias(_assetTypeAlias!!)
-        _assetImgRes = intent.getBundleExtra(KEY_ASSET_DATA)?.getInt(KEY_ASSET_IMAGE)
+        viewModel = ViewModelProvider(this)[AssetDebugViewModel::class.java]
+        assetTypeAlias = intent.getBundleExtra(KEY_ASSET_DATA)?.getString(KEY_ASSET_TYPE)
+        assetType = getAssetTypeFromAlias(assetTypeAlias!!)
+        assetImgRes = intent.getBundleExtra(KEY_ASSET_DATA)?.getInt(KEY_ASSET_IMAGE)
         setContentView(binding.root)
-        if (_assetImgRes == null || _assetTypeAlias == null) return
+
+        if (assetImgRes == null || assetTypeAlias == null) return
+
+        viewModel.getAssets(assetType)
+        subscribeToObservers()
         setUI()
         setupListeners()
-    }
-
-    private fun setupListeners() {
-        with(binding) {
-            backBtn.setOnClickListener {
-                onBackPressed()
-            }
-        }
     }
 
     private fun setUI() {
@@ -65,13 +75,109 @@ class AssetDebugActivity : ComponentActivity() {
             ivAssetIcon.setImageDrawable(
                 ContextCompat.getDrawable(
                     this@AssetDebugActivity,
-                    _assetImgRes!!
+                    assetImgRes!!
                 )
             )
-            tvAssetType.text = _assetTypeAlias
-
+            tvAssetType.text = assetTypeAlias
         }
     }
+
+    private fun setupListeners() {
+        with(binding) {
+            backBtn.setOnClickListener {
+                onBackPressed()
+            }
+            btnViewMeta.setOnClickListener {
+                containerAssetMeta.isVisible = true
+                overlay.isVisible = true
+            }
+            btnCloseDialog.setOnClickListener {
+                dismissOverlay()
+            }
+        }
+    }
+
+    private fun dismissOverlay() {
+        with(binding) {
+            containerAssetMeta.isVisible = false
+            overlay.isVisible = false
+        }
+    }
+
+    private fun subscribeToObservers() {
+        viewModel.currentAsset.observe(this) { asset ->
+            updateAssetUI(asset)
+        }
+    }
+
+    private fun updateAssetUI(asset: BaseAsset) {
+        asset.getStateLiveData().observe(this) { assetState ->
+            binding.tvStatus.apply {
+                text = assetState.name
+                setTextColor(
+                    ContextCompat.getColor(
+                        this@AssetDebugActivity,
+                        if (assetState == AssetState.STREAMING) {
+                            R.color.floGreen
+                        } else {
+                            R.color.floRed
+                        }
+                    )
+                )
+            }
+
+            if(assetState == AssetState.STREAMING) {
+                binding.containerAssetConfigPresent.isVisible = true
+                binding.containerAssetConfigAbsent.isVisible = false
+                binding.tvAssetConfig.text = getAssetConfigText(asset)
+
+                binding.tvOut.isVisible = true
+                binding.tvOutNotStreaming.isVisible = false
+
+                binding.tvIn.isVisible = true
+                binding.tvInNotStreaming.isVisible = false
+            } else {
+                binding.containerAssetConfigPresent.isVisible = false
+                binding.containerAssetConfigAbsent.isVisible = true
+
+                binding.tvOut.isVisible = false
+                binding.tvOutNotStreaming.isVisible = true
+
+                binding.tvIn.isVisible = false
+                binding.tvInNotStreaming.isVisible = true
+            }
+        }
+        binding.tvMeta.text = gson.toJson(asset.getDesc())
+
+        if(asset.type == AssetType.CAM) {
+            binding.containerOutCamera.isVisible = true
+            binding.containerOut.isVisible = false
+            binding.containerIn.isVisible = false
+        } else {
+            binding.containerOutCamera.isVisible = false
+            binding.containerOut.isVisible = asset.config.portPub != -1
+            binding.containerIn.isVisible = asset.config.portSub != -1
+        }
+
+    }
+
+    private fun getAssetConfigText(asset: BaseAsset): String {
+        var assetConfig = ""
+        asset.config.getFields().forEach { field ->
+            assetConfig += "${field.name} : ${field.value}"
+        }
+        return assetConfig
+    }
+
+    override fun onBackPressed() {
+        // check if asset meta view is visible
+        if (binding.overlay.isVisible) {
+            dismissOverlay()
+            return
+        }
+        finish()
+    }
+
 
     override fun onDestroy() {
         super.onDestroy()

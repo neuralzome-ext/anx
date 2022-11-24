@@ -202,6 +202,8 @@ class HomeActivity : AppCompatActivity() {
         )
         (bind.assetRecycler.adapter as AssetAdapter).apply {
             doOnItemClicked { assetUI ->
+                if(assetUI.assets.isEmpty()) return@doOnItemClicked
+
                 AssetDebugActivity.navigateToAssetDebugActivity(
                     this@HomeActivity,
                     Bundle().apply {
