@@ -21,6 +21,7 @@ import com.flomobility.anx.hermes.other.viewutils.AlertDialog
 import com.flomobility.anx.hermes.ui.login.LoginActivity
 import com.flomobility.anx.hermes.ui.settings.SettingsActivity
 import com.flomobility.anx.databinding.ActivityHomeBinding
+import com.flomobility.anx.hermes.ui.asset_debug.AssetDebugActivity
 import com.flomobility.anx.shared.terminal.TerminalConstants
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
@@ -199,7 +200,19 @@ class HomeActivity : AppCompatActivity() {
             this@HomeActivity,
             this@HomeActivity
         )
-        (bind.assetRecycler.adapter as AssetAdapter).setupAssetsList()
+        (bind.assetRecycler.adapter as AssetAdapter).apply {
+            doOnItemClicked { assetUI ->
+                if(assetUI.assets.isEmpty()) return@doOnItemClicked
+
+                AssetDebugActivity.navigateToAssetDebugActivity(
+                    this@HomeActivity,
+                    Bundle().apply {
+                        putString(AssetDebugActivity.KEY_ASSET_TYPE, assetUI.assetType.alias)
+                        putInt(AssetDebugActivity.KEY_ASSET_IMAGE, assetUI.assetImage)
+                    }
+                )
+            }
+        }.setupAssetsList()
     }
 
     private fun sendCommandToService(action: String, serviceClass: Class<*>) {

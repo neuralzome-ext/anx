@@ -25,6 +25,8 @@ abstract class Camera : BaseAsset() {
             compressionQuality.range = listOf(
                 10, 25, 50, 75, 80, 85, 90, 95, 100
             )
+
+            portSub = -1
         }
 
         fun loadStreams(streams: List<Stream>) {

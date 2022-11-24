@@ -14,6 +14,8 @@ import com.flomobility.anx.hermes.other.handleExceptions
 import com.flomobility.anx.hermes.phone.PhoneManager
 import com.google.gson.Gson
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import org.zeromq.SocketType
 import org.zeromq.ZContext
 import org.zeromq.ZMQ
@@ -115,7 +117,11 @@ class Phone @Inject constructor(
                                 gpuUsage = gpuUsage,
                                 gpuVramUsage = -1.0
                             )
-                            socket.send(gson.toJson(phoneState).toByteArray(ZMQ.CHARSET), 0)
+                            val jsonStr = gson.toJson(phoneState)
+                            GlobalScope.launch {
+                                assetOut.send(jsonStr)
+                            }
+                            socket.send(jsonStr.toByteArray(ZMQ.CHARSET), 0)
                             sleep(1000L / _config.fps.value)
                         } catch (e: InterruptedException) {
                             break
@@ -140,6 +146,8 @@ class Phone @Inject constructor(
             fps.range = listOf(1)
             fps.name = "fps"
             fps.value = DEFAULT_FPS
+
+            portSub = -1
         }
 
         override fun getFields(): List<Field<*>> {

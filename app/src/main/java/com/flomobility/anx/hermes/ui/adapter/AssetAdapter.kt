@@ -32,6 +32,12 @@ class AssetAdapter(
         }
     }
 
+    private var onAssetUIClicked: ((AssetUI) -> Unit)? = null
+
+    fun doOnItemClicked(onClick: (AssetUI) -> Unit) {
+        onAssetUIClicked = onClick
+    }
+
     private val differ = AsyncListDiffer(this, diffCallback)
 
     private var assetList: List<AssetUI>
@@ -70,6 +76,9 @@ class AssetAdapter(
             (bind.assetStatusRecycler.adapter as AssetStatusAdapter).updateAssetsList(assetUI.assets)
             bind.assetStatusRecycler.layoutManager =
                 LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
+            bind.root.setOnClickListener {
+                onAssetUIClicked?.invoke(assetUI)
+            }
         } else {
             bind.sensorAvailability.visibility = View.VISIBLE
         }

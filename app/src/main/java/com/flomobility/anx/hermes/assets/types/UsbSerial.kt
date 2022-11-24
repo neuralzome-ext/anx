@@ -18,6 +18,8 @@ import com.flomobility.anx.hermes.common.Result
 import com.flomobility.anx.hermes.other.Constants
 import com.flomobility.anx.hermes.other.GsonUtils
 import com.flomobility.anx.hermes.other.handleExceptions
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import org.zeromq.SocketType
 import org.zeromq.ZContext
 import org.zeromq.ZMQ
@@ -221,6 +223,9 @@ class UsbSerial : BaseAsset() {
                 when (msg.what) {
                     MSG_SEND_READ_DATA -> {
                         val bytes = msg.obj as String
+                        GlobalScope.launch {
+                            assetOut.send(bytes)
+                        }
                         socket.sendRaw(bytes)
                     }
                     Constants.SIG_KILL_THREAD -> {
@@ -274,11 +279,15 @@ class UsbSerial : BaseAsset() {
                             poller.poll(100)
                             if (poller.pollin(0)) {
                                 val recvBytes = socket.recv(0)
+                                val dataRecv = String(recvBytes, ZMQ.CHARSET)
                                 val rawData = GsonUtils.getGson().fromJson<Raw>(
-                                    String(recvBytes, ZMQ.CHARSET),
+                                    dataRecv,
                                     Raw.type
                                 )
 //                            Timber.d("[USB-Serial] : Data sending to usb_serial asset-> $rawData")
+                                GlobalScope.launch {
+                                    assetOut.send(dataRecv)
+                                }
                                 val bytes = "${rawData.data}\n".toByteArray(ZMQ.CHARSET)
                                 usbSerialDevice?.write(bytes)
                             }
