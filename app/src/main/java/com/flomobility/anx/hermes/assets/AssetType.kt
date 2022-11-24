@@ -10,6 +10,7 @@ enum class AssetType(val alias: String) {
     BLE("ble"),
     SPEAKER("speaker"),
     PHONE("phone"),
+    DEPTH_CAM("depth"),
     UNK("unknown")
 }
 

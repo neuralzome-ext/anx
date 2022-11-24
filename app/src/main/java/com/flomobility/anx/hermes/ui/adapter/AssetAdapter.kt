@@ -94,7 +94,8 @@ class AssetAdapter(
             AssetUI(R.drawable.ic_speaker, AssetType.SPEAKER, arrayListOf()),
             AssetUI(R.drawable.ic_bluetooth, AssetType.CLASSIC_BT, isAvailable = false),
             AssetUI(R.drawable.ic_bluetooth, AssetType.BLE, isAvailable = false),
-            AssetUI(R.drawable.ic_phone, AssetType.PHONE, arrayListOf())
+            AssetUI(R.drawable.ic_phone, AssetType.PHONE, arrayListOf()),
+            AssetUI(R.drawable.ic_flo_o, AssetType.DEPTH_CAM, arrayListOf())
         ).toList()
     }
 

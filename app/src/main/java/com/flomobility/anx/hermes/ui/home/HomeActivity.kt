@@ -21,7 +21,9 @@ import com.flomobility.anx.hermes.other.viewutils.AlertDialog
 import com.flomobility.anx.hermes.ui.login.LoginActivity
 import com.flomobility.anx.hermes.ui.settings.SettingsActivity
 import com.flomobility.anx.databinding.ActivityHomeBinding
+import com.flomobility.anx.hermes.assets.AssetType
 import com.flomobility.anx.hermes.ui.asset_debug.AssetDebugActivity
+import com.flomobility.anx.hermes.ui.depth.DepthImageActivity
 import com.flomobility.anx.shared.terminal.TerminalConstants
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
@@ -202,6 +204,10 @@ class HomeActivity : AppCompatActivity() {
         )
         (bind.assetRecycler.adapter as AssetAdapter).apply {
             doOnItemClicked { assetUI ->
+                if(assetUI.assetType == AssetType.DEPTH_CAM) {
+                    DepthImageActivity.navigateToDepthImageActivity(this@HomeActivity)
+                    return@doOnItemClicked
+                }
                 if(assetUI.assets.isEmpty()) return@doOnItemClicked
 
                 AssetDebugActivity.navigateToAssetDebugActivity(

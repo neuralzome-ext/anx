@@ -59,7 +59,7 @@ class AssetManager @Inject constructor(
         addAsset(phone)
         addAsset(speaker)
         addAsset(phoneGnss)
-        addAsset(phoneBackCamera)
+//        addAsset(phoneBackCamera)
         addAsset(phoneFrontCamera)
     }
 

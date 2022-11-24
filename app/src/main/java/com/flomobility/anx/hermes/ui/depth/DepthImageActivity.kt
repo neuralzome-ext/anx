@@ -1,6 +1,8 @@
 package com.flomobility.anx.hermes.ui.depth
 
 import android.annotation.SuppressLint
+import android.content.Context
+import android.content.Intent
 import android.graphics.*
 import android.media.Image
 import android.os.Bundle
@@ -18,6 +20,12 @@ import java.util.concurrent.Executors
 @SuppressLint("UnsafeOptInUsageError")
 @AndroidEntryPoint
 class DepthImageActivity : ComponentActivity() {
+
+    companion object {
+        fun navigateToDepthImageActivity(context: Context) {
+            context.startActivity(Intent(context, DepthImageActivity::class.java))
+        }
+    }
 
     lateinit var cameraHI: CameraHI
 
