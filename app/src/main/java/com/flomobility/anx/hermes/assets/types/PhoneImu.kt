@@ -18,6 +18,8 @@ import com.flomobility.anx.hermes.common.Result
 import com.flomobility.anx.hermes.other.Constants
 import com.flomobility.anx.hermes.other.handleExceptions
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import org.zeromq.SocketType
 import org.zeromq.ZContext
 import org.zeromq.ZMQ
@@ -213,6 +215,9 @@ class PhoneImu @Inject constructor(
                     try {
                         val jsonStr = this@PhoneImu.getImuData().toJson()
 //                        Timber.d("[Publishing] -- imu : $jsonStr")
+                        GlobalScope.launch {
+                            assetOut.send(jsonStr)
+                        }
                         socket.send(jsonStr.toByteArray(ZMQ.CHARSET), ZMQ.DONTWAIT)
                         Thread.sleep(1000L / (config.fps.value as Int))
                     } catch (e: InterruptedException) {

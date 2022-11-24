@@ -3,6 +3,8 @@ package com.flomobility.anx.hermes.assets
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.flomobility.anx.hermes.common.Result
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.receiveAsFlow
 
 
 abstract class BaseAsset {
@@ -20,6 +22,12 @@ abstract class BaseAsset {
 
     val state: AssetState
         get() = _state.value!!
+
+    protected var assetOut = Channel<String>(Channel.BUFFERED)
+    val outStream = assetOut.receiveAsFlow()
+
+    protected var assetIn = Channel<String>(Channel.BUFFERED)
+    val inStream = assetIn.receiveAsFlow()
 
     fun updateState(state: AssetState) {
         this._state.postValue(state)

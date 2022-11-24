@@ -8,12 +8,18 @@ import androidx.annotation.DrawableRes
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import com.flomobility.anx.R
 import com.flomobility.anx.databinding.ActivityAssetDebugBinding
 import com.flomobility.anx.hermes.assets.*
 import com.google.gson.Gson
+import com.google.gson.JsonParser
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import javax.inject.Inject
+
 
 @AndroidEntryPoint
 class AssetDebugActivity : ComponentActivity() {
@@ -52,6 +58,9 @@ class AssetDebugActivity : ComponentActivity() {
             .setPrettyPrinting()
             .create()
     }
+
+    private var outStreamJob: Job? = null
+    private var inStreamJob: Job? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -159,6 +168,18 @@ class AssetDebugActivity : ComponentActivity() {
             binding.containerIn.isVisible = asset.config.portSub != -1
         }
 
+        outStreamJob?.cancel()
+        outStreamJob = asset.outStream
+            .onEach { outTxt ->
+                binding.tvOut.text = gson.toJson(JsonParser.parseString(outTxt))
+            }.launchIn(lifecycleScope)
+
+        inStreamJob?.cancel()
+        inStreamJob = asset.inStream
+            .onEach { inTxt ->
+                binding.tvIn.text = gson.toJson(JsonParser.parseString(inTxt))
+            }.launchIn(lifecycleScope)
+
     }
 
     private fun getAssetConfigText(asset: BaseAsset): String {
@@ -182,5 +203,10 @@ class AssetDebugActivity : ComponentActivity() {
     override fun onDestroy() {
         super.onDestroy()
         _binding = null
+        outStreamJob?.cancel()
+        outStreamJob = null
+
+        inStreamJob?.cancel()
+        inStreamJob = null
     }
 }

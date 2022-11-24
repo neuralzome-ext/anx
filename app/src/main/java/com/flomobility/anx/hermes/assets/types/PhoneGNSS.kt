@@ -209,7 +209,11 @@ class PhoneGNSS @Inject constructor(
                     MSG_NMEA_DATA -> {
                         val gnssData = msg.obj as GNSSData
                         gnssData.let {
-                            socket.send(gson.toJson(it).toByteArray(ZMQ.CHARSET), 0)
+                            val jsonStr = gson.toJson(it)
+                            GlobalScope.launch {
+                                assetOut.send(jsonStr)
+                            }
+                            socket.send(jsonStr.toByteArray(ZMQ.CHARSET), 0)
                         }
                     }
                     Constants.SIG_KILL_THREAD -> {
