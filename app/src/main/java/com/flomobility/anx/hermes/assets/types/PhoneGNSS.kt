@@ -133,6 +133,8 @@ class PhoneGNSS @Inject constructor(
             fps.range = listOf(1)
             fps.name = "fps"
             fps.value = DEFAULT_FPS
+
+            portSub = -1
         }
 
         override fun getFields(): List<Field<*>> {

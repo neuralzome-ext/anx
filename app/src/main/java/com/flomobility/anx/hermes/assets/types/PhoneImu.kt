@@ -237,6 +237,8 @@ class PhoneImu @Inject constructor(
             fps.range = fpsRange
             fps.name = "fps"
             fps.value = DEFAULT_FPS
+
+            portSub = -1
         }
 
         companion object {

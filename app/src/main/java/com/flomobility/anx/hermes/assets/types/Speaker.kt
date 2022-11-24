@@ -152,6 +152,8 @@ class Speaker @Inject constructor(
 
         init {
             language.name = "language"
+
+            portPub = -1
         }
 
         override fun getFields(): List<Field<*>> {
