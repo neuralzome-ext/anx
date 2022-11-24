@@ -73,9 +73,11 @@
         android:theme="@style/Theme.Flo"
         android:usesCleartextTraffic="true">
         <activity
+            android:name=".hermes.ui.asset_debug.AssetDebugActivity"
+            android:exported="false" />
+        <activity
             android:name=".hermes.ui.license.LicenseActivity"
             android:exported="false" />
-
         <activity
             android:name=".app.TerminalActivity"
             android:configChanges="orientation|screenSize|smallestScreenSize|density|screenLayout|uiMode|keyboard|keyboardHidden|navigation"

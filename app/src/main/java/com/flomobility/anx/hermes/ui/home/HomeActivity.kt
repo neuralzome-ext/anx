@@ -21,6 +21,7 @@ import com.flomobility.anx.hermes.other.viewutils.AlertDialog
 import com.flomobility.anx.hermes.ui.login.LoginActivity
 import com.flomobility.anx.hermes.ui.settings.SettingsActivity
 import com.flomobility.anx.databinding.ActivityHomeBinding
+import com.flomobility.anx.hermes.ui.asset_debug.AssetDebugActivity
 import com.flomobility.anx.shared.terminal.TerminalConstants
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
@@ -201,7 +202,13 @@ class HomeActivity : AppCompatActivity() {
         )
         (bind.assetRecycler.adapter as AssetAdapter).apply {
             doOnItemClicked { assetUI ->
-                // TODO : navigate to asset debug view
+                AssetDebugActivity.navigateToAssetDebugActivity(
+                    this@HomeActivity,
+                    Bundle().apply {
+                        putString(AssetDebugActivity.KEY_ASSET_TYPE, assetUI.assetType.alias)
+                        putInt(AssetDebugActivity.KEY_ASSET_IMAGE, assetUI.assetImage)
+                    }
+                )
             }
         }.setupAssetsList()
     }

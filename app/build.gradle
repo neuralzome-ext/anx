@@ -212,9 +212,9 @@ android {
             debuggable true
             minifyEnabled false
             signingConfig signingConfigs.flo
-            manifestPlaceholders.TERMINAL_PACKAGE_NAME = "com.flomobility.anx.dev"
+            manifestPlaceholders.TERMINAL_PACKAGE_NAME = "com.flomobility.anx"
             versionNameSuffix "-dev"
-            applicationIdSuffix ".dev"
+//            applicationIdSuffix ".dev"
             resValue "string", "application_name", "(D)anx"
         }
         release {

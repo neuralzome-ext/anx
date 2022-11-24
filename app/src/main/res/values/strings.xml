@@ -1,15 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE
-    resources[
-        <!ENTITY TERMINAL_PACKAGE_NAME "com.flomobility.anx">
-        <!ENTITY TERMINAL_APP_NAME "anx">
-        <!ENTITY TERMINAL_API_APP_NAME "Terminal:API">
-        <!ENTITY TERMINAL_BOOT_APP_NAME "Terminal:Boot">
-        <!ENTITY TERMINAL_FLOAT_APP_NAME "Terminal:Float">
-        <!ENTITY TERMINAL_STYLING_APP_NAME "Terminal:Styling">
-        <!ENTITY TERMINAL_TASKER_APP_NAME "Terminal:Tasker">
-        <!ENTITY TERMINAL_WIDGET_APP_NAME "Terminal:Widget">
-    ]>
+<?xml version="1.0" encoding="utf-8"?><!DOCTYPE
+    resources[<!ENTITY TERMINAL_PACKAGE_NAME "com.flomobility.anx"><!ENTITY TERMINAL_APP_NAME "anx"><!ENTITY TERMINAL_API_APP_NAME "Terminal:API"><!ENTITY TERMINAL_BOOT_APP_NAME "Terminal:Boot"><!ENTITY TERMINAL_FLOAT_APP_NAME "Terminal:Float"><!ENTITY TERMINAL_STYLING_APP_NAME "Terminal:Styling"><!ENTITY TERMINAL_TASKER_APP_NAME "Terminal:Tasker"><!ENTITY TERMINAL_WIDGET_APP_NAME "Terminal:Widget">]>
 
 <resources>
 
@@ -221,5 +211,8 @@
     <string name="i_understand_and_agree_to_the_above_agreement">I understand and agree to the above agreement.</string>
     <string name="proceed">Proceed</string>
     <string name="do_not_press_back_or_exit_from_here">Do not press back or exit from here.</string>
+    <string name="current_config">Current Config:</string>
+    <string name="out">out</string>
+    <string name="in">in</string>
 
 </resources>
