@@ -122,7 +122,12 @@ class DepthImageActivity : ComponentActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        midasAddr?.let { nativeLib.destroyMidas(it) }
+        mutex.lock()
+        midasAddr?.let {
+            nativeLib.destroyMidas(it)
+        }
+        midasAddr = null
+        mutex.unlock()
     }
 
     fun rotate(bitmap: Bitmap, degrees: Float): Bitmap {
