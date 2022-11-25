@@ -130,7 +130,7 @@ fun getIPAddress(useIPv4: Boolean): String {
  * @param useIPv4   true=return ipv4, false=return ipv6
  * @return  address or empty string
  */
-fun getIPAddressList(useIPv4: Boolean): ArrayList<String> {
+fun getIPAddressList(): ArrayList<String> {
     val ipAddresses: ArrayList<String> = ArrayList()
     try {
         val interfaces: List<NetworkInterface> =

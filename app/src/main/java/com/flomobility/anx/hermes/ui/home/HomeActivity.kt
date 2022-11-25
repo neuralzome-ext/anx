@@ -11,16 +11,16 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.downloader.PRDownloader
 import com.flomobility.anx.app.PluginResultsService
 import com.flomobility.anx.app.TerminalCommandExecutor
-import com.flomobility.anx.hermes.ui.adapter.IpAdapter
-import com.flomobility.anx.hermes.ui.adapter.AssetAdapter
+import com.flomobility.anx.databinding.ActivityHomeBinding
 import com.flomobility.anx.hermes.assets.AssetManager
 import com.flomobility.anx.hermes.daemon.EndlessService
-import com.flomobility.anx.hermes.other.*
 import com.flomobility.anx.hermes.network.requests.InfoRequest
+import com.flomobility.anx.hermes.other.*
 import com.flomobility.anx.hermes.other.viewutils.AlertDialog
+import com.flomobility.anx.hermes.ui.adapter.AssetAdapter
+import com.flomobility.anx.hermes.ui.adapter.IpAdapter
 import com.flomobility.anx.hermes.ui.login.LoginActivity
 import com.flomobility.anx.hermes.ui.settings.SettingsActivity
-import com.flomobility.anx.databinding.ActivityHomeBinding
 import com.flomobility.anx.shared.terminal.TerminalConstants
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
@@ -165,7 +165,7 @@ class HomeActivity : AppCompatActivity() {
             if(isConnected) {
                 bind.ipRecycler.isVisible = true
                 bind.connectToNetworkError.isVisible = false
-                (bind.ipRecycler.adapter as IpAdapter).updateIpList(getIPAddressList(true))
+                (bind.ipRecycler.adapter as IpAdapter).updateIpList(getIPAddressList())
             } else {
                 bind.ipRecycler.isVisible = false
                 bind.connectToNetworkError.isVisible = true
@@ -193,7 +193,7 @@ class HomeActivity : AppCompatActivity() {
 
     private fun setupRecyclers() {
         bind.ipRecycler.layoutManager = LinearLayoutManager(this@HomeActivity)
-        bind.ipRecycler.adapter = IpAdapter(this@HomeActivity, getIPAddressList(true))
+        bind.ipRecycler.adapter = IpAdapter(this@HomeActivity, getIPAddressList())
         bind.assetRecycler.layoutManager = GridLayoutManager(this@HomeActivity, 4)
         bind.assetRecycler.adapter = AssetAdapter(
             this@HomeActivity,
