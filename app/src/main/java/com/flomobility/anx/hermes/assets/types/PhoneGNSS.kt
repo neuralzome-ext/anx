@@ -13,20 +13,20 @@ import com.flomobility.anx.hermes.assets.AssetType
 import com.flomobility.anx.hermes.assets.BaseAsset
 import com.flomobility.anx.hermes.assets.BaseAssetConfig
 import com.flomobility.anx.hermes.common.Result
-import com.flomobility.anx.hermes.phonegnss.PhoneGNSSManager
 import com.flomobility.anx.hermes.other.Constants
 import com.flomobility.anx.hermes.other.handleExceptions
+import com.flomobility.anx.hermes.phonegnss.PhoneGNSSManager
 import com.google.gson.Gson
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import org.zeromq.SocketType
 import org.zeromq.ZContext
 import org.zeromq.ZMQ
 import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 
 
 /**
@@ -130,7 +130,7 @@ class PhoneGNSS @Inject constructor(
         val fps = Field<Int>()
 
         init {
-            fps.range = listOf(1)
+            fps.range = listOf(1, 2, 5, 10)
             fps.name = "fps"
             fps.value = DEFAULT_FPS
         }

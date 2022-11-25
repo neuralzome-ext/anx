@@ -143,7 +143,7 @@ class Phone @Inject constructor(
         val fps = Field<Int>()
 
         init {
-            fps.range = listOf(1)
+            fps.range = listOf(1, 2, 5, 10)
             fps.name = "fps"
             fps.value = DEFAULT_FPS
         }

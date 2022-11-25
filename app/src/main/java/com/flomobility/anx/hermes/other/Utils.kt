@@ -143,22 +143,22 @@ fun getIPAddressList(useIPv4: Boolean): ArrayList<String> {
 
                     //boolean isIPv4 = InetAddressUtils.isIPv4Address(sAddr);
                     val isIPv4 = sAddr.indexOf(':') < 0
-                    if (useIPv4) {
-                        if (isIPv4) {
-                            ipAddresses.add("$sAddr (${intf.displayName})")
-                        }
+//                    if (useIPv4) {
+                    if (isIPv4) {
+                        ipAddresses.add("$sAddr (${intf.displayName})")
+//                        }
                     } else {
-                        if (!isIPv4) {
-                            val delim = sAddr.indexOf('%') // drop ip6 zone suffix
-                            ipAddresses.add(
-                                if (delim < 0) sAddr.uppercase(Locale.getDefault()) else sAddr.substring(
-                                    0,
-                                    delim
-                                ).uppercase(
-                                    Locale.getDefault()
-                                )
+//                        if (!isIPv4) {
+                        val delim = sAddr.indexOf('%') // drop ip6 zone suffix
+                        ipAddresses.add(
+                            if (delim < 0) sAddr.uppercase(Locale.getDefault()) else sAddr.substring(
+                                0,
+                                delim
+                            ).uppercase(
+                                Locale.getDefault()
                             )
-                        }
+                            )
+//                        }
                     }
                 }
             }
