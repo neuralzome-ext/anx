@@ -14,7 +14,8 @@ import com.flomobility.anx.hermes.other.handleExceptions
 import com.flomobility.anx.hermes.phone.PhoneManager
 import com.google.gson.Gson
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.zeromq.SocketType
 import org.zeromq.ZContext
@@ -28,7 +29,8 @@ import javax.inject.Singleton
 class Phone @Inject constructor(
     @ApplicationContext private val context: Context,
     private val phoneManager: PhoneManager,
-    private val gson: Gson
+    private val gson: Gson,
+    private val dispatcher: CoroutineDispatcher
 ) : BaseAsset() {
 
     private val _id = "0"
@@ -118,9 +120,12 @@ class Phone @Inject constructor(
                                 gpuVramUsage = -1.0
                             )
                             val jsonStr = gson.toJson(phoneState)
-                            GlobalScope.launch {
+                            CoroutineScope(dispatcher).launch(dispatcher) {
                                 assetOut.send(jsonStr)
                             }
+                            /*GlobalScope.launch {
+                                assetOut.send(jsonStr)
+                            }*/
                             socket.send(jsonStr.toByteArray(ZMQ.CHARSET), 0)
                             sleep(1000L / _config.fps.value)
                         } catch (e: InterruptedException) {

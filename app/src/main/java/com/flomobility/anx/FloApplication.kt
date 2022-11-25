@@ -16,12 +16,16 @@ class FloApplication: Application() {
     override fun onCreate() {
         super.onCreate()
         appContext = applicationContext
-        val config = PRDownloaderConfig.newBuilder()
-            .setDatabaseEnabled(true)
-            .setReadTimeout(30000)
-            .setConnectTimeout(30000)
-            .build()
-        PRDownloader.initialize(applicationContext,config)
+        try {
+            val config = PRDownloaderConfig.newBuilder()
+                .setDatabaseEnabled(true)
+                .setReadTimeout(30000)
+                .setConnectTimeout(30000)
+                .build()
+            PRDownloader.initialize(applicationContext,config)
+        } catch (e: Exception) {
+            Timber.e(e)
+        }
 
         // Timber logging
         Timber.plant(Timber.DebugTree())

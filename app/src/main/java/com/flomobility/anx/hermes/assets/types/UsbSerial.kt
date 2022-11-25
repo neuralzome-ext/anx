@@ -18,7 +18,8 @@ import com.flomobility.anx.hermes.common.Result
 import com.flomobility.anx.hermes.other.Constants
 import com.flomobility.anx.hermes.other.GsonUtils
 import com.flomobility.anx.hermes.other.handleExceptions
-import kotlinx.coroutines.GlobalScope
+import com.flomobility.anx.hermes.other.provideDispatcher
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.zeromq.SocketType
 import org.zeromq.ZContext
@@ -61,6 +62,8 @@ class UsbSerial : BaseAsset() {
             readerThread?.sendData(buffer.nextTextCommand().trim(_config.delimiter.value[0]))
         }
     }
+
+    private val dispatcher = provideDispatcher()
 
     companion object {
         fun create(id: String, usbDevice: UsbDevice, usbManager: UsbManager): UsbSerial {
@@ -223,9 +226,6 @@ class UsbSerial : BaseAsset() {
                 when (msg.what) {
                     MSG_SEND_READ_DATA -> {
                         val bytes = msg.obj as String
-                        GlobalScope.launch {
-                            assetOut.send(bytes)
-                        }
                         socket.sendRaw(bytes)
                     }
                     Constants.SIG_KILL_THREAD -> {
@@ -248,7 +248,14 @@ class UsbSerial : BaseAsset() {
         private fun ZMQ.Socket.sendRaw(str: String, flags: Int = 0) {
             val rawData = Raw(data = str)
 //            Timber.d("${this@UsbSerial.type.alias}-${this@UsbSerial.id} Sending raw data : $rawData")
-            send(GsonUtils.getGson().toJson(rawData), flags)
+            val jsonStr = GsonUtils.getGson().toJson(rawData)
+            CoroutineScope(dispatcher).launch(dispatcher) {
+                assetOut.send(jsonStr)
+            }
+/*            GlobalScope.launch {
+                assetOut.send(jsonStr)
+            }*/
+            send(jsonStr, flags)
         }
 
     }
@@ -285,8 +292,8 @@ class UsbSerial : BaseAsset() {
                                     Raw.type
                                 )
 //                            Timber.d("[USB-Serial] : Data sending to usb_serial asset-> $rawData")
-                                GlobalScope.launch {
-                                    assetOut.send(dataRecv)
+                                CoroutineScope(dispatcher).launch(dispatcher) {
+                                    assetIn.send(dataRecv)
                                 }
                                 val bytes = "${rawData.data}\n".toByteArray(ZMQ.CHARSET)
                                 usbSerialDevice?.write(bytes)

@@ -12,6 +12,8 @@ import com.flomobility.anx.hermes.other.Constants
 import com.flomobility.anx.hermes.other.GsonUtils
 import com.flomobility.anx.hermes.other.handleExceptions
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.zeromq.SocketType
@@ -24,7 +26,8 @@ import javax.inject.Singleton
 
 @Singleton
 class Speaker @Inject constructor(
-    @ApplicationContext private val context: Context
+    @ApplicationContext private val context: Context,
+    private val dispatcher: CoroutineDispatcher
 ) : BaseAsset(), TextToSpeech.OnInitListener {
 
     private val _id: String = "0"
@@ -134,7 +137,7 @@ class Speaker @Inject constructor(
                                     dataRecv,
                                     Raw.type
                                 )
-                                GlobalScope.launch {
+                                CoroutineScope(dispatcher).launch(dispatcher) {
                                     assetIn.send(dataRecv)
                                 }
                                 speak(rawData.data)
