@@ -3,12 +3,22 @@ package com.flomobility.anx.hermes.assets.types.camera
 import com.flomobility.anx.hermes.assets.BaseAsset
 import com.flomobility.anx.hermes.assets.BaseAssetConfig
 import com.flomobility.anx.hermes.other.GsonUtils
+import com.flomobility.anx.hermes.other.provideDispatcher
 import com.google.gson.annotations.SerializedName
 import com.google.gson.reflect.TypeToken
 import com.serenegiant.usb.UVCCamera
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.consumeAsFlow
 import org.json.JSONObject
+import java.nio.ByteBuffer
 
 abstract class Camera : BaseAsset() {
+
+    protected val cameraOut = Channel<ByteBuffer>(Channel.BUFFERED)
+    val out: Flow<ByteBuffer> = cameraOut.consumeAsFlow()
+
+    protected val dispatcher = provideDispatcher(nThreads = 1)
 
     class Config : BaseAssetConfig() {
 

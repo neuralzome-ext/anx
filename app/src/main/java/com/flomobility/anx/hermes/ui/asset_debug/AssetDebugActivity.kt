@@ -116,6 +116,7 @@ class AssetDebugActivity : ComponentActivity() {
     private fun subscribeToObservers() {
         viewModel.currentAsset.observe(this) { asset ->
             updateAssetUI(asset)
+            viewModel.setDebug(true)
         }
     }
 
@@ -197,6 +198,21 @@ class AssetDebugActivity : ComponentActivity() {
             return
         }
         finish()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        viewModel.setDebug(false)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        viewModel.setDebug(true)
+    }
+
+    override fun onStop() {
+        super.onStop()
+        viewModel.setDebug(false)
     }
 
 

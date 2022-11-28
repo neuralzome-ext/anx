@@ -15,6 +15,8 @@ abstract class BaseAsset {
 
     abstract val config: BaseAssetConfig
 
+    var debug = false
+
     val name: String
         get() = "${type.alias}-$id"
 

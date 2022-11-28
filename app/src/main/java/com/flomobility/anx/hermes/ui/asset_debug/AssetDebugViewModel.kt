@@ -27,7 +27,12 @@ class AssetDebugViewModel @Inject constructor(
     }
 
     fun setCurrentAsset(asset: BaseAsset) {
+        _currentAsset.value?.debug = false
         _currentAsset.postValue(asset)
+    }
+
+    fun setDebug(debug: Boolean) {
+        _currentAsset.value?.debug = debug
     }
 
 }

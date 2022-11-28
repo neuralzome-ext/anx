@@ -292,8 +292,10 @@ class UsbSerial : BaseAsset() {
                                     Raw.type
                                 )
 //                            Timber.d("[USB-Serial] : Data sending to usb_serial asset-> $rawData")
-                                CoroutineScope(dispatcher).launch(dispatcher) {
-                                    assetIn.send(dataRecv)
+                                if (debug) {
+                                    CoroutineScope(dispatcher).launch(dispatcher) {
+                                        assetIn.send(dataRecv)
+                                    }
                                 }
                                 val bytes = "${rawData.data}\n".toByteArray(ZMQ.CHARSET)
                                 usbSerialDevice?.write(bytes)

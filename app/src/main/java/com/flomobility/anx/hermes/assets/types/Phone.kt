@@ -120,8 +120,10 @@ class Phone @Inject constructor(
                                 gpuVramUsage = -1.0
                             )
                             val jsonStr = gson.toJson(phoneState)
-                            CoroutineScope(dispatcher).launch(dispatcher) {
-                                assetOut.send(jsonStr)
+                            if (debug) {
+                                CoroutineScope(dispatcher).launch(dispatcher) {
+                                    assetOut.send(jsonStr)
+                                }
                             }
                             /*GlobalScope.launch {
                                 assetOut.send(jsonStr)

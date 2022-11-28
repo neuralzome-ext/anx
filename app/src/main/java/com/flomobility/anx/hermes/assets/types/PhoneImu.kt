@@ -221,8 +221,10 @@ class PhoneImu @Inject constructor(
                         /*GlobalScope.launch {
                             assetOut.send(jsonStr)
                         }*/
-                        CoroutineScope(dispatcher).launch(dispatcher) {
-                            assetOut.send(jsonStr)
+                        if(debug) {
+                            CoroutineScope(dispatcher).launch(dispatcher) {
+                                assetOut.send(jsonStr)
+                            }
                         }
                         socket.send(jsonStr.toByteArray(ZMQ.CHARSET), ZMQ.DONTWAIT)
                         Thread.sleep(1000L / (config.fps.value as Int))

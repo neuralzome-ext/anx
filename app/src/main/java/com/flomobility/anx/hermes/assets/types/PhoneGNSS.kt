@@ -209,8 +209,10 @@ class PhoneGNSS @Inject constructor(
                         val gnssData = msg.obj as GNSSData
                         gnssData.let {
                             val jsonStr = gson.toJson(it)
-                            CoroutineScope(dispatcher).launch(dispatcher) {
-                                assetOut.send(jsonStr)
+                            if(debug) {
+                                CoroutineScope(dispatcher).launch(dispatcher) {
+                                    assetOut.send(jsonStr)
+                                }
                             }
                             /*GlobalScope.launch {
                                 assetOut.send(jsonStr)

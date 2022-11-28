@@ -137,8 +137,10 @@ class Speaker @Inject constructor(
                                     dataRecv,
                                     Raw.type
                                 )
-                                CoroutineScope(dispatcher).launch(dispatcher) {
-                                    assetIn.send(dataRecv)
+                                if (debug) {
+                                    CoroutineScope(dispatcher).launch(dispatcher) {
+                                        assetIn.send(dataRecv)
+                                    }
                                 }
                                 speak(rawData.data)
                             }
