@@ -11,6 +11,7 @@ import com.flomobility.anx.hermes.network.FloApiService
 import com.flomobility.anx.hermes.other.Constants
 import com.flomobility.anx.hermes.other.Constants.NOTIFICATION_CHANNEL_ID
 import com.flomobility.anx.hermes.other.GsonUtils
+import com.flomobility.anx.hermes.other.provideDispatcher
 import com.flomobility.anx.hermes.repositories.FloRepository
 import com.flomobility.anx.hermes.repositories.FloRepositoryImpl
 import dagger.Module
@@ -18,6 +19,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.CoroutineDispatcher
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -87,5 +89,11 @@ object AppModule {
         EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
     )
 //    context.getSharedPreferences("user", AppCompatActivity.MODE_PRIVATE)
+
+    @Singleton
+    @Provides
+    fun providesDispatcher(): CoroutineDispatcher {
+        return provideDispatcher()
+    }
 
 }

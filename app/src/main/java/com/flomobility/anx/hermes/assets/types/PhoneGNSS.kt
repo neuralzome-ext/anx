@@ -13,14 +13,12 @@ import com.flomobility.anx.hermes.assets.AssetType
 import com.flomobility.anx.hermes.assets.BaseAsset
 import com.flomobility.anx.hermes.assets.BaseAssetConfig
 import com.flomobility.anx.hermes.common.Result
+import com.flomobility.anx.hermes.phonegnss.PhoneGNSSManager
 import com.flomobility.anx.hermes.other.Constants
 import com.flomobility.anx.hermes.other.handleExceptions
-import com.flomobility.anx.hermes.phonegnss.PhoneGNSSManager
 import com.google.gson.Gson
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import org.zeromq.SocketType
 import org.zeromq.ZContext
 import org.zeromq.ZMQ
@@ -39,7 +37,8 @@ import javax.inject.Singleton
 class PhoneGNSS @Inject constructor(
     @ApplicationContext private val context: Context,
     private val phoneGnssManager: PhoneGNSSManager,
-    private val gson: Gson
+    private val gson: Gson,
+    private val dispatcher: CoroutineDispatcher
 ) : BaseAsset(), OnNmeaMessageListener {
 
     companion object {
@@ -130,9 +129,11 @@ class PhoneGNSS @Inject constructor(
         val fps = Field<Int>()
 
         init {
-            fps.range = listOf(1, 2, 5, 10)
+            fps.range = listOf(1)
             fps.name = "fps"
             fps.value = DEFAULT_FPS
+
+            portSub = -1
         }
 
         override fun getFields(): List<Field<*>> {
@@ -207,7 +208,16 @@ class PhoneGNSS @Inject constructor(
                     MSG_NMEA_DATA -> {
                         val gnssData = msg.obj as GNSSData
                         gnssData.let {
-                            socket.send(gson.toJson(it).toByteArray(ZMQ.CHARSET), 0)
+                            val jsonStr = gson.toJson(it)
+                            if(debug) {
+                                CoroutineScope(dispatcher).launch(dispatcher) {
+                                    assetOut.send(jsonStr)
+                                }
+                            }
+                            /*GlobalScope.launch {
+                                assetOut.send(jsonStr)
+                            }*/
+                            socket.send(jsonStr.toByteArray(ZMQ.CHARSET), 0)
                         }
                     }
                     Constants.SIG_KILL_THREAD -> {

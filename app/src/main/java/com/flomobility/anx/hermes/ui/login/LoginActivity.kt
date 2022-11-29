@@ -53,7 +53,6 @@ class LoginActivity : ComponentActivity() {
             sharedPreferences.putDeviceID(phoneNumber)
         } catch (e: Exception) {
             Timber.e("Phone Number Hint failed")
-            showSnackBarWithAction("Couldn't get device ID", indefinite = true, actionText = "Ok")
         }
     }
 
@@ -93,6 +92,7 @@ class LoginActivity : ComponentActivity() {
             }
             .addOnFailureListener {
                 Timber.e(it, "Phone Number Hint failed")
+                showSnackBarWithAction("Couldn't get device ID", indefinite = true, actionText = "Ok")
             }
     }
 

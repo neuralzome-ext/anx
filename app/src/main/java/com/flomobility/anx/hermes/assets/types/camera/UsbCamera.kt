@@ -10,9 +10,12 @@ import com.flomobility.anx.hermes.common.Result
 import com.flomobility.anx.hermes.other.Constants
 import com.flomobility.anx.hermes.other.Constants.SOCKET_BIND_DELAY_IN_MS
 import com.flomobility.anx.hermes.other.handleExceptions
+import com.flomobility.anx.hermes.other.toJpeg
 import com.serenegiant.usb.UVCCamera
 import com.serenegiant.usbcameracommon.CameraCallback
 import com.serenegiant.usbcameracommon.UVCCameraHandler
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import org.zeromq.SocketType
 import org.zeromq.ZContext
 import org.zeromq.ZMQ
@@ -91,6 +94,11 @@ class UsbCamera : Camera() {
 
     private val frameCallback = object : FrameCallback {
         override fun onFrame(byteBuffer: ByteBuffer) {
+            if (debug) {
+                CoroutineScope(dispatcher).launch(dispatcher) {
+                    cameraOut.send(byteBuffer)
+                }
+            }
             streamingThread?.publishFrame(byteBuffer)
         }
     }

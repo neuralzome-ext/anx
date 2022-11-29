@@ -25,6 +25,7 @@ import com.flomobility.anx.hermes.other.Constants.SOCKET_BIND_DELAY_IN_MS
 import com.flomobility.anx.hermes.other.handleExceptions
 import com.flomobility.anx.hermes.other.toJpeg
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -216,9 +217,15 @@ class PhoneFrontCamera @Inject constructor(
                 image.use {
                     try {
 //                        val imageBuffer = image.image?.planes?.toNV21(image.width, image.height)
+                        val img = image.toJpeg()
                         streamingThread?.publishFrame(
-                            image.toJpeg() ?: throw Throwable("Couldn't get JPEG image")
+                             img ?: throw Throwable("Couldn't get JPEG image")
                         )
+                        if (debug) {
+                            CoroutineScope(dispatcher).launch(dispatcher) {
+                                cameraOut.send(img ?: throw Throwable("Couldn't get JPEG image"))
+                            }
+                        }
                     } catch (t: Throwable) {
                         Timber.e("Error in getting Img : ${t.message}")
                     }
