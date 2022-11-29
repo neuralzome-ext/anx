@@ -22,7 +22,6 @@
             android:layout_alignParentStart="true"
             android:layout_centerVertical="true"
             android:layout_marginStart="12dp"
-            android:layout_marginTop="12dp"
             android:layout_marginEnd="12dp"
             android:layout_marginBottom="12dp"
             android:src="@drawable/ic_flo" />
@@ -33,7 +32,6 @@
             android:layout_height="32dp"
             android:layout_centerVertical="true"
             android:layout_gravity="end"
-            android:layout_marginTop="10dp"
             android:layout_marginEnd="16dp"
             android:layout_toStartOf="@+id/exit"
             android:foreground="?attr/selectableItemBackground"
@@ -46,7 +44,6 @@
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
             android:layout_gravity="end"
-            android:layout_marginTop="10dp"
             android:layout_marginEnd="16dp"
             android:foreground="?attr/selectableItemBackground"
             android:src="@drawable/ic_exit" />
@@ -55,117 +52,136 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_marginHorizontal="20dp"
-        android:layout_marginBottom="16dp"
         android:layout_weight="4"
-        android:background="@drawable/square_rounded_1"
-        android:orientation="vertical"
-        android:paddingHorizontal="8dp"
-        android:paddingVertical="12dp"
-        android:weightSum="5">
+        android:layout_marginHorizontal="20dp"
+        android:layout_marginBottom="16dp">
 
-        <TextView
-            android:id="@+id/tv_ssh_header"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginHorizontal="16dp"
-            android:fontFamily="@font/metropolis_semibold_webfont"
-            android:text="SSH Into Device"
-            android:textColor="@color/white"
-            android:textSize="24sp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <TextView
-            android:id="@+id/tv_ip_addr_header"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginHorizontal="20dp"
-            app:layout_constraintStart_toStartOf="parent"
-            android:layout_marginTop="10dp"
-            android:fontFamily="@font/metropolis_medium_webfont"
-            android:text="Your IP Address:"
-            android:textColor="@color/white"
-            android:textSize="18sp"
-            app:layout_constraintTop_toBottomOf="@id/tv_ssh_header" />
-
-        <com.github.angads25.toggle.widget.LabeledSwitch
-            android:id="@+id/ip_switch"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:layout_marginEnd="16dp"
-            android:textSize="12sp"
-            app:colorBorder="@android:color/transparent"
-            app:colorOn="@color/floGreen"
-            app:layout_constraintBottom_toBottomOf="@id/tv_ip_addr_header"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="1.0"
-            app:layout_constraintStart_toStartOf="@id/tv_ip_addr_header"
-            app:layout_constraintTop_toTopOf="@id/tv_ip_addr_header"
-            app:on="true"
-            app:textOff="IPv4"
-            app:textOn="IPv6" />
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/ipRecycler"
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginBottom="8dp"
-            android:theme="@style/Theme.Flo.RecyclerView"
-            android:visibility="visible"
-            app:layout_constraintBottom_toTopOf="@id/tv_ssh_connect_header"
-            app:layout_constraintTop_toBottomOf="@id/tv_ip_addr_header"
-            tools:itemCount="3"
-            tools:listitem="@layout/ip_single_item" />
+            android:background="@drawable/square_rounded_1"
+            android:paddingHorizontal="8dp"
+            android:paddingVertical="16dp"
+            app:layout_constraintVertical_bias="0.0"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/connect_to_network_error"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginTop="8dp"
-            android:fontFamily="@font/metropolis_semibold_webfont"
-            android:text="Connect to a network"
-            android:textColor="@color/white"
-            android:textSize="18sp"
-            android:visibility="gone"
-            app:layout_constraintBottom_toTopOf="@id/tv_ssh_connect_header"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tv_ip_addr_header" />
+            <TextView
+                android:id="@+id/tv_ssh_header"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="16dp"
+                android:fontFamily="@font/metropolis_semibold_webfont"
+                android:text="SSH Into Device"
+                android:textColor="@color/white"
+                android:textSize="24sp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <com.github.angads25.toggle.widget.LabeledSwitch
+                android:id="@+id/ip_switch"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="16dp"
+                android:layout_marginTop="8dp"
+                android:textSize="12sp"
+                app:colorBorder="@android:color/transparent"
+                app:colorOn="@color/floGreen"
+                app:layout_constraintBottom_toBottomOf="@id/tv_ssh_header"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="1.0"
+                app:layout_constraintStart_toStartOf="@id/tv_ssh_header"
+                app:layout_constraintTop_toTopOf="@id/tv_ssh_header"
+                app:on="false"
+                app:textOff="IPv4"
+                app:textOn="IPv6" />
+
+            <TextView
+                android:id="@+id/tv_ssh_connect_header"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="16dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="8dp"
+                android:fontFamily="@font/metropolis_semibold_webfont"
+                android:text="On your PC"
+                android:textColor="@color/white"
+                android:textSize="18sp"
+                app:layout_constraintTop_toBottomOf="@id/tv_ssh_header" />
+
+            <TextView
+                android:id="@+id/tv_ssh_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="16dp"
+                android:layout_marginTop="12dp"
+                android:background="@drawable/square_rounded_2"
+                android:fontFamily="@font/metropolis_medium_webfont"
+                android:paddingVertical="8dp"
+                android:paddingHorizontal="12dp"
+                android:text="ssh root@&lt;ip_address&gt; -p 2222"
+                android:textColor="@color/white"
+                android:textSize="16sp"
+                app:layout_constraintTop_toBottomOf="@id/tv_ssh_connect_header"/>
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/container_ip_addrs"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                app:layout_constraintTop_toBottomOf="@id/tv_ssh_text"
+                app:layout_constraintBottom_toBottomOf="parent">
+
+                <TextView
+                    android:id="@+id/tv_ip_addr_header"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="16dp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    android:layout_marginTop="10dp"
+                    android:fontFamily="@font/metropolis_medium_webfont"
+                    android:text="Your IP Address:"
+                    android:textColor="@color/white"
+                    android:textSize="18sp"
+                    app:layout_constraintTop_toTopOf="parent" />
 
 
-        <TextView
-            android:id="@+id/tv_ssh_connect_header"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginHorizontal="16dp"
-            android:layout_marginTop="10dp"
-            android:layout_marginBottom="8dp"
-            android:fontFamily="@font/metropolis_semibold_webfont"
-            android:text="On your PC"
-            android:textColor="@color/white"
-            android:textSize="18sp"
-            app:layout_constraintBottom_toTopOf="@id/tv_ssh_text" />
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/ipRecycler"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginEnd="16dp"
+                    android:layout_marginBottom="8dp"
+                    android:theme="@style/Theme.Flo.RecyclerView"
+                    android:visibility="visible"
+                    app:layout_constraintVertical_bias="0.0"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/tv_ip_addr_header"
+                    tools:itemCount="3"
+                    tools:listitem="@layout/ip_single_item" />
 
-        <TextView
-            android:id="@+id/tv_ssh_text"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginHorizontal="16dp"
-            android:layout_marginTop="12dp"
-            android:layout_marginBottom="8dp"
-            android:background="@drawable/square_rounded_2"
-            android:fontFamily="@font/metropolis_regular_webfont"
-            android:padding="10dp"
-            android:text="ssh root@&lt;ip_address&gt; -p 2222"
-            android:textColor="@color/white"
-            android:textSize="16sp"
-            app:layout_constraintBottom_toBottomOf="parent" />
+                <TextView
+                    android:id="@+id/connect_to_network_error"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginTop="8dp"
+                    android:fontFamily="@font/metropolis_semibold_webfont"
+                    android:text="Connect to a network"
+                    android:textColor="@color/white"
+                    android:textSize="18sp"
+                    android:visibility="gone"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/tv_ip_addr_header" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <TextView
