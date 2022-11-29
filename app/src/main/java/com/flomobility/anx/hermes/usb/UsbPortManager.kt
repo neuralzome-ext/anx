@@ -9,6 +9,9 @@ import android.hardware.usb.UsbDevice
 import android.hardware.usb.UsbManager
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import com.flomobility.anx.hermes.alerts.Alert
+import com.flomobility.anx.hermes.alerts.AlertManager
 import com.flomobility.anx.hermes.assets.AssetManager
 import com.flomobility.anx.hermes.assets.AssetType
 import com.flomobility.anx.hermes.assets.types.UsbSerial
@@ -33,7 +36,8 @@ class UsbPortManager @Inject constructor(
     private val assetManager: AssetManager,
     private val usbManager: UsbManager,
     private val usbSerialManager: UsbSerialManager,
-    private val usbCamManager: UsbCamManager
+    private val usbCamManager: UsbCamManager,
+    private val alertManager: AlertManager
 ) {
 
     private val unAuthorizedDevices = hashMapOf<Int, SecureUsbDevice>()
@@ -97,6 +101,10 @@ class UsbPortManager @Inject constructor(
     }
 
     private fun handleUsbDetached(usbDevice: UsbDevice) {
+        unRegisterUsbDevice(usbDevice)
+    }
+
+    private fun unRegisterUsbDevice(usbDevice: UsbDevice) {
         when (usbDevice.getDeviceType()) {
             UsbDeviceType.VIDEO -> {
                 val port = usbCamManager.unRegisterUsbCamDevice(usbDevice.deviceId)
@@ -125,39 +133,63 @@ class UsbPortManager @Inject constructor(
             UsbDeviceType.VIDEO -> {
                 val port = usbCamManager.registerUsbCamDevice(usbDevice.deviceId)
                 val usbCam = UsbCamera.Builder.createNew("$port")
-                val handler =
-                    UVCCameraHandler.createHandler(2, port)
-                usbCam.setCameraThread(handler)
-                handler?.addCallback(object : CameraCallback {
-                    override fun onOpen() {
-                        val supportedStreams = handler.camera?.supportedStreams ?: return
-                        (usbCam.config as Camera.Config).loadStreams(
-                            Camera.Config.toStreamList(supportedStreams)
+                try {
+                    val handler =
+                        UVCCameraHandler.createHandler(2, port)
+                    usbCam.setCameraThread(handler)
+                    handler?.addCallback(object : CameraCallback {
+                        override fun onOpen() {
+                            val supportedStreams = handler.camera?.supportedStreams ?: return
+                            (usbCam.config as Camera.Config).loadStreams(
+                                Camera.Config.toStreamList(supportedStreams)
+                            )
+                            assetManager.addAsset(usbCam)
+                        }
+
+                        override fun onClose() {}
+
+                        override fun onStartPreview() {}
+
+                        override fun onStopPreview() {}
+
+                        override fun onStartRecording() {}
+
+                        override fun onStopRecording() {}
+
+                        override fun onError(e: Exception?) {}
+                    })
+                    handler?.open(UsbControlBlock(usbManager, usbDevice))
+                } catch (e: Exception) {
+                    // send error broadcast
+                    alertManager.sendAlert(
+                        Alert(
+                            title = "Uh Oh!",
+                            message = "Couldn't open camera ${usbDevice.deviceId}",
+                            priority = Alert.Priority.HIGH
                         )
-                        assetManager.addAsset(usbCam)
-                    }
-
-                    override fun onClose() {}
-
-                    override fun onStartPreview() {}
-
-                    override fun onStopPreview() {}
-
-                    override fun onStartRecording() {}
-
-                    override fun onStopRecording() {}
-
-                    override fun onError(e: Exception?) {}
-                })
-                handler?.open(UsbControlBlock(usbManager, usbDevice))
+                    )
+                    unRegisterUsbDevice(usbDevice)
+                }
             }
             UsbDeviceType.SERIAL -> {
-                val serialPort = usbSerialManager.registerSerialDevice(usbDevice.deviceId)
-                if (serialPort == -1) {
-                    Timber.e("No ports available for ${usbDevice.deviceName}")
-                    return
+                try {
+                    val serialPort = usbSerialManager.registerSerialDevice(usbDevice.deviceId)
+                    if (serialPort == -1) {
+                        Timber.e("No ports available for ${usbDevice.deviceName}")
+                        return
+                    }
+                    assetManager.addAsset(UsbSerial.create("$serialPort", usbDevice, usbManager))
+                } catch (e: Exception) {
+                    // send error broadcast
+                    alertManager.sendAlert(
+                        Alert(
+                            title = "Uh Oh!",
+                            message = "Couldn't open usb-serial device ${usbDevice.deviceId}",
+                            priority = Alert.Priority.HIGH
+                        )
+                    )
+                    unRegisterUsbDevice(usbDevice)
                 }
-                assetManager.addAsset(UsbSerial.create("$serialPort", usbDevice, usbManager))
             }
             UsbDeviceType.UNK -> {
                 Timber.e("Cannot register unknown usb device - ${usbDevice.deviceId} as asset")

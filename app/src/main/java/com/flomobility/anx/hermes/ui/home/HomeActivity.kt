@@ -21,6 +21,8 @@ import com.flomobility.anx.hermes.ui.adapter.IpAdapter
 import com.flomobility.anx.hermes.ui.login.LoginActivity
 import com.flomobility.anx.hermes.ui.settings.SettingsActivity
 import com.flomobility.anx.databinding.ActivityHomeBinding
+import com.flomobility.anx.hermes.alerts.Alert
+import com.flomobility.anx.hermes.alerts.AlertManager
 import com.flomobility.anx.hermes.ui.asset_debug.AssetDebugActivity
 import com.flomobility.anx.shared.terminal.TerminalConstants
 import com.google.android.material.snackbar.Snackbar
@@ -82,19 +84,44 @@ class HomeActivity : AppCompatActivity() {
     private val receiver: BroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             if (intent != null) {
-                val executionCode =
-                    intent.getIntExtra(PluginResultsService.RESULT_BROADCAST_EXECUTION_CODE_KEY, -1)
-                val result = intent.getBundleExtra(PluginResultsService.RESULT_BROADCAST_RESULT_KEY)
-                when (executionCode) {
-                     START_SSHD_EXECUTION_CODE -> {
-                        result?.let {
-                            val exitCode =
-                                result.getInt(TerminalConstants.TERMUX_APP.TERMUX_SERVICE.EXTRA_PLUGIN_RESULT_BUNDLE_EXIT_CODE)
-                            if (exitCode == 0) {
-                                Timber.i("SSH server on port 2222 started successfully")
-                                return
+                when(intent.action) {
+                    PluginResultsService.RESULT_BROADCAST_INTENT -> {
+                        val executionCode =
+                            intent.getIntExtra(PluginResultsService.RESULT_BROADCAST_EXECUTION_CODE_KEY, -1)
+                        val result = intent.getBundleExtra(PluginResultsService.RESULT_BROADCAST_RESULT_KEY)
+                        when (executionCode) {
+                            START_SSHD_EXECUTION_CODE -> {
+                                result?.let {
+                                    val exitCode =
+                                        result.getInt(TerminalConstants.TERMUX_APP.TERMUX_SERVICE.EXTRA_PLUGIN_RESULT_BUNDLE_EXIT_CODE)
+                                    if (exitCode == 0) {
+                                        Timber.i("SSH server on port 2222 started successfully")
+                                        return
+                                    }
+                                    Timber.e("Starting ssh server failed")
+                                }
                             }
-                            Timber.e("Starting ssh server failed")
+                        }
+                    }
+                    AlertManager.ANX_ALERTS_BROADCAST_INTENT -> {
+                        val alert = intent.getParcelableExtra<Alert>(AlertManager.KEY_ANX_ALERT) ?: return
+                        when(alert.priority) {
+                            Alert.Priority.LOW -> {
+                                // TODO
+                            }
+                            Alert.Priority.MEDIUM -> {
+                                // TODO
+                            }
+                            Alert.Priority.HIGH -> {
+                                AlertDialog.getInstance(
+                                    alert.title,
+                                    alert.message,
+                                    "Ok"
+                                ).show(supportFragmentManager, AlertDialog.TAG)
+                            }
+                            Alert.Priority.SEVERE -> {
+                                // TODO
+                            }
                         }
                     }
                 }
@@ -172,7 +199,7 @@ class HomeActivity : AppCompatActivity() {
         }
 
         InternetConnectionCheck(this).observe(this) { isConnected ->
-            if(isConnected) {
+            if (isConnected) {
                 bind.ipRecycler.isVisible = true
                 bind.connectToNetworkError.isVisible = false
                 (bind.ipRecycler.adapter as IpAdapter).updateIpList(getIPAddressList(useIPv4 = bind.ipSwitch.isOn))
@@ -211,7 +238,7 @@ class HomeActivity : AppCompatActivity() {
         )
         (bind.assetRecycler.adapter as AssetAdapter).apply {
             doOnItemClicked { assetUI ->
-                if(assetUI.assets.isEmpty()) return@doOnItemClicked
+                if (assetUI.assets.isEmpty()) return@doOnItemClicked
 
                 AssetDebugActivity.navigateToAssetDebugActivity(
                     this@HomeActivity,
@@ -250,7 +277,10 @@ class HomeActivity : AppCompatActivity() {
     override fun onStart() {
         super.onStart()
         LocalBroadcastManager.getInstance(this)
-            .registerReceiver(receiver, IntentFilter(PluginResultsService.RESULT_BROADCAST_INTENT))
+            .registerReceiver(receiver,
+                IntentFilter(PluginResultsService.RESULT_BROADCAST_INTENT).apply {
+                    addAction(AlertManager.ANX_ALERTS_BROADCAST_INTENT)
+                })
     }
 
     override fun onStop() {
