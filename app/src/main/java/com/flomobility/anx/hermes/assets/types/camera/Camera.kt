@@ -73,6 +73,15 @@ abstract class Camera : BaseAsset() {
                 UNK("unkown", -1, -1)
             }
 
+            override fun toString(): String {
+                var str = "\n\t"
+                str += "width : $width\n\t"
+                str += "height : $height\n\t"
+                str += "fps : $fps\n\t"
+                str += "pixel_format : ${pixelFormat.alias}\n"
+                return str
+            }
+
             companion object {
                 val DEFAULT = Stream(
                     fps = 30,
