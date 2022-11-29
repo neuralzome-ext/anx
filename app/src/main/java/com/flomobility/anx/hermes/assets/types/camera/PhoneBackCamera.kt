@@ -208,7 +208,6 @@ class PhoneBackCamera @Inject constructor(
             imageAnalysis.setAnalyzer(executor, ImageAnalysis.Analyzer { image ->
                 image.use {
                     // Compute the FPS of the entire pipeline
-                    Timber.d("$frameCounter and ${frameCounter % frameCount == 0}")
                     if (++frameCounter % frameCount == 0) {
                         frameCounter = 0
                         val now = System.currentTimeMillis()

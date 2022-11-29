@@ -2,9 +2,12 @@ package com.flomobility.anx.hermes.ui.asset_debug
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.BitmapFactory
+import android.media.Image
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.annotation.DrawableRes
+import androidx.camera.core.ImageProxy
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.lifecycle.ViewModelProvider
@@ -12,12 +15,15 @@ import androidx.lifecycle.lifecycleScope
 import com.flomobility.anx.R
 import com.flomobility.anx.databinding.ActivityAssetDebugBinding
 import com.flomobility.anx.hermes.assets.*
+import com.flomobility.anx.hermes.assets.types.camera.Camera
 import com.google.gson.Gson
 import com.google.gson.JsonParser
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 
@@ -167,6 +173,20 @@ class AssetDebugActivity : ComponentActivity() {
             binding.containerOutCamera.isVisible = false
             binding.containerOut.isVisible = asset.config.portPub != -1
             binding.containerIn.isVisible = asset.config.portSub != -1
+        }
+
+        if(assetType == AssetType.CAM) {
+            outStreamJob?.cancel()
+            outStreamJob = (asset as Camera).out.onEach { byteBuffer ->
+                val imageBytes = ByteArray(byteBuffer.remaining())
+                byteBuffer.get(imageBytes)
+                val bmp = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
+                withContext(Dispatchers.Main) {
+                    binding.ivOut.setImageBitmap(bmp)
+                }
+//                bmp.recycle()
+            }.launchIn(lifecycleScope)
+            return
         }
 
         outStreamJob?.cancel()

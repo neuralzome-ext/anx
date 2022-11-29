@@ -9,14 +9,14 @@ import com.google.gson.reflect.TypeToken
 import com.serenegiant.usb.UVCCamera
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.consumeAsFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import org.json.JSONObject
 import java.nio.ByteBuffer
 
 abstract class Camera : BaseAsset() {
 
     protected val cameraOut = Channel<ByteBuffer>(Channel.BUFFERED)
-    val out: Flow<ByteBuffer> = cameraOut.consumeAsFlow()
+    val out: Flow<ByteBuffer> = cameraOut.receiveAsFlow()
 
     protected val dispatcher = provideDispatcher(nThreads = 1)
 
