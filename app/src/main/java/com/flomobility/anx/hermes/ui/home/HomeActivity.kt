@@ -63,10 +63,19 @@ class HomeActivity : AppCompatActivity() {
             return
         }
         bind.deviceId.text = "DEVICE ID: ${sharedPreferences.getDeviceID()}"
+        setupUI()
         setupRecyclers()
         subscribeToObservers()
         setEventListeners()
         viewModel.sendInfoRequest(InfoRequest(sharedPreferences.getDeviceID()!!))
+    }
+
+    private fun setupUI() {
+        with(bind) {
+            ipSwitch.setOnToggledListener { _, isOn ->
+                (bind.ipRecycler.adapter as IpAdapter).updateIpList(getIPAddressList(useIPv4 = isOn))
+            }
+        }
     }
 
     // broadcast receiver
@@ -166,7 +175,7 @@ class HomeActivity : AppCompatActivity() {
             if(isConnected) {
                 bind.ipRecycler.isVisible = true
                 bind.connectToNetworkError.isVisible = false
-                (bind.ipRecycler.adapter as IpAdapter).updateIpList(getIPAddressList())
+                (bind.ipRecycler.adapter as IpAdapter).updateIpList(getIPAddressList(useIPv4 = bind.ipSwitch.isOn))
             } else {
                 bind.ipRecycler.isVisible = false
                 bind.connectToNetworkError.isVisible = true

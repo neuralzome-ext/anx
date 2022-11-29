@@ -10,6 +10,8 @@ import com.flomobility.anx.hermes.other.Constants.USER_TOKEN
 import timber.log.Timber
 import java.io.BufferedReader
 import java.io.InputStreamReader
+import java.net.Inet4Address
+import java.net.Inet6Address
 import java.net.InetAddress
 import java.net.NetworkInterface
 import java.nio.ByteBuffer
@@ -130,7 +132,7 @@ fun getIPAddress(useIPv4: Boolean): String {
  * @param useIPv4   true=return ipv4, false=return ipv6
  * @return  address or empty string
  */
-fun getIPAddressList(): ArrayList<String> {
+fun getIPAddressList(useIPv4: Boolean = false): ArrayList<String> {
     val ipAddresses: ArrayList<String> = ArrayList()
     try {
         val interfaces: List<NetworkInterface> =
@@ -143,22 +145,17 @@ fun getIPAddressList(): ArrayList<String> {
 
                     //boolean isIPv4 = InetAddressUtils.isIPv4Address(sAddr);
                     val isIPv4 = sAddr.indexOf(':') < 0
-//                    if (useIPv4) {
-                    if (isIPv4) {
-                        ipAddresses.add("$sAddr (${intf.displayName})")
-//                        }
+                    if (useIPv4) {
+                        if (addr is Inet4Address) {
+                            ipAddresses.add("$sAddr (${intf.displayName})")
+                        }
                     } else {
-//                        if (!isIPv4) {
-                        val delim = sAddr.indexOf('%') // drop ip6 zone suffix
-                        ipAddresses.add(
-                            if (delim < 0) sAddr.uppercase(Locale.getDefault()) else sAddr.substring(
-                                0,
-                                delim
-                            ).uppercase(
-                                Locale.getDefault()
-                            )
-                            )
-//                        }
+                        if (addr is Inet6Address) {
+                            val delim = sAddr.indexOf('%') // drop ip6 zone suffix
+                            val ipv6addr =
+                                if (delim < 0) sAddr else sAddr.substring(0, delim)
+                            ipAddresses.add("$ipv6addr (${intf.displayName})")
+                        }
                     }
                 }
             }

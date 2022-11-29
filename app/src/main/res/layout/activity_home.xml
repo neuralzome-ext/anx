@@ -1,15 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/background"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:weightSum="10">
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
         android:layout_gravity="center_horizontal"
+        android:layout_weight="1"
         android:orientation="horizontal"
         android:padding="8dp">
 
@@ -38,7 +41,6 @@
 
         <ImageView
             android:id="@+id/exit"
-            android:foreground="?attr/selectableItemBackground"
             android:layout_width="32dp"
             android:layout_height="32dp"
             android:layout_alignParentEnd="true"
@@ -46,72 +48,112 @@
             android:layout_gravity="end"
             android:layout_marginTop="10dp"
             android:layout_marginEnd="16dp"
+            android:foreground="?attr/selectableItemBackground"
             android:src="@drawable/ic_exit" />
     </RelativeLayout>
 
-    <LinearLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="20dp"
+        android:layout_height="0dp"
+        android:layout_marginHorizontal="20dp"
+        android:layout_marginBottom="16dp"
+        android:layout_weight="4"
         android:background="@drawable/square_rounded_1"
         android:orientation="vertical"
         android:paddingHorizontal="8dp"
-        android:paddingVertical="12dp">
+        android:paddingVertical="12dp"
+        android:weightSum="5">
 
         <TextView
+            android:id="@+id/tv_ssh_header"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginHorizontal="20dp"
+            android:layout_marginHorizontal="16dp"
             android:fontFamily="@font/metropolis_semibold_webfont"
             android:text="SSH Into Device"
             android:textColor="@color/white"
-            android:textSize="32sp"/>
+            android:textSize="24sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
-            android:layout_width="match_parent"
+            android:id="@+id/tv_ip_addr_header"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="20dp"
+            app:layout_constraintStart_toStartOf="parent"
             android:layout_marginTop="10dp"
-            android:fontFamily="@font/metropolis_regular_webfont"
+            android:fontFamily="@font/metropolis_medium_webfont"
             android:text="Your IP Address:"
             android:textColor="@color/white"
-            android:textSize="20sp" />
+            android:textSize="18sp"
+            app:layout_constraintTop_toBottomOf="@id/tv_ssh_header" />
+
+        <com.github.angads25.toggle.widget.LabeledSwitch
+            android:id="@+id/ip_switch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:layout_marginEnd="16dp"
+            android:textSize="12sp"
+            app:colorBorder="@android:color/transparent"
+            app:colorOn="@color/floGreen"
+            app:layout_constraintBottom_toBottomOf="@id/tv_ip_addr_header"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="1.0"
+            app:layout_constraintStart_toStartOf="@id/tv_ip_addr_header"
+            app:layout_constraintTop_toTopOf="@id/tv_ip_addr_header"
+            app:on="true"
+            app:textOff="IPv4"
+            app:textOn="IPv6" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/ipRecycler"
-            android:theme="@style/Theme.Flo.RecyclerView"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="50dp"
-            android:layout_marginEnd="20dp"
-            tools:itemCount="3"
+            android:layout_height="0dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="8dp"
+            android:theme="@style/Theme.Flo.RecyclerView"
             android:visibility="visible"
+            app:layout_constraintBottom_toTopOf="@id/tv_ssh_connect_header"
+            app:layout_constraintTop_toBottomOf="@id/tv_ip_addr_header"
+            tools:itemCount="3"
             tools:listitem="@layout/ip_single_item" />
 
         <TextView
+            android:id="@+id/connect_to_network_error"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/connect_to_network_error"
-            android:text="Connect to a network"
-            android:fontFamily="@font/metropolis_semibold_webfont"
-            android:textSize="18sp"
+            android:layout_gravity="center_horizontal"
             android:layout_marginTop="8dp"
+            android:fontFamily="@font/metropolis_semibold_webfont"
+            android:text="Connect to a network"
             android:textColor="@color/white"
+            android:textSize="18sp"
             android:visibility="gone"
-            android:layout_gravity="center_horizontal"/>
+            app:layout_constraintBottom_toTopOf="@id/tv_ssh_connect_header"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tv_ip_addr_header" />
 
 
         <TextView
+            android:id="@+id/tv_ssh_connect_header"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginHorizontal="20dp"
+            android:layout_marginHorizontal="16dp"
             android:layout_marginTop="10dp"
+            android:layout_marginBottom="8dp"
             android:fontFamily="@font/metropolis_semibold_webfont"
             android:text="On your PC"
             android:textColor="@color/white"
-            android:textSize="20sp" />
+            android:textSize="18sp"
+            app:layout_constraintBottom_toTopOf="@id/tv_ssh_text" />
 
         <TextView
+            android:id="@+id/tv_ssh_text"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="16dp"
@@ -122,27 +164,30 @@
             android:padding="10dp"
             android:text="ssh root@&lt;ip_address&gt; -p 2222"
             android:textColor="@color/white"
-            android:textSize="18sp" />
-    </LinearLayout>
+            android:textSize="16sp"
+            app:layout_constraintBottom_toBottomOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <TextView
         android:id="@+id/deviceId"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
         android:layout_marginHorizontal="20dp"
+        android:layout_weight="0.5"
         android:fontFamily="@font/metropolis_regular_webfont"
-        android:text="DEVICE ID: "
         android:gravity="center"
+        android:text="DEVICE ID: "
         android:textColor="@color/white"
-        android:textSize="20sp" />
+        android:textSize="18sp" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/asset_recycler"
-        android:theme="@style/Theme.Flo.RecyclerView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_margin="10dp"
+        android:layout_height="0dp"
         android:layout_gravity="center_horizontal"
-        android:padding="10dp"
+        android:layout_margin="12dp"
+        android:layout_weight="4.5"
+        android:padding="4dp"
+        android:theme="@style/Theme.Flo.RecyclerView"
         tools:listitem="@layout/asset_single_item" />
 </LinearLayout>

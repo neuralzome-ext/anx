@@ -133,6 +133,9 @@ android {
             exclude module: 'support-v4'
         }
 
+        // custom switch
+        implementation 'com.github.angads25:toggle:1.1.0'
+
     }
 
     defaultConfig {
