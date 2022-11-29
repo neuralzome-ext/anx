@@ -11,7 +11,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.downloader.PRDownloader
 import com.flomobility.anx.app.PluginResultsService
 import com.flomobility.anx.app.TerminalCommandExecutor
-import com.flomobility.anx.databinding.ActivityHomeBinding
 import com.flomobility.anx.hermes.assets.AssetManager
 import com.flomobility.anx.hermes.daemon.EndlessService
 import com.flomobility.anx.hermes.network.requests.InfoRequest
