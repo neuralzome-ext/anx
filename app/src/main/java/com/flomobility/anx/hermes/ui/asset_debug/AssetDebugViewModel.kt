@@ -12,7 +12,7 @@ import javax.inject.Inject
 @HiltViewModel
 class AssetDebugViewModel @Inject constructor(
     private val assetManager: AssetManager
-): ViewModel() {
+) : ViewModel() {
 
     private val _assets = MutableLiveData<List<BaseAsset>>()
     val assets: LiveData<List<BaseAsset>> = _assets
@@ -29,6 +29,12 @@ class AssetDebugViewModel @Inject constructor(
     fun setCurrentAsset(asset: BaseAsset) {
         _currentAsset.value?.debug = false
         _currentAsset.postValue(asset)
+    }
+
+    fun setCurrentAssetById(id: String) {
+        if(_currentAsset.value?.id == id) return
+        val asset = _assets.value?.filter { it.id == id }?.first() ?: return
+        setCurrentAsset(asset)
     }
 
     fun setDebug(debug: Boolean) {

@@ -3,11 +3,11 @@ package com.flomobility.anx.hermes.ui.asset_debug
 import android.content.Context
 import android.content.Intent
 import android.graphics.BitmapFactory
-import android.media.Image
 import android.os.Bundle
+import android.view.View
+import android.widget.AdapterView
 import androidx.activity.ComponentActivity
 import androidx.annotation.DrawableRes
-import androidx.camera.core.ImageProxy
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.lifecycle.ViewModelProvider
@@ -16,6 +16,7 @@ import com.flomobility.anx.R
 import com.flomobility.anx.databinding.ActivityAssetDebugBinding
 import com.flomobility.anx.hermes.assets.*
 import com.flomobility.anx.hermes.assets.types.camera.Camera
+import com.flomobility.anx.hermes.ui.adapter.AssetIdSpinnerAdapter
 import com.google.gson.Gson
 import com.google.gson.JsonParser
 import dagger.hilt.android.AndroidEntryPoint
@@ -52,6 +53,8 @@ class AssetDebugActivity : ComponentActivity() {
 
     private var _binding: ActivityAssetDebugBinding? = null
     private val binding get() = _binding!!
+
+    private lateinit var spinnerAdapter: AssetIdSpinnerAdapter
 
     private var assetTypeAlias: String? = null
     private var assetType: AssetType = AssetType.UNK
@@ -94,7 +97,9 @@ class AssetDebugActivity : ComponentActivity() {
                 )
             )
             tvAssetType.text = assetTypeAlias
+            assetSelector
         }
+        spinnerAdapter = AssetIdSpinnerAdapter(this, this)
     }
 
     private fun setupListeners() {
@@ -124,6 +129,32 @@ class AssetDebugActivity : ComponentActivity() {
             updateAssetUI(asset)
             viewModel.setDebug(true)
         }
+        viewModel.assets.observe(this) { assets ->
+            updateSpinner(assets)
+        }
+    }
+
+    private fun updateSpinner(assets: List<BaseAsset>) {
+        binding.assetSelector.apply {
+            adapter = spinnerAdapter
+            spinnerAdapter.addAll(assets)
+            onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+                override fun onItemSelected(
+                    parent: AdapterView<*>?,
+                    view: View?,
+                    position: Int,
+                    id: Long
+                ) {
+                    val assetId = spinnerAdapter.getItem(position)?.id ?: return
+                    viewModel.setCurrentAssetById(assetId)
+                }
+
+                override fun onNothingSelected(parent: AdapterView<*>?) {
+                    /*NO-OP*/
+                }
+
+            }
+        }
     }
 
     private fun updateAssetUI(asset: BaseAsset) {
@@ -141,8 +172,8 @@ class AssetDebugActivity : ComponentActivity() {
                     )
                 )
             }
-
-            if(assetState == AssetState.STREAMING) {
+            binding.ivOut.setImageResource(android.R.color.transparent)
+            if (assetState == AssetState.STREAMING) {
                 binding.containerAssetConfigPresent.isVisible = true
                 binding.containerAssetConfigAbsent.isVisible = false
                 binding.tvAssetConfig.text = getAssetConfigText(asset)
@@ -152,6 +183,9 @@ class AssetDebugActivity : ComponentActivity() {
 
                 binding.tvIn.isVisible = true
                 binding.tvInNotStreaming.isVisible = false
+
+                binding.ivOut.isVisible = true
+                binding.tvOutCameraNotStreaming.isVisible = false
             } else {
                 binding.containerAssetConfigPresent.isVisible = false
                 binding.containerAssetConfigAbsent.isVisible = true
@@ -161,11 +195,13 @@ class AssetDebugActivity : ComponentActivity() {
 
                 binding.tvIn.isVisible = false
                 binding.tvInNotStreaming.isVisible = true
+                binding.ivOut.isVisible = false
+                binding.tvOutCameraNotStreaming.isVisible = true
             }
         }
         binding.tvMeta.text = gson.toJson(asset.getDesc())
 
-        if(asset.type == AssetType.CAM) {
+        if (asset.type == AssetType.CAM) {
             binding.containerOutCamera.isVisible = true
             binding.containerOut.isVisible = false
             binding.containerIn.isVisible = false
@@ -175,7 +211,7 @@ class AssetDebugActivity : ComponentActivity() {
             binding.containerIn.isVisible = asset.config.portSub != -1
         }
 
-        if(assetType == AssetType.CAM) {
+        if (assetType == AssetType.CAM) {
             outStreamJob?.cancel()
             outStreamJob = (asset as Camera).out.onEach { byteBuffer ->
                 val imageBytes = ByteArray(byteBuffer.remaining())

@@ -77,6 +77,18 @@
                 app:layout_constraintStart_toStartOf="@id/tv_asset_type"
                 app:layout_constraintTop_toBottomOf="@id/tv_asset_type" />
 
+            <androidx.appcompat.widget.AppCompatSpinner
+                android:layout_width="wrap_content"
+                android:layout_height="0dp"
+                android:id="@+id/asset_selector"
+                android:dropDownVerticalOffset="24dp"
+                android:backgroundTint="@color/white"
+                tools:listitem="@layout/item_spinner_asset"
+                android:spinnerMode="dropdown"
+                app:layout_constraintTop_toTopOf="@id/tv_select_heading"
+                app:layout_constraintBottom_toBottomOf="@id/tv_select_heading"
+                app:layout_constraintStart_toEndOf="@id/tv_select_heading"/>
+
             <TextView
                 android:id="@+id/tv_status_header"
                 android:layout_width="wrap_content"
@@ -316,6 +328,20 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/tv_out_camera_header"
                 tools:src="@drawable/anx_logo" />
+
+            <TextView
+                android:id="@+id/tv_out_camera_not_streaming"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="64dp"
+                android:text="asset not streaming"
+                android:textAppearance="@style/TextAppearance.MaterialComponents.Subtitle1"
+                android:textColor="@color/white"
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
