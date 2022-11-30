@@ -208,16 +208,16 @@ class LoginActivity : ComponentActivity() {
                 if (!userLogin.deviceID.isNullOrEmpty())
                     if (Patterns.EMAIL_ADDRESS.matcher(userLogin.email).matches()) {
                         bind.emailLayout.error = null
-                        if (userLogin.password.length >= 4) {
+                        if (userLogin.password.isNotEmpty()) {
                             bind.passLayout.error = null
                             viewModel.sendLoginRequest(userLogin)
                         } else {
-                            bind.passLayout.error = "Incorrect Password"
+                            bind.passLayout.error = "Invalid password"
                             bind.spinKitLogin.visibility = View.GONE
                             bind.btnLogin.visibility = View.VISIBLE
                         }
                     } else {
-                        bind.emailLayout.error = "Incorrect E-Mail"
+                        bind.emailLayout.error = "Invalid E-Mail"
                         bind.spinKitLogin.visibility = View.GONE
                         bind.btnLogin.visibility = View.VISIBLE
                     }
