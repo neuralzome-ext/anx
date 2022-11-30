@@ -167,10 +167,4 @@ class SettingsActivity : AppCompatActivity() {
                 Snackbar.make(bind.root, msg, Snackbar.LENGTH_LONG).show()
         }
     }
-
-    override fun onBackPressed() {
-        HomeActivity.navigateToHome(this@SettingsActivity)
-        finish()
-        super.onBackPressed()
-    }
 }

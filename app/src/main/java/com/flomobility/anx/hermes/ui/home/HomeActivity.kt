@@ -145,7 +145,6 @@ class HomeActivity : AppCompatActivity() {
             }
             settings.setOnClickListener {
                 SettingsActivity.navigateToSetting(this@HomeActivity)
-                finish()
             }
         }
     }
