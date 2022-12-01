@@ -21,8 +21,8 @@ import com.flomobility.anx.app.TerminalCommandExecutor
 import com.flomobility.anx.app.TerminalCommandExecutor.ITerminalCommandExecutor
 import com.flomobility.anx.app.TerminalInstaller
 import com.flomobility.anx.databinding.ActivityUbuntuSetupBinding
-import com.flomobility.anx.hermes.other.clear
-import com.flomobility.anx.hermes.other.setIsInstalled
+import com.flomobility.anx.hermes.daemon.InstallingService
+import com.flomobility.anx.hermes.other.*
 import com.flomobility.anx.hermes.other.viewutils.AlertDialog
 import com.flomobility.anx.hermes.ui.home.HomeActivity
 import com.flomobility.anx.hermes.ui.login.LoginActivity
@@ -118,7 +118,7 @@ echo "done"
             )
         }
 
-        private const val INSTALL_FS_EXECUTION_CODE = 10001
+        const val INSTALL_FS_EXECUTION_CODE = 10001
     }
 
     // broadcast receiver
@@ -166,9 +166,26 @@ echo "done"
         viewModel.installStatus.observe(this) {
             it.getContentIfNotHandled()?.let { status ->
                 when (status) {
-                    DownloadViewModel.InstallStatus.Success -> onInstallSuccess()
-                    is DownloadViewModel.InstallStatus.Failed -> onInstallFailed(status.code)
-                    DownloadViewModel.InstallStatus.Installing -> Unit
+                    DownloadViewModel.InstallStatus.Success -> {
+                        onInstallSuccess()
+                        sendCommandToService(
+                            Constants.ACTION_STOP_SERVICE,
+                            InstallingService::class.java
+                        )
+                    }
+                    is DownloadViewModel.InstallStatus.Failed -> {
+                        onInstallFailed(status.code)
+                        sendCommandToService(
+                            Constants.ACTION_STOP_SERVICE,
+                            InstallingService::class.java
+                        )
+                    }
+                    DownloadViewModel.InstallStatus.Installing -> {
+                        sendCommandToService(
+                            Constants.ACTION_START_OR_RESUME_SERVICE,
+                            InstallingService::class.java
+                        )
+                    }
                     DownloadViewModel.InstallStatus.NotStarted -> Unit
                 }
             }
@@ -266,14 +283,21 @@ echo "done"
         startDownload()
     }
 
+    private fun sendCommandToService(action: String, serviceClass: Class<*>) {
+        handleExceptions {
+            Intent(this, serviceClass).also {
+                it.action = action
+                startService(it)
+            }
+        }
+    }
+
     private fun checkInstalled() {
-/*
-        if (sharedPreferences.getIsInstalled()){
+        if (sharedPreferences.getIsInstalled()) {
             HomeActivity.navigateToHome(this@DownloadActivity)
             finish()
             return
         }
-*/
         bind.tvInfoText.text = "INSTALLING FILE SYSTEM"
         bind.tvInfoText2.isVisible = true
         bind.progress.visibility = View.INVISIBLE

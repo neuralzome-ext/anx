@@ -17,7 +17,7 @@ class DownloadViewModel @Inject constructor(
     val installStatus: LiveData<Event<InstallStatus>> = _installStatus
 
     fun setInstallStatus(status: InstallStatus) {
-        this._installStatus.postValue(Event(status))
+        _installStatus.postValue(Event(status))
     }
 
     sealed class InstallStatus {

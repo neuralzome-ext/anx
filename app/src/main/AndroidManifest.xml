@@ -114,11 +114,20 @@
             </intent-filter>
         </activity>
         <activity android:name=".hermes.ui.login.LoginActivity" />
-        <activity android:name=".hermes.ui.download.DownloadActivity" />
-        <activity android:name=".hermes.ui.home.HomeActivity" />
+        <activity
+            android:name=".hermes.ui.download.DownloadActivity"
+            android:launchMode="singleTask" />
+        <activity
+            android:name=".hermes.ui.home.HomeActivity"
+            android:launchMode="singleTask" />
 
         <service
             android:name=".hermes.daemon.EndlessService"
+            android:exported="true"
+            android:foregroundServiceType="dataSync" />
+
+        <service
+            android:name=".hermes.daemon.InstallingService"
             android:exported="true"
             android:foregroundServiceType="dataSync" />
 

@@ -9,9 +9,13 @@ object Constants {
     const val ACTION_STOP_SERVICE = "ACTION_STOP_SERVICE"
     const val ACTION_STOP_AND_EXIT = "ACTION_STOP_AND_EXIT"
 
-    const val NOTIFICATION_CHANNEL_ID = "hermes_service_channel"
-    const val NOTIFICATION_CHANNEL_NAME = "Hermes Comms"
+    const val NOTIFICATION_CHANNEL_ID = "anx_service_channel"
+    const val NOTIFICATION_CHANNEL_NAME = "ANX Comms"
     const val NOTIFICATION_ID = 1
+
+    const val INSTALLER_CHANNEL_ID = "intaller_service_channel"
+    const val INSTALLER_CHANNEL_NAME = "ANX Installer"
+    const val INSTALLER_ID = 2
 
     const val UNKNOWN_ERROR_MSG = "An unknown error occurred"
 
