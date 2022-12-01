@@ -116,6 +116,7 @@ class PhoneBackCamera @Inject constructor(
             )
             this@PhoneBackCamera._config.loadStreams(streams)
             cameraProvider.unbindAll()
+            this@PhoneBackCamera.rotation = -90f
         }
     }
 
