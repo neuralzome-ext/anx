@@ -1,14 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?attr/selectableItemBackgroundBorderless">
     
     <TextView
         android:id="@+id/ip"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:fontFamily="@font/metropolis_regular_webfont"
-        android:padding="5dp"
+        android:padding="6dp"
         android:text="@string/sample_ip"
         android:textColor="@color/white"
         android:textSize="18sp"/>

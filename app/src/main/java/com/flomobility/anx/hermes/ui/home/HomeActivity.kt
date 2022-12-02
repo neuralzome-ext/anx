@@ -60,7 +60,7 @@ class HomeActivity : AppCompatActivity() {
         viewModel = ViewModelProvider(this@HomeActivity)[HomeViewModel::class.java]
         setContentView(binding?.root)
         if (sharedPreferences.getDeviceID() == null) {
-            showSnack("Login Again")
+            showSnackBar("Login Again")
             logout()
             return
         }
@@ -157,7 +157,7 @@ class HomeActivity : AppCompatActivity() {
                 }
                 is Resource.Success -> {
                     if (it.peekContent().data?.access == false || isExpired(it.peekContent().data?.expiry)) {
-                        showSnack("Your access has been revoked")
+                        showSnackBar("Your access has been revoked")
                         logout()
                         return@observe
                     }
@@ -174,19 +174,19 @@ class HomeActivity : AppCompatActivity() {
                             var error = it.peekContent().message
                             if (error?.contains("Failed to connect to") == true)
                                 error = "Failed to connect to server"
-                            showSnack(error)
+                            showSnackBar(error)
                             return@observe
                         }
                         400 -> {
-                            showSnack("Server Unreachable!! (400)")
+                            showSnackBar("Server Unreachable!! (400)")
                         }
                         401 -> {
-                            showSnack("Login Again")
+                            showSnackBar("Login Again")
                             logout()
                         }
                         else -> {
                             val error = it.peekContent().errorData?.message
-                            showSnack(error)
+                            showSnackBar(error)
                         }
                     }
                 }
@@ -229,7 +229,13 @@ class HomeActivity : AppCompatActivity() {
 
     private fun setupRecyclers() {
         bind.ipRecycler.layoutManager = LinearLayoutManager(this@HomeActivity)
-        bind.ipRecycler.adapter = IpAdapter(this@HomeActivity, getIPAddressList())
+        bind.ipRecycler.adapter = IpAdapter(this@HomeActivity, getIPAddressList()).apply {
+            doOnLongClick { ipAddress ->
+                if(this@HomeActivity.setClipboard("ip_address", ipAddress.address)) {
+                    showSnackBar("Copied Ip Address to clipboard")
+                }
+            }
+        }
         bind.assetRecycler.layoutManager = GridLayoutManager(this@HomeActivity, 4)
         bind.assetRecycler.adapter = AssetAdapter(
             this@HomeActivity,
@@ -259,10 +265,18 @@ class HomeActivity : AppCompatActivity() {
         }
     }
 
-    private fun showSnack(msg: String?) {
+    private fun showSnackBar(
+        msg: String?,
+        indefinite: Boolean = false
+    ) {
         runOnUiThread {
-            if (msg != null)
-                Snackbar.make(bind.root, msg, Snackbar.LENGTH_LONG).show()
+            if (msg != null) {
+                Snackbar.make(
+                    bind.root,
+                    msg,
+                    if (indefinite) Snackbar.LENGTH_INDEFINITE else Snackbar.LENGTH_LONG
+                ).show()
+            }
         }
     }
 
