@@ -1,19 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/background"
     android:orientation="vertical">
-
-    <ImageView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="end"
-        android:layout_marginTop="10dp"
-        android:layout_marginEnd="10dp"
-        android:src="@drawable/ic_help"
-        android:visibility="gone" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -38,6 +29,7 @@
             android:fontFamily="@font/metropolis_regular_webfont"
             android:foreground="?attr/selectableItemBackgroundBorderless"
             android:gravity="center"
+            android:minHeight="48dp"
             android:padding="8dp"
             android:text="Click to select Device ID"
             android:textColor="@color/white"
@@ -79,6 +71,7 @@
             android:focusable="true"
             app:hintEnabled="false"
             app:passwordToggleEnabled="true"
+            android:nextFocusDown="@null"
             app:startIconTint="@null">
 
             <com.google.android.material.textfield.TextInputEditText
@@ -87,6 +80,7 @@
                 android:background="@drawable/text_field_background"
                 android:focusable="true"
                 android:fontFamily="@font/metropolis_regular_webfont"
+                android:imeOptions="actionDone"
                 android:hint="Enter Password"
                 android:inputType="textPassword"
                 android:textColor="@color/textColor2"
@@ -118,4 +112,127 @@
 
     </LinearLayout>
 
-</LinearLayout>
+    <LinearLayout
+        android:id="@+id/overlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/greyTransparent"
+        android:clickable="true"
+        android:focusable="true"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <ImageButton
+            android:id="@+id/btn_close_dialog"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:layout_gravity="end"
+            android:layout_margin="12dp"
+            android:background="@android:color/transparent"
+            android:src="@drawable/ic_close_white"
+            android:visibility="gone" />
+
+    </LinearLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/container_phone_bottom_sheet"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/rounded_corners"
+        android:clickable="true"
+        android:focusable="true"
+        android:padding="8dp"
+        app:behavior_hideable="true"
+        app:behavior_peekHeight="0dp"
+        app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <ImageView
+            android:id="@+id/pill"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            android:src="@drawable/ic_pill"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.0" />
+
+        <TextView
+            android:id="@+id/tv_enter_phone_header"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            android:fontFamily="@font/metropolis_medium_webfont"
+            android:text="Enter phone number"
+            android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
+            android:textColor="?attr/colorOnSurface"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/pill"
+            app:layout_constraintVertical_bias="0.0" />
+
+        <TextView
+            android:id="@+id/tv_enter_phone_caption"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Your phone number is considered as your device's ID"
+            android:textAppearance="@style/TextAppearance.AppCompat.Small"
+            app:layout_constraintEnd_toEndOf="@id/tv_enter_phone_header"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="@id/tv_enter_phone_header"
+            app:layout_constraintTop_toBottomOf="@id/tv_enter_phone_header" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/phone_number_lyt"
+            style="@style/Widget.SignIN.TextInputLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="8dp"
+            android:layout_marginTop="12dp"
+            android:focusable="true"
+            app:boxStrokeColor="@color/black"
+            app:boxStrokeWidth="1dp"
+            app:hintEnabled="false"
+            app:layout_constraintTop_toBottomOf="@id/tv_enter_phone_caption"
+            app:prefixText="+91"
+            app:startIconTint="@null">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/text_field_background_with_stroke"
+                android:drawablePadding="3dp"
+                android:focusable="true"
+                android:fontFamily="@font/metropolis_regular_webfont"
+                android:hint="Enter your phone number"
+                android:inputType="phone"
+                android:textColor="@color/textColor2"
+                android:textColorHint="@color/text_color_hint" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_proceed"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:elevation="0dp"
+            android:fontFamily="@font/metropolis_bold_webfont"
+            android:text="@string/proceed"
+            android:textColor="@color/white"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="@id/phone_number_lyt"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="@id/phone_number_lyt"
+            app:layout_constraintTop_toBottomOf="@id/phone_number_lyt"
+            app:layout_constraintVertical_bias="0.0" />
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

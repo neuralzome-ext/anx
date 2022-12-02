@@ -18,6 +18,10 @@ import com.flomobility.anx.hermes.common.Result
 import com.flomobility.anx.hermes.other.Constants
 import com.flomobility.anx.hermes.other.handleExceptions
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import org.zeromq.SocketType
 import org.zeromq.ZContext
 import org.zeromq.ZMQ
@@ -27,7 +31,8 @@ import javax.inject.Singleton
 
 @Singleton
 class PhoneImu @Inject constructor(
-    @ApplicationContext private val context: Context
+    @ApplicationContext private val context: Context,
+    private val dispatcher: CoroutineDispatcher
 ) : BaseAsset() {
 
     private val sensorManager by lazy {
@@ -213,6 +218,14 @@ class PhoneImu @Inject constructor(
                     try {
                         val jsonStr = this@PhoneImu.getImuData().toJson()
 //                        Timber.d("[Publishing] -- imu : $jsonStr")
+                        /*GlobalScope.launch {
+                            assetOut.send(jsonStr)
+                        }*/
+                        if(debug) {
+                            CoroutineScope(dispatcher).launch(dispatcher) {
+                                assetOut.send(jsonStr)
+                            }
+                        }
                         socket.send(jsonStr.toByteArray(ZMQ.CHARSET), ZMQ.DONTWAIT)
                         Thread.sleep(1000L / (config.fps.value as Int))
                     } catch (e: InterruptedException) {
@@ -237,6 +250,8 @@ class PhoneImu @Inject constructor(
             fps.range = fpsRange
             fps.name = "fps"
             fps.value = DEFAULT_FPS
+
+            portSub = -1
         }
 
         companion object {

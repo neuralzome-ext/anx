@@ -9,15 +9,18 @@ import android.view.View
 import androidx.activity.ComponentActivity
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.view.isVisible
 import androidx.lifecycle.ViewModelProvider
+import com.flomobility.anx.databinding.ActivityLoginBinding
 import com.flomobility.anx.hermes.network.requests.LoginRequest
 import com.flomobility.anx.hermes.other.*
-import com.flomobility.anx.hermes.ui.home.HomeActivity
-import com.flomobility.anx.databinding.ActivityLoginBinding
 import com.flomobility.anx.hermes.ui.download.DownloadActivity
+import com.flomobility.anx.hermes.ui.home.HomeActivity
 import com.github.ybq.android.spinkit.style.ThreeBounce
 import com.google.android.gms.auth.api.identity.GetPhoneNumberHintIntentRequest
 import com.google.android.gms.auth.api.identity.Identity
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
@@ -56,6 +59,8 @@ class LoginActivity : ComponentActivity() {
         }
     }
 
+    private lateinit var bottomSheetPhoneNumber: BottomSheetBehavior<ConstraintLayout>
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityLoginBinding.inflate(layoutInflater)
@@ -69,6 +74,47 @@ class LoginActivity : ComponentActivity() {
         bind.spinKitLogin.setIndeterminateDrawable(ThreeBounce())
         setEventListeners()
         subscribeToObservers()
+        setupUI()
+    }
+
+    private fun setupUI() {
+        bottomSheetPhoneNumber = BottomSheetBehavior.from(bind.containerPhoneBottomSheet).apply {
+            addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
+                override fun onStateChanged(bottomSheet: View, newState: Int) {
+                    when(newState) {
+                        BottomSheetBehavior.STATE_EXPANDED -> {
+                            bind.overlay.isVisible = true
+                            bind.phoneNumberLyt.editText?.requestFocus()
+                        }
+                        BottomSheetBehavior.STATE_COLLAPSED -> {
+                            bind.overlay.isVisible = false
+                        }
+                    }
+                }
+
+                override fun onSlide(bottomSheet: View, slideOffset: Float) {
+
+                }
+
+            })
+        }
+        bind.emailLayout.editText?.setText(sharedPreferences.getEmail())
+    }
+
+    private fun BottomSheetBehavior<ConstraintLayout>.toggleBottomSheetBehaviour() {
+        state = if (state == BottomSheetBehavior.STATE_EXPANDED) {
+            BottomSheetBehavior.STATE_COLLAPSED
+        } else {
+            BottomSheetBehavior.STATE_EXPANDED
+        }
+    }
+
+    private fun BottomSheetBehavior<ConstraintLayout>.open() {
+        state = BottomSheetBehavior.STATE_EXPANDED
+    }
+
+    private fun BottomSheetBehavior<ConstraintLayout>.close() {
+        state = BottomSheetBehavior.STATE_COLLAPSED
     }
 
     /**
@@ -92,7 +138,9 @@ class LoginActivity : ComponentActivity() {
             }
             .addOnFailureListener {
                 Timber.e(it, "Phone Number Hint failed")
-                showSnackBarWithAction("Couldn't get device ID", indefinite = true, actionText = "Ok")
+                bind.overlay.isVisible = true
+                bottomSheetPhoneNumber.open()
+//                showSnackBarWithAction("Couldn't get device ID", indefinite = true, actionText = "Ok")
             }
     }
 
@@ -101,6 +149,8 @@ class LoginActivity : ComponentActivity() {
         viewModel.login.observe(this@LoginActivity) {
             when (it.getContentIfNotHandled()) {
                 is Resource.Loading -> {
+                    bind.emailLayout.isEnabled = false
+                    bind.passLayout.isEnabled = false
                     bind.btnLogin.visibility = View.GONE
                     bind.spinKitLogin.visibility = View.VISIBLE
                 }
@@ -111,6 +161,7 @@ class LoginActivity : ComponentActivity() {
                         bind.btnLogin.visibility = View.VISIBLE
                         return@observe
                     }
+                    sharedPreferences.setEmail(bind.emailLayout.editText?.text?.toString()!!)
                     sharedPreferences.putToken(it.peekContent().data?.token)
                     sharedPreferences.putDeviceExpiry(it.peekContent().data?.robot?.expiry)
                     when (true) {
@@ -122,6 +173,8 @@ class LoginActivity : ComponentActivity() {
                     finish()
                 }
                 is Resource.Error -> {
+                    bind.emailLayout.isEnabled = true
+                    bind.passLayout.isEnabled = true
                     bind.spinKitLogin.visibility = View.GONE
                     bind.btnLogin.visibility = View.VISIBLE
                     when (it.peekContent().errorData?.message) {
@@ -161,16 +214,16 @@ class LoginActivity : ComponentActivity() {
                 if (!userLogin.deviceID.isNullOrEmpty())
                     if (Patterns.EMAIL_ADDRESS.matcher(userLogin.email).matches()) {
                         bind.emailLayout.error = null
-                        if (userLogin.password.length >= 4) {
+                        if (userLogin.password.isNotEmpty()) {
                             bind.passLayout.error = null
                             viewModel.sendLoginRequest(userLogin)
                         } else {
-                            bind.passLayout.error = "Incorrect Password"
+                            bind.passLayout.error = "Invalid password"
                             bind.spinKitLogin.visibility = View.GONE
                             bind.btnLogin.visibility = View.VISIBLE
                         }
                     } else {
-                        bind.emailLayout.error = "Incorrect E-Mail"
+                        bind.emailLayout.error = "Invalid E-Mail"
                         bind.spinKitLogin.visibility = View.GONE
                         bind.btnLogin.visibility = View.VISIBLE
                     }
@@ -183,6 +236,22 @@ class LoginActivity : ComponentActivity() {
             }
             deviceId.setOnClickListener {
                 requestPhoneNumber()
+            }
+            overlay.setOnClickListener {
+                bottomSheetPhoneNumber.close()
+            }
+            btnProceed.setOnClickListener {
+                var phoneNumber = phoneNumberLyt.editText?.text?.trim()?.toString() ?: ""
+                phoneNumberLyt.error = null
+                if(phoneNumber.length != 10) {
+                    phoneNumberLyt.error = "Invalid phone number"
+                    return@setOnClickListener
+                }
+                phoneNumber = "+91$phoneNumber"
+                bind.deviceId.text = "DEVICE ID: $phoneNumber"
+                sharedPreferences.putDeviceID(phoneNumber)
+                phoneNumberLyt.editText?.setText("")
+                bottomSheetPhoneNumber.close()
             }
         }
     }
@@ -225,6 +294,14 @@ class LoginActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    override fun onBackPressed() {
+        if(bottomSheetPhoneNumber.state == BottomSheetBehavior.STATE_EXPANDED) {
+            bottomSheetPhoneNumber.close()
+            return
+        }
+        super.onBackPressed()
     }
 
     override fun onDestroy() {

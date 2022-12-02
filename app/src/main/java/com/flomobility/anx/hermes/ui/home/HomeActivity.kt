@@ -11,16 +11,19 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.downloader.PRDownloader
 import com.flomobility.anx.app.PluginResultsService
 import com.flomobility.anx.app.TerminalCommandExecutor
-import com.flomobility.anx.hermes.ui.adapter.IpAdapter
-import com.flomobility.anx.hermes.ui.adapter.AssetAdapter
 import com.flomobility.anx.hermes.assets.AssetManager
 import com.flomobility.anx.hermes.daemon.EndlessService
-import com.flomobility.anx.hermes.other.*
 import com.flomobility.anx.hermes.network.requests.InfoRequest
+import com.flomobility.anx.hermes.other.*
 import com.flomobility.anx.hermes.other.viewutils.AlertDialog
+import com.flomobility.anx.hermes.ui.adapter.AssetAdapter
+import com.flomobility.anx.hermes.ui.adapter.IpAdapter
 import com.flomobility.anx.hermes.ui.login.LoginActivity
 import com.flomobility.anx.hermes.ui.settings.SettingsActivity
 import com.flomobility.anx.databinding.ActivityHomeBinding
+import com.flomobility.anx.hermes.alerts.Alert
+import com.flomobility.anx.hermes.alerts.AlertManager
+import com.flomobility.anx.hermes.ui.asset_debug.AssetDebugActivity
 import com.flomobility.anx.shared.terminal.TerminalConstants
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
@@ -57,34 +60,68 @@ class HomeActivity : AppCompatActivity() {
         viewModel = ViewModelProvider(this@HomeActivity)[HomeViewModel::class.java]
         setContentView(binding?.root)
         if (sharedPreferences.getDeviceID() == null) {
-            showSnack("Login Again")
+            showSnackBar("Login Again")
             logout()
             return
         }
         bind.deviceId.text = "DEVICE ID: ${sharedPreferences.getDeviceID()}"
+        setupUI()
         setupRecyclers()
         subscribeToObservers()
         setEventListeners()
         viewModel.sendInfoRequest(InfoRequest(sharedPreferences.getDeviceID()!!))
     }
 
+    private fun setupUI() {
+        with(bind) {
+            ipSwitch.setOnToggledListener { _, isOn ->
+                (bind.ipRecycler.adapter as IpAdapter).updateIpList(getIPAddressList(useIPv4 = isOn))
+            }
+        }
+    }
+
     // broadcast receiver
     private val receiver: BroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             if (intent != null) {
-                val executionCode =
-                    intent.getIntExtra(PluginResultsService.RESULT_BROADCAST_EXECUTION_CODE_KEY, -1)
-                val result = intent.getBundleExtra(PluginResultsService.RESULT_BROADCAST_RESULT_KEY)
-                when (executionCode) {
-                     START_SSHD_EXECUTION_CODE -> {
-                        result?.let {
-                            val exitCode =
-                                result.getInt(TerminalConstants.TERMUX_APP.TERMUX_SERVICE.EXTRA_PLUGIN_RESULT_BUNDLE_EXIT_CODE)
-                            if (exitCode == 0) {
-                                Timber.i("SSH server on port 2222 started successfully")
-                                return
+                when(intent.action) {
+                    PluginResultsService.RESULT_BROADCAST_INTENT -> {
+                        val executionCode =
+                            intent.getIntExtra(PluginResultsService.RESULT_BROADCAST_EXECUTION_CODE_KEY, -1)
+                        val result = intent.getBundleExtra(PluginResultsService.RESULT_BROADCAST_RESULT_KEY)
+                        when (executionCode) {
+                            START_SSHD_EXECUTION_CODE -> {
+                                result?.let {
+                                    val exitCode =
+                                        result.getInt(TerminalConstants.TERMUX_APP.TERMUX_SERVICE.EXTRA_PLUGIN_RESULT_BUNDLE_EXIT_CODE)
+                                    if (exitCode == 0) {
+                                        Timber.i("SSH server on port 2222 started successfully")
+                                        return
+                                    }
+                                    Timber.e("Starting ssh server failed")
+                                }
                             }
-                            Timber.e("Starting ssh server failed")
+                        }
+                    }
+                    AlertManager.ANX_ALERTS_BROADCAST_INTENT -> {
+                        val alert = intent.getParcelableExtra<Alert>(AlertManager.KEY_ANX_ALERT) ?: return
+                        when(alert.priority) {
+                            Alert.Priority.LOW -> {
+                                // TODO
+                            }
+                            Alert.Priority.MEDIUM -> {
+                                // TODO
+                            }
+                            Alert.Priority.HIGH -> {
+                                AlertDialog.getInstance(
+                                    alert.title,
+                                    alert.message,
+                                    "Ok"
+                                ).show(supportFragmentManager, AlertDialog.TAG)
+                            }
+                            Alert.Priority.SEVERE -> {
+                                // TODO
+                            }
                         }
                     }
                 }
@@ -108,7 +145,6 @@ class HomeActivity : AppCompatActivity() {
             }
             settings.setOnClickListener {
                 SettingsActivity.navigateToSetting(this@HomeActivity)
-                finish()
             }
         }
     }
@@ -121,7 +157,7 @@ class HomeActivity : AppCompatActivity() {
                 }
                 is Resource.Success -> {
                     if (it.peekContent().data?.access == false || isExpired(it.peekContent().data?.expiry)) {
-                        showSnack("Your access has been revoked")
+                        showSnackBar("Your access has been revoked")
                         logout()
                         return@observe
                     }
@@ -138,19 +174,19 @@ class HomeActivity : AppCompatActivity() {
                             var error = it.peekContent().message
                             if (error?.contains("Failed to connect to") == true)
                                 error = "Failed to connect to server"
-                            showSnack(error)
+                            showSnackBar(error)
                             return@observe
                         }
                         400 -> {
-                            showSnack("Server Unreachable!! (400)")
+                            showSnackBar("Server Unreachable!! (400)")
                         }
                         401 -> {
-                            showSnack("Login Again")
+                            showSnackBar("Login Again")
                             logout()
                         }
                         else -> {
                             val error = it.peekContent().errorData?.message
-                            showSnack(error)
+                            showSnackBar(error)
                         }
                     }
                 }
@@ -162,10 +198,10 @@ class HomeActivity : AppCompatActivity() {
         }
 
         InternetConnectionCheck(this).observe(this) { isConnected ->
-            if(isConnected) {
+            if (isConnected) {
                 bind.ipRecycler.isVisible = true
                 bind.connectToNetworkError.isVisible = false
-                (bind.ipRecycler.adapter as IpAdapter).updateIpList(getIPAddressList(true))
+                (bind.ipRecycler.adapter as IpAdapter).updateIpList(getIPAddressList(useIPv4 = bind.ipSwitch.isOn))
             } else {
                 bind.ipRecycler.isVisible = false
                 bind.connectToNetworkError.isVisible = true
@@ -193,13 +229,31 @@ class HomeActivity : AppCompatActivity() {
 
     private fun setupRecyclers() {
         bind.ipRecycler.layoutManager = LinearLayoutManager(this@HomeActivity)
-        bind.ipRecycler.adapter = IpAdapter(this@HomeActivity, getIPAddressList(true))
+        bind.ipRecycler.adapter = IpAdapter(this@HomeActivity, getIPAddressList()).apply {
+            doOnLongClick { ipAddress ->
+                if(this@HomeActivity.setClipboard("ip_address", ipAddress.address)) {
+                    showSnackBar("Copied Ip Address to clipboard")
+                }
+            }
+        }
         bind.assetRecycler.layoutManager = GridLayoutManager(this@HomeActivity, 4)
         bind.assetRecycler.adapter = AssetAdapter(
             this@HomeActivity,
             this@HomeActivity
         )
-        (bind.assetRecycler.adapter as AssetAdapter).setupAssetsList()
+        (bind.assetRecycler.adapter as AssetAdapter).apply {
+            doOnItemClicked { assetUI ->
+                if (assetUI.assets.isEmpty()) return@doOnItemClicked
+
+                AssetDebugActivity.navigateToAssetDebugActivity(
+                    this@HomeActivity,
+                    Bundle().apply {
+                        putString(AssetDebugActivity.KEY_ASSET_TYPE, assetUI.assetType.alias)
+                        putInt(AssetDebugActivity.KEY_ASSET_IMAGE, assetUI.assetImage)
+                    }
+                )
+            }
+        }.setupAssetsList()
     }
 
     private fun sendCommandToService(action: String, serviceClass: Class<*>) {
@@ -211,10 +265,18 @@ class HomeActivity : AppCompatActivity() {
         }
     }
 
-    private fun showSnack(msg: String?) {
+    private fun showSnackBar(
+        msg: String?,
+        indefinite: Boolean = false
+    ) {
         runOnUiThread {
-            if (msg != null)
-                Snackbar.make(bind.root, msg, Snackbar.LENGTH_LONG).show()
+            if (msg != null) {
+                Snackbar.make(
+                    bind.root,
+                    msg,
+                    if (indefinite) Snackbar.LENGTH_INDEFINITE else Snackbar.LENGTH_LONG
+                ).show()
+            }
         }
     }
 
@@ -228,7 +290,10 @@ class HomeActivity : AppCompatActivity() {
     override fun onStart() {
         super.onStart()
         LocalBroadcastManager.getInstance(this)
-            .registerReceiver(receiver, IntentFilter(PluginResultsService.RESULT_BROADCAST_INTENT))
+            .registerReceiver(receiver,
+                IntentFilter(PluginResultsService.RESULT_BROADCAST_INTENT).apply {
+                    addAction(AlertManager.ANX_ALERTS_BROADCAST_INTENT)
+                })
     }
 
     override fun onStop() {

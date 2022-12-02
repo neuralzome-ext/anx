@@ -1,15 +1,23 @@
 package com.flomobility.anx.hermes.other
 
+import android.content.ClipData
+import android.content.Context
 import android.content.SharedPreferences
+import android.os.Build
+import android.text.ClipboardManager
+import com.flomobility.anx.hermes.model.IpAddress
 import com.flomobility.anx.hermes.other.Constants.DEVICE_EXPIRY
 import com.flomobility.anx.hermes.other.Constants.DEVICE_ID
 import com.flomobility.anx.hermes.other.Constants.INSTALL_STATUS
 import com.flomobility.anx.hermes.other.Constants.KEY_ACCEPT_LICENSE
+import com.flomobility.anx.hermes.other.Constants.KEY_EMAIL
 import com.flomobility.anx.hermes.other.Constants.ON_BOOT
 import com.flomobility.anx.hermes.other.Constants.USER_TOKEN
 import timber.log.Timber
 import java.io.BufferedReader
 import java.io.InputStreamReader
+import java.net.Inet4Address
+import java.net.Inet6Address
 import java.net.InetAddress
 import java.net.NetworkInterface
 import java.nio.ByteBuffer
@@ -130,8 +138,8 @@ fun getIPAddress(useIPv4: Boolean): String {
  * @param useIPv4   true=return ipv4, false=return ipv6
  * @return  address or empty string
  */
-fun getIPAddressList(useIPv4: Boolean): ArrayList<String> {
-    val ipAddresses: ArrayList<String> = ArrayList()
+fun getIPAddressList(useIPv4: Boolean = false): ArrayList<IpAddress> {
+    val ipAddresses: ArrayList<IpAddress> = ArrayList()
     try {
         val interfaces: List<NetworkInterface> =
             Collections.list(NetworkInterface.getNetworkInterfaces())
@@ -144,18 +152,25 @@ fun getIPAddressList(useIPv4: Boolean): ArrayList<String> {
                     //boolean isIPv4 = InetAddressUtils.isIPv4Address(sAddr);
                     val isIPv4 = sAddr.indexOf(':') < 0
                     if (useIPv4) {
-                        if (isIPv4) {
-                            ipAddresses.add("$sAddr (${intf.displayName})")
+                        if (addr is Inet4Address) {
+                            ipAddresses.add(/*"$sAddr (${intf.displayName})"*/
+                                IpAddress(
+                                    address = sAddr,
+                                    type = IpAddress.Type.IPv4,
+                                    networkInterface = intf.displayName
+                                )
+                            )
                         }
                     } else {
-                        if (!isIPv4) {
+                        if (addr is Inet6Address) {
                             val delim = sAddr.indexOf('%') // drop ip6 zone suffix
-                            ipAddresses.add(
-                                if (delim < 0) sAddr.uppercase(Locale.getDefault()) else sAddr.substring(
-                                    0,
-                                    delim
-                                ).uppercase(
-                                    Locale.getDefault()
+                            val ipv6addr =
+                                if (delim < 0) sAddr else sAddr.substring(0, delim)
+                            ipAddresses.add(/*"$ipv6addr (${intf.displayName})"*/
+                                IpAddress(
+                                    address = ipv6addr,
+                                    type = IpAddress.Type.IPv6,
+                                    networkInterface = intf.displayName
                                 )
                             )
                         }
@@ -166,6 +181,19 @@ fun getIPAddressList(useIPv4: Boolean): ArrayList<String> {
     } catch (ignored: java.lang.Exception) {
     } // for now eat exceptions
     return ipAddresses
+}
+
+fun Context.setClipboard(label: String, text: String): Boolean {
+    return try {
+        val clipboard =
+            getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+        val clip = ClipData.newPlainText(label, text)
+        clipboard.setPrimaryClip(clip)
+        true
+    } catch (e: Exception) {
+        Timber.e(e)
+        false
+    }
 }
 
 fun isExpired(expiryStr: String?): Boolean {
@@ -234,6 +262,14 @@ fun SharedPreferences.setAcceptLicense(accept: Boolean) {
 
 fun SharedPreferences.getAcceptLicense(): Boolean {
     return this.getBoolean(KEY_ACCEPT_LICENSE, false)
+}
+
+fun SharedPreferences.setEmail(email: String) {
+    this.edit().putString(KEY_EMAIL, email).apply()
+}
+
+fun SharedPreferences.getEmail(): String {
+    return this.getString(KEY_EMAIL, "") ?: ""
 }
 
 fun SharedPreferences.clear() {

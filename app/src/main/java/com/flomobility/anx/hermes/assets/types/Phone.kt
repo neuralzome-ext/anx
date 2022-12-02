@@ -3,7 +3,7 @@ package com.flomobility.anx.hermes.assets.types
 import android.content.Context
 import android.os.Build
 import androidx.annotation.RequiresApi
-import com.flomobility.anx.hermes.api.model.PhoneState
+import com.flomobility.anx.hermes.api.model.PhoneStates
 import com.flomobility.anx.hermes.assets.AssetState
 import com.flomobility.anx.hermes.assets.AssetType
 import com.flomobility.anx.hermes.assets.BaseAsset
@@ -14,6 +14,9 @@ import com.flomobility.anx.hermes.other.handleExceptions
 import com.flomobility.anx.hermes.phone.PhoneManager
 import com.google.gson.Gson
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import org.zeromq.SocketType
 import org.zeromq.ZContext
 import org.zeromq.ZMQ
@@ -26,7 +29,8 @@ import javax.inject.Singleton
 class Phone @Inject constructor(
     @ApplicationContext private val context: Context,
     private val phoneManager: PhoneManager,
-    private val gson: Gson
+    private val gson: Gson,
+    private val dispatcher: CoroutineDispatcher
 ) : BaseAsset() {
 
     private val _id = "0"
@@ -104,18 +108,32 @@ class Phone @Inject constructor(
                         try {
                             val chargingStatus = phoneManager.getChargingStatus()
                             val cpuRam = phoneManager.getMemoryInfo()
-                            val cpuTemp = phoneManager.getCPUTemperature()
-                            val cpuUsage = phoneManager.getCpu()
+                            val storage = phoneManager.getStorage()
+                            val thermals = phoneManager.getThermals()
+                            val processorName = phoneManager.getCPUInfo()
+                            val cpuFreq = phoneManager.getCurrentCpu()
                             val gpuUsage = phoneManager.getGpuUsage()
-                            val phoneState = PhoneState(
-                                charging = chargingStatus,
-                                cpuRamUsage = cpuRam,
-                                cpuTemp = cpuTemp,
-                                cpuUsage = cpuUsage,
-                                gpuUsage = gpuUsage,
-                                gpuVramUsage = -1.0
+                            val uptime = phoneManager.getSystemUptime()
+                            val phoneStates = PhoneStates(
+                                chargingStatus,
+                                PhoneStates.Cpu(processor = processorName, cpuFreq = cpuFreq),
+                                gpuUsage,
+                                0.0,
+                                cpuRam,
+                                storage,
+                                thermals,
+                                uptime
                             )
-                            socket.send(gson.toJson(phoneState).toByteArray(ZMQ.CHARSET), 0)
+                            val jsonStr = gson.toJson(phoneStates)
+                            if (debug) {
+                                CoroutineScope(dispatcher).launch(dispatcher) {
+                                    assetOut.send(jsonStr)
+                                }
+                            }
+                            /*GlobalScope.launch {
+                                assetOut.send(jsonStr)
+                            }*/
+                            socket.send(jsonStr.toByteArray(ZMQ.CHARSET), 0)
                             sleep(1000L / _config.fps.value)
                         } catch (e: InterruptedException) {
                             break
@@ -137,9 +155,11 @@ class Phone @Inject constructor(
         val fps = Field<Int>()
 
         init {
-            fps.range = listOf(1)
+            fps.range = listOf(1, 2, 5, 10)
             fps.name = "fps"
             fps.value = DEFAULT_FPS
+
+            portSub = -1
         }
 
         override fun getFields(): List<Field<*>> {

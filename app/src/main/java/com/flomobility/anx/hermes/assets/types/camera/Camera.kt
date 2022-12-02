@@ -3,12 +3,24 @@ package com.flomobility.anx.hermes.assets.types.camera
 import com.flomobility.anx.hermes.assets.BaseAsset
 import com.flomobility.anx.hermes.assets.BaseAssetConfig
 import com.flomobility.anx.hermes.other.GsonUtils
+import com.flomobility.anx.hermes.other.provideDispatcher
 import com.google.gson.annotations.SerializedName
 import com.google.gson.reflect.TypeToken
 import com.serenegiant.usb.UVCCamera
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.receiveAsFlow
 import org.json.JSONObject
+import java.nio.ByteBuffer
 
 abstract class Camera : BaseAsset() {
+
+    protected val cameraOut = Channel<ByteBuffer>(Channel.BUFFERED)
+    val out: Flow<ByteBuffer> = cameraOut.receiveAsFlow()
+
+    protected val dispatcher = provideDispatcher(nThreads = 1)
+
+    var rotation = 0f
 
     class Config : BaseAssetConfig() {
 
@@ -25,6 +37,8 @@ abstract class Camera : BaseAsset() {
             compressionQuality.range = listOf(
                 10, 25, 50, 75, 80, 85, 90, 95, 100
             )
+
+            portSub = -1
         }
 
         fun loadStreams(streams: List<Stream>) {
@@ -59,6 +73,15 @@ abstract class Camera : BaseAsset() {
                 @SerializedName("yuyv")
                 YUYV("yuyv", 4, UVCCamera.FRAME_FORMAT_YUYV),
                 UNK("unkown", -1, -1)
+            }
+
+            override fun toString(): String {
+                var str = "\n\t"
+                str += "width : $width\n\t"
+                str += "height : $height\n\t"
+                str += "fps : $fps\n\t"
+                str += "pixel_format : ${pixelFormat.alias}\n"
+                return str
             }
 
             companion object {

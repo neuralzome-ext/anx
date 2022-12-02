@@ -3,11 +3,13 @@ package com.flomobility.anx.hermes.phone
 import android.annotation.SuppressLint
 import android.app.ActivityManager
 import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.content.SharedPreferences
-import android.os.BatteryManager
-import android.os.Build
+import android.os.*
 import android.telephony.TelephonyManager
 import androidx.annotation.RequiresApi
+import com.flomobility.anx.hermes.api.model.PhoneStates
 import com.flomobility.anx.hermes.common.Result
 import com.flomobility.anx.hermes.other.getDeviceID
 import com.flomobility.anx.hermes.other.getRootOutput
@@ -15,6 +17,7 @@ import com.flomobility.anx.hermes.other.runAsRoot
 import dagger.hilt.android.qualifiers.ApplicationContext
 import timber.log.Timber
 import java.io.*
+import java.lang.Process
 import java.util.regex.Pattern
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -31,6 +34,7 @@ class PhoneManager @Inject constructor(
     lateinit var device: Device
 
     private var sLastCpuCoreCount = -1
+    private var sLastThermalCount = -1
 
     private val telephony by lazy {
         context.getSystemService(
@@ -54,10 +58,25 @@ class PhoneManager @Inject constructor(
 //        return "${telephony.getImei(0)}:${telephony.getImei(1)}"
     }
 
-    fun getChargingStatus(): Boolean {
-        val batteryStatus = batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_STATUS)
-        return (batteryStatus == BatteryManager.BATTERY_STATUS_CHARGING
-            || batteryStatus == BatteryManager.BATTERY_STATUS_FULL)
+    fun getChargingStatus(): PhoneStates.Battery {
+        val intent = context.registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
+//        Timber.d("FLO Battery ${batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CURRENT_NOW)} ${batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY)} ${intent?.getIntExtra(
+//            BatteryManager.ACTION_CHARGING, -10)}")
+//        val batteryStatus = batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_STATUS)
+//        return (batteryStatus == BatteryManager.BATTERY_STATUS_CHARGING
+//            || batteryStatus == BatteryManager.BATTERY_STATUS_FULL)
+        val battery = PhoneStates.Battery(
+            batteryManager.isCharging,
+            batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CURRENT_NOW) * if (batteryManager.isCharging) 1 else -1,
+            batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY),
+            intent?.getIntExtra(
+                BatteryManager.EXTRA_TEMPERATURE, -10
+            )?.div(10) ?: -1,
+            intent?.getIntExtra(
+                BatteryManager.EXTRA_VOLTAGE, -1
+            ) ?: -1
+        )
+        return battery
     }
 
     /**
@@ -66,11 +85,42 @@ class PhoneManager @Inject constructor(
      * @param context for accessing getSystemService method.
      * @return percent of memory used by the system.
      */
-    fun getMemoryInfo(): Double {
+    fun getMemoryInfo(): PhoneStates.Ram {
         val memoryInfo = ActivityManager.MemoryInfo()
         val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
         activityManager.getMemoryInfo(memoryInfo)//Code not being used
-        return (memoryInfo.availMem * 100.0) / memoryInfo.totalMem
+        return PhoneStates.Ram(
+            memoryInfo.totalMem.toDouble() / 1000000,
+            memoryInfo.availMem.toDouble() / 1000000
+        )
+    }
+
+    fun getStorage(): PhoneStates.Storage {
+        val stat = StatFs(Environment.getDataDirectory().path)
+        return PhoneStates.Storage(
+            stat.availableBytes.toDouble() / 1048576,
+            stat.totalBytes.toDouble() / 1048576
+        )
+    }
+
+    @Throws(IOException::class)
+    fun getCPUInfo(): String {
+        val br = BufferedReader(FileReader("/proc/cpuinfo"))
+        var output = ""
+        var line = br.readLine()
+        while (line != null) {
+            val data = line.split(":").toTypedArray()
+            if (data.size > 1) {
+                val key = data[0].trim { it <= ' ' }.replace(" ", "_")
+                if (key == "Hardware") {
+                    output = data[1].trim { it <= ' ' }
+                    break
+                }
+            }
+            line = br.readLine()
+        }
+        br.close()
+        return output
     }
 
     /**
@@ -78,32 +128,46 @@ class PhoneManager @Inject constructor(
      *
      * @return battery temperature of type float.
      */
-    fun getCPUTemperature(): Double {
-        val process: Process
-        return try {
-            process = Runtime.getRuntime().exec("cat sys/class/thermal/thermal_zone" + 0 + "/temp")
-            process.waitFor()
-            val reader = BufferedReader(InputStreamReader(process.inputStream))
-            val line = reader.readLine()
-            if (line != null) {
-                line.toDouble() / 1000
-            } else {
-                -1.0
-            }
-        } catch (e: Exception) {
-            Timber.e(e.localizedMessage)
+    fun getThermals(): ArrayList<PhoneStates.Thermal> {
+        val thermals = arrayListOf<PhoneStates.Thermal>()
+        for (i in 0 until calcThermalCount()) {
+            val thermalProcess: Process
+            val typeProcess: Process
+            try {
+                thermalProcess =
+                    Runtime.getRuntime().exec("cat sys/class/thermal/thermal_zone$i/temp")
+                typeProcess =
+                    Runtime.getRuntime().exec("cat sys/class/thermal/thermal_zone$i/type")
+                thermalProcess.waitFor()
+                typeProcess.waitFor()
+                val thermalReader = BufferedReader(InputStreamReader(thermalProcess.inputStream))
+                val typeReader = BufferedReader(InputStreamReader(typeProcess.inputStream))
+                val thermal = thermalReader.readLine()
+                val type = typeReader.readLine()
+                if (type != null) {
+                    thermals.add(PhoneStates.Thermal(type, thermal.toDouble() / 1000))
+                } else {
+                    continue
+                }
+            } catch (e: Exception) {
+                Timber.e(e.localizedMessage)
 //            Timber.e(e.localizedMessage)
-            -1.0
+                continue
+            }
         }
+        return thermals
     }
 
-    fun getCpu(): Double {
-        val currentFreq = arrayListOf<Double>()
+    fun getSystemUptime(): Double {
+        return (SystemClock.uptimeMillis() / 1000).toDouble()
+    }
+
+    fun getCurrentCpu(): ArrayList<PhoneStates.Cpu.CpuFreq> {
+        val currentFreq = arrayListOf<PhoneStates.Cpu.CpuFreq>()
         for (i in 0 until calcCpuCoreCount()) {
-            currentFreq.add(takeCurrentCpuFreq(i))
+            currentFreq.add(getCpuFreq(i))
         }
-        return currentFreq.average()
-//        return -1.0
+        return currentFreq
     }
 
     fun getGpuUsage(): Double {
@@ -140,24 +204,37 @@ class PhoneManager @Inject constructor(
         }
     }
 
-    private fun takeCurrentCpuFreq(coreIndex: Int): Double {
+    private fun getCpuFreq(coreIndex: Int): PhoneStates.Cpu.CpuFreq {
         val curFreq =
-            readIntegerFile("/sys/devices/system/cpu/cpu$coreIndex/cpufreq/scaling_cur_freq")
+            readIntegerFile("/sys/devices/system/cpu/cpu$coreIndex/cpufreq/scaling_cur_freq").toDouble()
         val minFreq =
-            readIntegerFile("/sys/devices/system/cpu/cpu$coreIndex/cpufreq/cpuinfo_min_freq")
+            readIntegerFile("/sys/devices/system/cpu/cpu$coreIndex/cpufreq/cpuinfo_min_freq").toDouble()
         val maxFreq =
-            readIntegerFile("/sys/devices/system/cpu/cpu$coreIndex/cpufreq/cpuinfo_max_freq")
-        val currentFreq = ((curFreq - minFreq).toDouble() / (maxFreq - minFreq).toDouble())
+            readIntegerFile("/sys/devices/system/cpu/cpu$coreIndex/cpufreq/cpuinfo_max_freq").toDouble()
+        return PhoneStates.Cpu.CpuFreq(curFreq, maxFreq, minFreq)
+//        val currentFreq = ((curFreq - minFreq).toDouble() / (maxFreq - minFreq).toDouble())
 //        Timber.d("CPU $coreIndex -- $curFreq, $minFreq, $maxFreq")
-//        Timber.d(
-//            "FLOCPU $coreIndex $currentFreq ${readIntegerFile("/sys/devices/system/cpu/cpu$coreIndex/cpufreq/scaling_min_freq")} ${
-//                readIntegerFile(
-//                    "/sys/devices/system/cpu/cpu$coreIndex/cpufreq/scaling_cur_freq"
-//                )
-//            } ${readIntegerFile("/sys/devices/system/cpu/cpu$coreIndex/cpufreq/scaling_max_freq")}"
-//        )
-//        return readIntegerFile("/sys/devices/system/cpu/cpu$coreIndex/cpufreq/scaling_cur_freq")
-        return currentFreq * 100
+    }
+
+    private fun calcThermalCount(): Int {
+        if (sLastThermalCount >= 1) {
+            // キャッシュさせる
+            return sLastThermalCount
+        }
+        sLastThermalCount = try {
+            // Get directory containing CPU info
+            val dir = File("/sys/class/thermal/")
+            // Filter to only list the devices we care about
+            val files: Array<File>? =
+                dir.listFiles { pathname -> //Check if filename is "thermal", followed by a number
+                    Pattern.matches("thermal_zone[0-9]+$", pathname.name)
+                }
+            // Return the number of thermals
+            files!!.size
+        } catch (e: java.lang.Exception) {
+            Runtime.getRuntime().availableProcessors()
+        }
+        return sLastThermalCount
     }
 
     private fun calcCpuCoreCount(): Int {
@@ -205,7 +282,10 @@ class PhoneManager @Inject constructor(
                     Timber.i("[OS] --  Shutting Down...")
                     runAsRoot("reboot -p")
                     Result(success = true)
-                } else Result(success = false, message = "Can't shutdown. Device needs to be rooted.")
+                } else Result(
+                    success = false,
+                    message = "Can't shutdown. Device needs to be rooted."
+                )
             }
             else -> {
                 Timber.e("Unknown signal")

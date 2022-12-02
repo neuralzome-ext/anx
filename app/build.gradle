@@ -3,6 +3,9 @@ plugins {
     id 'com.android.application'
     id 'dagger.hilt.android.plugin'
     id 'org.jetbrains.kotlin.android'
+    id 'com.google.gms.google-services'
+    id 'com.google.firebase.crashlytics'
+    id 'kotlin-parcelize'
 }
 
 
@@ -98,6 +101,11 @@ android {
 
         def camerax_version = "1.1.0"
 
+        // Import the BoM for the Firebase platform
+        implementation platform('com.google.firebase:firebase-bom:31.0.3')
+        implementation 'com.google.firebase:firebase-crashlytics-ktx'
+        implementation 'com.google.firebase:firebase-analytics-ktx'
+
         // CameraX core library using camera2 implementation
         implementation "androidx.camera:camera-camera2:$camerax_version"
 
@@ -126,14 +134,17 @@ android {
             exclude module: 'support-v4'
         }
 
+        // custom switch
+        implementation 'com.github.angads25:toggle:1.1.0'
+
     }
 
     defaultConfig {
         applicationId "com.flomobility.anx"
         minSdkVersion project.properties.minSdkVersion.toInteger()
         targetSdkVersion project.properties.targetSdkVersion.toInteger()
-        versionCode 9
-        versionName "0.8.0"
+        versionCode 10
+        versionName "0.8.1"
 
         Properties properties = new Properties()
         properties.load(project.rootProject.file('local.properties').newDataInputStream())
@@ -212,9 +223,12 @@ android {
             debuggable true
             minifyEnabled false
             signingConfig signingConfigs.flo
-            manifestPlaceholders.TERMINAL_PACKAGE_NAME = "com.flomobility.anx.dev"
+            manifestPlaceholders.TERMINAL_PACKAGE_NAME = "com.flomobility.anx"
+            firebaseCrashlytics {
+                mappingFileUploadEnabled false
+            }
             versionNameSuffix "-dev"
-            applicationIdSuffix ".dev"
+//            applicationIdSuffix ".dev"
             resValue "string", "application_name", "(D)anx"
         }
         release {
@@ -224,6 +238,9 @@ android {
             signingConfig signingConfigs.flo
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             debuggable false
+            firebaseCrashlytics {
+                mappingFileUploadEnabled true
+            }
             manifestPlaceholders.TERMINAL_PACKAGE_NAME = "com.flomobility.anx"
             resValue "string", "application_name", "anx"
         }
@@ -233,6 +250,9 @@ android {
             debuggable true
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            firebaseCrashlytics {
+                mappingFileUploadEnabled false
+            }
             manifestPlaceholders.TERMINAL_PACKAGE_NAME = "com.flomobility.anx.debug"
             applicationIdSuffix ".debug"
             resValue "string", "application_name", "(Debug)anx"

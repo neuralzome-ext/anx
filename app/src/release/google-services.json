@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "1011349989242",
+    "project_id": "anx-closed-beta",
+    "storage_bucket": "anx-closed-beta.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1011349989242:android:17ec62b4e572a22a7818c3",
+        "android_client_info": {
+          "package_name": "com.flomobility.anx"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1011349989242-oc96mjpqklpn5qgdor1j3mc584h8s3ui.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCUwCEt-MJG80o9Xj4uevc3RZTlNhwFfUI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1011349989242-oc96mjpqklpn5qgdor1j3mc584h8s3ui.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

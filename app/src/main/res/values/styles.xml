@@ -64,6 +64,8 @@
 
         <item name="snackbarStyle">@style/Flo.Snackbar</item>
 
+        <item name="android:fontFamily">@font/metropolis_regular_webfont</item>
+
         <item name="android:windowAnimationStyle">@style/CustomActivityAnimation</item>
 
         <!--        <item name="android:windowActivityTransitions">true</item>-->
