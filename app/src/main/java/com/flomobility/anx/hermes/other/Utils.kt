@@ -10,6 +10,7 @@ import com.flomobility.anx.hermes.other.Constants.DEVICE_EXPIRY
 import com.flomobility.anx.hermes.other.Constants.DEVICE_ID
 import com.flomobility.anx.hermes.other.Constants.INSTALL_STATUS
 import com.flomobility.anx.hermes.other.Constants.KEY_ACCEPT_LICENSE
+import com.flomobility.anx.hermes.other.Constants.KEY_EMAIL
 import com.flomobility.anx.hermes.other.Constants.ON_BOOT
 import com.flomobility.anx.hermes.other.Constants.USER_TOKEN
 import timber.log.Timber
@@ -261,6 +262,14 @@ fun SharedPreferences.setAcceptLicense(accept: Boolean) {
 
 fun SharedPreferences.getAcceptLicense(): Boolean {
     return this.getBoolean(KEY_ACCEPT_LICENSE, false)
+}
+
+fun SharedPreferences.setEmail(email: String) {
+    this.edit().putString(KEY_EMAIL, email).apply()
+}
+
+fun SharedPreferences.getEmail(): String {
+    return this.getString(KEY_EMAIL, "") ?: ""
 }
 
 fun SharedPreferences.clear() {
