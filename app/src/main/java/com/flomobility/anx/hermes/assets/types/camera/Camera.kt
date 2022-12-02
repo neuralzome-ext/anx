@@ -20,6 +20,8 @@ abstract class Camera : BaseAsset() {
 
     protected val dispatcher = provideDispatcher(nThreads = 1)
 
+    var rotation = 0f
+
     class Config : BaseAssetConfig() {
 
         val stream = StreamField()

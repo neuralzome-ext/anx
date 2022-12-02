@@ -71,6 +71,7 @@
             android:focusable="true"
             app:hintEnabled="false"
             app:passwordToggleEnabled="true"
+            android:nextFocusDown="@null"
             app:startIconTint="@null">
 
             <com.google.android.material.textfield.TextInputEditText
@@ -79,6 +80,7 @@
                 android:background="@drawable/text_field_background"
                 android:focusable="true"
                 android:fontFamily="@font/metropolis_regular_webfont"
+                android:imeOptions="actionDone"
                 android:hint="Enter Password"
                 android:inputType="textPassword"
                 android:textColor="@color/textColor2"
@@ -178,28 +180,28 @@
             android:id="@+id/tv_enter_phone_caption"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textAppearance="@style/TextAppearance.AppCompat.Small"
+            android:layout_marginTop="8dp"
             android:text="Your phone number is considered as your device's ID"
-            app:layout_constraintTop_toBottomOf="@id/tv_enter_phone_header"
-            app:layout_constraintStart_toStartOf="@id/tv_enter_phone_header"
+            android:textAppearance="@style/TextAppearance.AppCompat.Small"
             app:layout_constraintEnd_toEndOf="@id/tv_enter_phone_header"
             app:layout_constraintHorizontal_bias="0.0"
-            android:layout_marginTop="8dp"/>
+            app:layout_constraintStart_toStartOf="@id/tv_enter_phone_header"
+            app:layout_constraintTop_toBottomOf="@id/tv_enter_phone_header" />
 
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/phone_number_lyt"
             style="@style/Widget.SignIN.TextInputLayout"
-            app:boxStrokeColor="@color/black"
-            app:boxStrokeWidth="1dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="8dp"
-            android:focusable="true"
-            app:hintEnabled="false"
-            app:startIconTint="@null"
             android:layout_marginTop="12dp"
+            android:focusable="true"
+            app:boxStrokeColor="@color/black"
+            app:boxStrokeWidth="1dp"
+            app:hintEnabled="false"
+            app:layout_constraintTop_toBottomOf="@id/tv_enter_phone_caption"
             app:prefixText="+91"
-            app:layout_constraintTop_toBottomOf="@id/tv_enter_phone_caption">
+            app:startIconTint="@null">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:layout_width="match_parent"
@@ -219,16 +221,16 @@
             android:id="@+id/btn_proceed"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:elevation="0dp"
             android:fontFamily="@font/metropolis_bold_webfont"
             android:text="@string/proceed"
             android:textColor="@color/white"
-            android:elevation="0dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="@id/phone_number_lyt"
             app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintVertical_bias="0.0"
+            app:layout_constraintStart_toStartOf="@id/phone_number_lyt"
             app:layout_constraintTop_toBottomOf="@id/phone_number_lyt"
-            app:layout_constraintStart_toStartOf="@id/phone_number_lyt" />
+            app:layout_constraintVertical_bias="0.0" />
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>

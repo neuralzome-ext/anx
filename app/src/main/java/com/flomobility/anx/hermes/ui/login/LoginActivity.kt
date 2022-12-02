@@ -98,6 +98,7 @@ class LoginActivity : ComponentActivity() {
 
             })
         }
+        bind.emailLayout.editText?.setText(sharedPreferences.getEmail())
     }
 
     private fun BottomSheetBehavior<ConstraintLayout>.toggleBottomSheetBehaviour() {
@@ -148,6 +149,8 @@ class LoginActivity : ComponentActivity() {
         viewModel.login.observe(this@LoginActivity) {
             when (it.getContentIfNotHandled()) {
                 is Resource.Loading -> {
+                    bind.emailLayout.isEnabled = false
+                    bind.passLayout.isEnabled = false
                     bind.btnLogin.visibility = View.GONE
                     bind.spinKitLogin.visibility = View.VISIBLE
                 }
@@ -158,6 +161,7 @@ class LoginActivity : ComponentActivity() {
                         bind.btnLogin.visibility = View.VISIBLE
                         return@observe
                     }
+                    sharedPreferences.setEmail(bind.emailLayout.editText?.text?.toString()!!)
                     sharedPreferences.putToken(it.peekContent().data?.token)
                     sharedPreferences.putDeviceExpiry(it.peekContent().data?.robot?.expiry)
                     when (true) {
@@ -169,6 +173,8 @@ class LoginActivity : ComponentActivity() {
                     finish()
                 }
                 is Resource.Error -> {
+                    bind.emailLayout.isEnabled = true
+                    bind.passLayout.isEnabled = true
                     bind.spinKitLogin.visibility = View.GONE
                     bind.btnLogin.visibility = View.VISIBLE
                     when (it.peekContent().errorData?.message) {

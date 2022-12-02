@@ -31,6 +31,7 @@ object Constants {
     const val INSTALL_STATUS = "installStatus"
     const val ON_BOOT = "onBoot"
     const val KEY_ACCEPT_LICENSE = "KEY_ACCEPT_LICENSE"
+    const val KEY_EMAIL = "KEY_EMAIL"
 
     const val FILES_SYSTEM_FILE_NAME = "ubuntu-latest.tar.gz"
 

@@ -2,7 +2,9 @@ package com.flomobility.anx.hermes.ui.asset_debug
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Matrix
 import android.os.Bundle
 import android.view.View
 import android.widget.AdapterView
@@ -212,15 +214,16 @@ class AssetDebugActivity : ComponentActivity() {
         }
 
         if (assetType == AssetType.CAM) {
+            val rotation = (asset as Camera).rotation
             outStreamJob?.cancel()
             outStreamJob = (asset as Camera).out.onEach { byteBuffer ->
                 val imageBytes = ByteArray(byteBuffer.remaining())
                 byteBuffer.get(imageBytes)
                 val bmp = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
                 withContext(Dispatchers.Main) {
+                    binding.ivOut.rotation = rotation
                     binding.ivOut.setImageBitmap(bmp)
                 }
-//                bmp.recycle()
             }.launchIn(lifecycleScope)
             return
         }
