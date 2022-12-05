@@ -143,8 +143,8 @@ android {
         applicationId "com.flomobility.anx"
         minSdkVersion project.properties.minSdkVersion.toInteger()
         targetSdkVersion project.properties.targetSdkVersion.toInteger()
-        versionCode 10
-        versionName "0.8.1"
+        versionCode 11
+        versionName "0.8.2"
 
         Properties properties = new Properties()
         properties.load(project.rootProject.file('local.properties').newDataInputStream())
