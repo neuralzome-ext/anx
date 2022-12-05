@@ -106,7 +106,7 @@ class Phone @Inject constructor(
                     sleep(500)
                     while (!currentThread().isInterrupted) {
                         try {
-                            val chargingStatus = phoneManager.getChargingStatus()
+                            val battery = phoneManager.getBatteryInfo()
                             val cpuRam = phoneManager.getMemoryInfo()
                             val storage = phoneManager.getStorage()
                             val thermals = phoneManager.getThermals()
@@ -115,14 +115,13 @@ class Phone @Inject constructor(
                             val gpuUsage = phoneManager.getGpuUsage()
                             val uptime = phoneManager.getSystemUptime()
                             val phoneStates = PhoneStates(
-                                chargingStatus,
-                                PhoneStates.Cpu(processor = processorName, cpuFreq = cpuFreq),
-                                gpuUsage,
-                                0.0,
-                                cpuRam,
-                                storage,
-                                thermals,
-                                uptime
+                                battery = battery,
+                                cpu = PhoneStates.Cpu(processor = processorName, cpuFreq = cpuFreq),
+                                vram = gpuUsage,
+                                ram = cpuRam,
+                                storage = storage,
+                                thermals = thermals,
+                                uptime = uptime
                             )
                             val jsonStr = gson.toJson(phoneStates)
                             if (debug) {
