@@ -66,7 +66,7 @@ class PhoneManager @Inject constructor(
 //            || batteryStatus == BatteryManager.BATTERY_STATUS_FULL)
         return PhoneStates.Battery(
             batteryManager.isCharging,
-            batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CURRENT_NOW) * if (batteryManager.isCharging) 1 else -1,
+            batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CURRENT_NOW),
             batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY),
             intent?.getIntExtra(
                 BatteryManager.EXTRA_VOLTAGE, -1
