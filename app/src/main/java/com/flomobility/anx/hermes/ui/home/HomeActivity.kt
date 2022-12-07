@@ -34,6 +34,7 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
+import kotlin.system.exitProcess
 
 @AndroidEntryPoint
 class HomeActivity : AppCompatActivity() {
@@ -184,7 +185,19 @@ class HomeActivity : AppCompatActivity() {
                             var error = it.peekContent().message
                             if (error?.contains("Failed to connect to") == true)
                                 error = "Failed to connect to server."
-                            showSnackBar(error)
+//                            showSnackBar(error)
+                            AlertDialog.getInstance(
+                                "Uh Oh!",
+                                "Failed to connect to server.",
+                                "Try again",
+                                noText = "Exit",
+                                yesListener = {
+                                    viewModel.sendInfoRequest(InfoRequest(sharedPreferences.getDeviceID()!!))
+                                },
+                                noListener = {
+                                    exitProcess(0)
+                                }
+                            ).show(supportFragmentManager, AlertDialog.TAG)
                             return@observe
                         }
                         400 -> {
