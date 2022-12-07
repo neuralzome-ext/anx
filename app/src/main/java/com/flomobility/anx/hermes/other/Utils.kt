@@ -273,7 +273,10 @@ fun SharedPreferences.getEmail(): String {
 }
 
 fun SharedPreferences.clear() {
-    this.edit().remove(DEVICE_EXPIRY).remove(USER_TOKEN).apply()
+    this.edit()
+        .remove(DEVICE_EXPIRY)
+        .remove(USER_TOKEN)
+        .apply()
 }
 
 fun SharedPreferences.clearAll() {

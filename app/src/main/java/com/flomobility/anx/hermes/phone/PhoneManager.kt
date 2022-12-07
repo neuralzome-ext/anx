@@ -12,7 +12,6 @@ import androidx.annotation.RequiresApi
 import com.flomobility.anx.hermes.api.model.PhoneStates
 import com.flomobility.anx.hermes.common.Result
 import com.flomobility.anx.hermes.other.getDeviceID
-import com.flomobility.anx.hermes.other.getRootOutput
 import com.flomobility.anx.hermes.other.runAsRoot
 import dagger.hilt.android.qualifiers.ApplicationContext
 import timber.log.Timber
@@ -58,25 +57,22 @@ class PhoneManager @Inject constructor(
 //        return "${telephony.getImei(0)}:${telephony.getImei(1)}"
     }
 
-    fun getChargingStatus(): PhoneStates.Battery {
+    fun getBatteryInfo(): PhoneStates.Battery {
         val intent = context.registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
 //        Timber.d("FLO Battery ${batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CURRENT_NOW)} ${batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY)} ${intent?.getIntExtra(
 //            BatteryManager.ACTION_CHARGING, -10)}")
-//        val batteryStatus = batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_STATUS)
+        val batteryStatus = batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_STATUS)
 //        return (batteryStatus == BatteryManager.BATTERY_STATUS_CHARGING
 //            || batteryStatus == BatteryManager.BATTERY_STATUS_FULL)
-        val battery = PhoneStates.Battery(
-            batteryManager.isCharging,
-            batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CURRENT_NOW) * if (batteryManager.isCharging) 1 else -1,
+        return PhoneStates.Battery(
+            (batteryStatus == BatteryManager.BATTERY_STATUS_CHARGING
+                || batteryStatus == BatteryManager.BATTERY_STATUS_FULL),
+            batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CURRENT_AVERAGE) * 1000,
             batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY),
-            intent?.getIntExtra(
-                BatteryManager.EXTRA_TEMPERATURE, -10
-            )?.div(10) ?: -1,
             intent?.getIntExtra(
                 BatteryManager.EXTRA_VOLTAGE, -1
             ) ?: -1
         )
-        return battery
     }
 
     /**
@@ -85,21 +81,21 @@ class PhoneManager @Inject constructor(
      * @param context for accessing getSystemService method.
      * @return percent of memory used by the system.
      */
-    fun getMemoryInfo(): PhoneStates.Ram {
+    fun getMemoryInfo(): PhoneStates.Memory {
         val memoryInfo = ActivityManager.MemoryInfo()
         val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
         activityManager.getMemoryInfo(memoryInfo)//Code not being used
-        return PhoneStates.Ram(
-            memoryInfo.totalMem.toDouble() / 1000000,
-            memoryInfo.availMem.toDouble() / 1000000
+        return PhoneStates.Memory(
+            total = memoryInfo.totalMem,
+            used = memoryInfo.totalMem - memoryInfo.availMem
         )
     }
 
-    fun getStorage(): PhoneStates.Storage {
+    fun getStorage(): PhoneStates.Memory {
         val stat = StatFs(Environment.getDataDirectory().path)
-        return PhoneStates.Storage(
-            stat.availableBytes.toDouble() / 1048576,
-            stat.totalBytes.toDouble() / 1048576
+        return PhoneStates.Memory(
+            used = (stat.totalBytes - stat.availableBytes),
+            total = stat.totalBytes
         )
     }
 
@@ -170,8 +166,9 @@ class PhoneManager @Inject constructor(
         return currentFreq
     }
 
-    fun getGpuUsage(): Double {
-        try {
+    fun getGpuUsage(): PhoneStates.Memory {
+        return PhoneStates.Memory(-1, -1)
+/*        try {
             if (!device.isRooted) return -1.0
 
             val currentFreq: Double
@@ -186,7 +183,7 @@ class PhoneManager @Inject constructor(
 //            Timber.e("GPUUSAGE Core is Idle")
             ex.printStackTrace()
             return -1.0
-        }
+        }*/
     }
 
     private fun readIntegerFile(filePath: String): Int {

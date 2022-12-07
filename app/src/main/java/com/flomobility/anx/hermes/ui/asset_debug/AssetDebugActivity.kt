@@ -84,7 +84,7 @@ class AssetDebugActivity : ComponentActivity() {
 
         if (assetImgRes == null || assetTypeAlias == null) return
 
-        viewModel.getAssets(assetType)
+//        viewModel.getAssets(assetType)
         subscribeToObservers()
         setUI()
         setupListeners()
@@ -132,13 +132,20 @@ class AssetDebugActivity : ComponentActivity() {
             viewModel.setDebug(true)
         }
         viewModel.assets.observe(this) { assets ->
-            updateSpinner(assets)
+            val filteredAssets = assets.filter { it.type == assetType }
+            updateSpinner(filteredAssets)
+            if(viewModel.currentAsset.value in filteredAssets) {
+                binding.assetSelector.setSelection(filteredAssets.indexOf(viewModel.currentAsset.value))
+            } else {
+                viewModel.setCurrentAsset(filteredAssets.first())
+            }
         }
     }
 
     private fun updateSpinner(assets: List<BaseAsset>) {
         binding.assetSelector.apply {
             adapter = spinnerAdapter
+            spinnerAdapter.clear()
             spinnerAdapter.addAll(assets)
             onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
                 override fun onItemSelected(
@@ -148,7 +155,7 @@ class AssetDebugActivity : ComponentActivity() {
                     id: Long
                 ) {
                     val assetId = spinnerAdapter.getItem(position)?.id ?: return
-                    viewModel.setCurrentAssetById(assetId)
+                    viewModel.setCurrentAssetById(assetId, assetType)
                 }
 
                 override fun onNothingSelected(parent: AdapterView<*>?) {
