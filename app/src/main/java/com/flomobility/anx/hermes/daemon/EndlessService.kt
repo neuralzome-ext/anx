@@ -7,6 +7,7 @@ import android.app.PendingIntent
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
@@ -18,6 +19,7 @@ import android.widget.ArrayAdapter
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.LifecycleService
+import androidx.lifecycle.lifecycleScope
 import com.flomobility.anx.R
 import com.flomobility.anx.app.TerminalActivity
 import com.flomobility.anx.app.settings.properties.FloAppSharedProperties
@@ -26,13 +28,13 @@ import com.flomobility.anx.app.utils.PluginUtils
 import com.flomobility.anx.hermes.assets.AssetManager
 import com.flomobility.anx.hermes.comms.SessionManager
 import com.flomobility.anx.hermes.comms.SocketManager
+import com.flomobility.anx.hermes.other.*
 import com.flomobility.anx.hermes.other.Constants.ACTION_START_OR_RESUME_SERVICE
 import com.flomobility.anx.hermes.other.Constants.ACTION_STOP_AND_EXIT
 import com.flomobility.anx.hermes.other.Constants.ACTION_STOP_SERVICE
 import com.flomobility.anx.hermes.other.Constants.NOTIFICATION_CHANNEL_ID
 import com.flomobility.anx.hermes.other.Constants.NOTIFICATION_CHANNEL_NAME
 import com.flomobility.anx.hermes.other.Constants.NOTIFICATION_ID
-import com.flomobility.anx.hermes.other.ThreadStatus
 import com.flomobility.anx.hermes.usb.UsbPortManager
 import com.flomobility.anx.shared.data.DataUtils
 import com.flomobility.anx.shared.data.IntentUtils
@@ -48,6 +50,10 @@ import com.flomobility.anx.shared.terminal.TerminalConstants.TERMUX_APP.TERMUX_A
 import com.flomobility.anx.shared.terminal.TerminalConstants.TERMUX_APP.TERMUX_SERVICE
 import com.flomobility.anx.terminal.TerminalSession
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import timber.log.Timber
 import java.util.*
 import javax.inject.Inject
@@ -55,7 +61,8 @@ import kotlin.collections.ArrayList
 import kotlin.system.exitProcess
 
 @AndroidEntryPoint
-class EndlessService : LifecycleService() , TerminalTask.TermuxTaskClient, com.flomobility.anx.shared.shell.TerminalSession.TermuxSessionClient {
+class EndlessService : LifecycleService(), TerminalTask.TermuxTaskClient,
+    com.flomobility.anx.shared.shell.TerminalSession.TermuxSessionClient {
 
     private var isRunning = false
 
@@ -67,6 +74,17 @@ class EndlessService : LifecycleService() , TerminalTask.TermuxTaskClient, com.f
 //    internal class LocalBinder : Binder() {
 //        val service: EndlessService = this@
 //    }
+
+    companion object {
+
+        val events = Channel<Events>()
+        val eventsFlow = events.receiveAsFlow()
+
+        sealed class Events {
+            object Logout: Events()
+            object Nothing: Events()
+        }
+    }
 
     inner class LocalBinder : Binder() {
         fun getService(): EndlessService? {
@@ -85,7 +103,8 @@ class EndlessService : LifecycleService() , TerminalTask.TermuxTaskClient, com.f
      * [ArrayAdapter.notifyDataSetChanged] }.
      */
 
-    val mTerminalSessions : MutableList<com.flomobility.anx.shared.shell.TerminalSession> = ArrayList()
+    val mTerminalSessions: MutableList<com.flomobility.anx.shared.shell.TerminalSession> =
+        ArrayList()
 
     /**
      * The background TermuxTasks which this service manages.
@@ -118,6 +137,7 @@ class EndlessService : LifecycleService() , TerminalTask.TermuxTaskClient, com.f
     var mWantsToStop = false
 
     var mTerminalTranscriptRows: Int? = null
+
     @Inject
     lateinit var baseNotificationBuilder: NotificationCompat.Builder
 
@@ -135,30 +155,40 @@ class EndlessService : LifecycleService() , TerminalTask.TermuxTaskClient, com.f
     @Inject
     lateinit var sessionManager: SessionManager
 
+    @Inject
+    lateinit var sharedPreferences: SharedPreferences
+
+    private var expiryCheckerJob: Job? = null
+    private val dispatcher = provideDispatcher(nThreads = 1)
+
     @RequiresApi(Build.VERSION_CODES.M)
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         intent?.let {
             when (it.action) {
                 ACTION_START_OR_RESUME_SERVICE -> {
-                    if(!isRunning) {
+                    if (!isRunning) {
                         startEndlessService()
                         Timber.d("Started service")
                     }
                 }
                 ACTION_STOP_SERVICE -> {
-                    killService()
-                    actionStopService();
-                    Timber.d("Stopped service")
+                    if(isRunning) {
+                        killService()
+                        actionStopService()
+                        Timber.d("Stopped service")
+                    }
                 }
                 ACTION_STOP_AND_EXIT -> {
-                    killService()
-		    actionStopService();
-                    Timber.d("Stopped service")
-                    exitProcess(0)
+                    if(isRunning) {
+                        killService()
+                        actionStopService()
+                        Timber.d("Stopped service")
+                        exitProcess(0)
+                    }
                 }
- 		TerminalConstants.TERMUX_APP.TERMUX_SERVICE.ACTION_WAKE_LOCK -> {
+                TerminalConstants.TERMUX_APP.TERMUX_SERVICE.ACTION_WAKE_LOCK -> {
                     Logger.logDebug(LOG_TAG, "ACTION_WAKE_LOCK intent received");
-                    actionAcquireWakeLock();
+                    actionAcquireWakeLock()
                 }
                 TerminalConstants.TERMUX_APP.TERMUX_SERVICE.ACTION_WAKE_UNLOCK -> {
                     Logger.logDebug(LOG_TAG, "ACTION_WAKE_UNLOCK intent received");
@@ -175,7 +205,7 @@ class EndlessService : LifecycleService() , TerminalTask.TermuxTaskClient, com.f
         return super.onStartCommand(intent, flags, startId)
     }
 
- override fun onUnbind(intent: Intent?): Boolean {
+    override fun onUnbind(intent: Intent?): Boolean {
         Logger.logVerbose(LOG_TAG, "onUnbind")
 
         // Since we cannot rely on {@link TermuxActivity.onDestroy()} to always complete,
@@ -214,9 +244,10 @@ class EndlessService : LifecycleService() , TerminalTask.TermuxTaskClient, com.f
                 if (Build.VERSION.SDK_INT >= 31) PendingIntent.FLAG_IMMUTABLE else PendingIntent.FLAG_UPDATE_CURRENT
             )
         currentNotificationBuilder = baseNotificationBuilder
-        currentNotificationBuilder = currentNotificationBuilder.addAction(R.drawable.ic_stop, "Exit", pendingIntent)
+        currentNotificationBuilder =
+            currentNotificationBuilder.addAction(R.drawable.ic_stop, "Exit", pendingIntent)
         startForeground(NOTIFICATION_ID, currentNotificationBuilder.build())
-
+        startExpiryChecker()
         // init
         if (socketManager.threadStatus != ThreadStatus.ACTIVE) {
             socketManager.init()
@@ -239,11 +270,15 @@ class EndlessService : LifecycleService() , TerminalTask.TermuxTaskClient, com.f
     }
 
     private fun killService() {
+        isRunning = false
+        expiryCheckerJob?.cancel()
         socketManager.destroy()
         assetManager.stopAllAssets()
         stopForeground(true)
         stopSelf()
-        currentNotificationBuilder.clearActions()
+        if(this::currentNotificationBuilder.isInitialized) {
+            currentNotificationBuilder.clearActions()
+        }
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -256,7 +291,7 @@ class EndlessService : LifecycleService() , TerminalTask.TermuxTaskClient, com.f
         notificationManager.createNotificationChannel(channel)
     }
 
- /** Process action to stop service.  */
+    /** Process action to stop service.  */
     private fun actionStopService() {
         mWantsToStop = true
         killAllTermuxExecutionCommands()
@@ -326,7 +361,8 @@ class EndlessService : LifecycleService() , TerminalTask.TermuxTaskClient, com.f
             LOG_TAG,
             "Killing TerminalSessions=" + (mTerminalSessions?.size ?:0) + ", TerminalTasks=" + mTerminalTasks.size + ", PendingPluginExecutionCommands=" + mPendingPluginExecutionCommands.size
         )*/
-        val terminalSessions: List<com.flomobility.anx.shared.shell.TerminalSession> = ArrayList(mTerminalSessions)
+        val terminalSessions: List<com.flomobility.anx.shared.shell.TerminalSession> =
+            ArrayList(mTerminalSessions)
         for (i in terminalSessions.indices) {
             val executionCommand = terminalSessions[i].executionCommand
             processResult =
@@ -360,7 +396,6 @@ class EndlessService : LifecycleService() , TerminalTask.TermuxTaskClient, com.f
             }
         }
     }
-
 
 
     /** Process action to acquire Power and Wi-Fi WakeLocks.  */
@@ -495,6 +530,7 @@ class EndlessService : LifecycleService() , TerminalTask.TermuxTaskClient, com.f
             // ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE)).notify(TermuxConstants.TERMUX_APP_NOTIFICATION_ID, buildNotification());
         }
     }
+
     /** Process action to release Power and Wi-Fi WakeLocks.  */
     private fun actionReleaseWakeLock(updateNotification: Boolean) {
         if (mWakeLock == null && mWifiLock == null) {
@@ -646,8 +682,10 @@ class EndlessService : LifecycleService() , TerminalTask.TermuxTaskClient, com.f
             executionCommand.toString()
         )
         val newTerminalTask =
-            TerminalTask.execute(this, executionCommand, this,
-                TerminalShellEnvironmentClient(), false)
+            TerminalTask.execute(
+                this, executionCommand, this,
+                TerminalShellEnvironmentClient(), false
+            )
         if (newTerminalTask == null) {
             /*Logger.logError(
                 LOG_TAG,
@@ -1032,6 +1070,24 @@ class EndlessService : LifecycleService() , TerminalTask.TermuxTaskClient, com.f
 
     fun wantsToStop(): Boolean {
         return mWantsToStop
+    }
+
+    private fun startExpiryChecker() {
+        expiryCheckerJob?.cancel()
+        expiryCheckerJob = CoroutineScope(dispatcher).launch(dispatcher) {
+            while (true) {
+                try {
+                    if(isExpired(sharedPreferences.getDeviceExpiry())) {
+                        sharedPreferences.clear() // clears expiry and token
+                        events.send(Events.Logout)
+                    }
+                }
+                catch (t: Throwable) {
+                    Timber.e(t)
+                }
+                delay(10 * 60 * 1000L)
+            }
+        }
     }
 
 }

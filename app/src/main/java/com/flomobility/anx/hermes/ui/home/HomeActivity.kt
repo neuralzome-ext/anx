@@ -4,7 +4,10 @@ import android.content.*
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -27,6 +30,8 @@ import com.flomobility.anx.hermes.ui.asset_debug.AssetDebugActivity
 import com.flomobility.anx.shared.terminal.TerminalConstants
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -61,6 +66,11 @@ class HomeActivity : AppCompatActivity() {
         setContentView(binding?.root)
         if (sharedPreferences.getDeviceID() == null) {
             showSnackBar("Login Again")
+            logout()
+            return
+        }
+        if (isExpired(sharedPreferences.getDeviceExpiry())) {
+            showSnackBar("Your access has expired.")
             logout()
             return
         }
@@ -153,11 +163,11 @@ class HomeActivity : AppCompatActivity() {
         viewModel.info.observe(this@HomeActivity) {
             when (it.getContentIfNotHandled()) {
                 is Resource.Loading -> {
-
+                    // TODO show progress bar
                 }
                 is Resource.Success -> {
                     if (it.peekContent().data?.access == false || isExpired(it.peekContent().data?.expiry)) {
-                        showSnackBar("Your access has been revoked")
+                        showSnackBar("Your access has expired.")
                         logout()
                         return@observe
                     }
@@ -173,15 +183,15 @@ class HomeActivity : AppCompatActivity() {
                         null -> {
                             var error = it.peekContent().message
                             if (error?.contains("Failed to connect to") == true)
-                                error = "Failed to connect to server"
+                                error = "Failed to connect to server."
                             showSnackBar(error)
                             return@observe
                         }
                         400 -> {
-                            showSnackBar("Server Unreachable!! (400)")
+                            showSnackBar("Server Unreachable! (400)")
                         }
                         401 -> {
-                            showSnackBar("Login Again")
+                            showSnackBar("Session expired.")
                             logout()
                         }
                         else -> {
@@ -205,6 +215,19 @@ class HomeActivity : AppCompatActivity() {
             } else {
                 bind.ipRecycler.isVisible = false
                 bind.connectToNetworkError.isVisible = true
+            }
+        }
+
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                EndlessService.eventsFlow.collect { event ->
+                    when(event) {
+                        is EndlessService.Companion.Events.Nothing -> Unit
+                        is EndlessService.Companion.Events.Logout -> {
+                            logout()
+                        }
+                    }
+                }
             }
         }
     }
