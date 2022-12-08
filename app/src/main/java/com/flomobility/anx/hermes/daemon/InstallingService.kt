@@ -248,9 +248,12 @@ class InstallingService : LifecycleService() {
     }
 
     private fun killService() {
+        isRunning = false
         stopForeground(true)
         stopSelf()
-        currentNotificationBuilder.clearActions()
+        if(this::currentNotificationBuilder.isInitialized) {
+            currentNotificationBuilder.clearActions()
+        }
     }
 
     @RequiresApi(Build.VERSION_CODES.O)

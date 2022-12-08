@@ -119,12 +119,11 @@ echo "done"
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityUbuntuSetupBinding.inflate(layoutInflater)
+        setContentView(binding?.root)
         if(sharedPreferences.getIsInstalled()) {
-            HomeActivity.navigateToHome(this@DownloadActivity)
-            finish()
+            onInstallSuccess()
             return
         }
-        setContentView(binding?.root)
         FILE_PATH = filesDir.absolutePath
         createInstallScript()
         setEventListeners()
@@ -181,7 +180,6 @@ echo "done"
             }
             InstallingService.Events.InstallingSuccess -> {
                 onInstallSuccess()
-                sendCommandToService(Constants.ACTION_STOP_SERVICE, InstallingService::class.java)
             }
             InstallingService.Events.NotStarted -> Unit
 
@@ -262,6 +260,7 @@ echo "done"
             bind.tvInfoText.text = "YOU'RE ALL SET!"
             bind.checkAnim.visibility = View.VISIBLE
             delay(2000)
+            sendCommandToService(Constants.ACTION_STOP_SERVICE, InstallingService::class.java)
             HomeActivity.navigateToHome(this@DownloadActivity)
             finish()
         }

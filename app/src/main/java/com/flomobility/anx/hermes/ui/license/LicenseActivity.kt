@@ -70,7 +70,7 @@ class LicenseActivity : ComponentActivity() {
                     is Resource.Error -> {
                         Timber.e("Error in fetching license agreement ${res.message}")
                         bind.progress.isVisible = false
-                        bind.tvError.text = "Couldn't fetch license agreement"
+                        bind.tvError.text = "Couldn't fetch license agreement : ${res.errorData?.code ?: -1}"
                         bind.containerError.isVisible = true
                     }
                     is Resource.Loading -> {
