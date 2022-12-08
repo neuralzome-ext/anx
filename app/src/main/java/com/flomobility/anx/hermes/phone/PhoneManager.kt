@@ -61,12 +61,13 @@ class PhoneManager @Inject constructor(
         val intent = context.registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
 //        Timber.d("FLO Battery ${batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CURRENT_NOW)} ${batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY)} ${intent?.getIntExtra(
 //            BatteryManager.ACTION_CHARGING, -10)}")
-//        val batteryStatus = batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_STATUS)
+        val batteryStatus = batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_STATUS)
 //        return (batteryStatus == BatteryManager.BATTERY_STATUS_CHARGING
 //            || batteryStatus == BatteryManager.BATTERY_STATUS_FULL)
         return PhoneStates.Battery(
-            batteryManager.isCharging,
-            batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CURRENT_NOW),
+            (batteryStatus == BatteryManager.BATTERY_STATUS_CHARGING
+                || batteryStatus == BatteryManager.BATTERY_STATUS_FULL),
+            batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CURRENT_NOW) / 1000,
             batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY),
             intent?.getIntExtra(
                 BatteryManager.EXTRA_VOLTAGE, -1

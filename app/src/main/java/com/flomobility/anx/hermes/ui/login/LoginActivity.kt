@@ -3,7 +3,7 @@ package com.flomobility.anx.hermes.ui.login
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
-import android.os.Bundle
+import android.os.*
 import android.util.Patterns
 import android.view.View
 import androidx.activity.ComponentActivity
@@ -45,6 +45,10 @@ class LoginActivity : ComponentActivity() {
 
     @Inject
     lateinit var sharedPreferences: SharedPreferences
+
+    private val vibrator by lazy {
+        getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+    }
 
     private val phoneNumberHintIntentResultLauncher = registerForActivityResult(
         ActivityResultContracts.StartIntentSenderForResult()
@@ -221,11 +225,13 @@ class LoginActivity : ComponentActivity() {
                             bind.passLayout.error = "Invalid password"
                             bind.spinKitLogin.visibility = View.GONE
                             bind.btnLogin.visibility = View.VISIBLE
+                            vibrate()
                         }
                     } else {
                         bind.emailLayout.error = "Invalid E-Mail"
                         bind.spinKitLogin.visibility = View.GONE
                         bind.btnLogin.visibility = View.VISIBLE
+                        vibrate()
                     }
                 else {
                     //TODO Highlight DeviceID textField
@@ -236,6 +242,11 @@ class LoginActivity : ComponentActivity() {
             }
             deviceId.setOnClickListener {
                 requestPhoneNumber()
+            }
+            deviceId.setOnLongClickListener {
+                bind.overlay.isVisible = true
+                bottomSheetPhoneNumber.open()
+                return@setOnLongClickListener true
             }
             overlay.setOnClickListener {
                 bottomSheetPhoneNumber.close()
@@ -253,6 +264,19 @@ class LoginActivity : ComponentActivity() {
                 phoneNumberLyt.editText?.setText("")
                 bottomSheetPhoneNumber.close()
             }
+        }
+    }
+
+    private fun vibrate(durationInMs: Long = 200L) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            vibrator.vibrate(
+                VibrationEffect.createOneShot(
+                    durationInMs,
+                    VibrationEffect.DEFAULT_AMPLITUDE
+                )
+            )
+        } else {
+            vibrator.vibrate(durationInMs)
         }
     }
 

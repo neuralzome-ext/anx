@@ -13,6 +13,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import retrofit2.Response
 import timber.log.Timber
+import java.io.InterruptedIOException
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -55,6 +56,9 @@ suspend inline fun <reified T> handleApiResponse(
                     handleApiError(response)
                 }
             }
+        } catch (e: InterruptedIOException) {
+            Timber.e(e, "Exception is ${e.message}")
+            Resource.Error(e.message!!, null, FloApiError(code = -100, message = "Request timed out."))
         } catch (e: Exception) {
             when {
                 e.message != null -> {

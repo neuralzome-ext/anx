@@ -59,7 +59,7 @@ class SettingsActivity : AppCompatActivity() {
 
         setContentView(binding?.root)
         if (isExpired(sharedPreferences.getDeviceExpiry())) {
-            showSnack("Your access has been revoked")
+            showSnack("Your access has expired.")
             logout()
             return
         }

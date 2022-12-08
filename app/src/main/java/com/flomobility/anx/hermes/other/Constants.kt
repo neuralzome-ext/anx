@@ -9,9 +9,14 @@ object Constants {
     const val ACTION_STOP_SERVICE = "ACTION_STOP_SERVICE"
     const val ACTION_STOP_AND_EXIT = "ACTION_STOP_AND_EXIT"
 
-    const val NOTIFICATION_CHANNEL_ID = "hermes_service_channel"
-    const val NOTIFICATION_CHANNEL_NAME = "Hermes Comms"
+    const val NOTIFICATION_CHANNEL_ID = "anx_service_channel"
+    const val NOTIFICATION_CHANNEL_NAME = "ANX Comms"
     const val NOTIFICATION_ID = 1
+
+    const val INSTALLER_NOTIFICATION_CHANNEL_ID = "installer_service_channel"
+    const val INSTALLER_NOTIFICATION_CHANNEL_NAME = "ANX Installer"
+    const val INSTALLER_SERVICE_NOTIFICATION_ID = 2
+    const val INSTALLER_NOTIFICATION_ID = 3
 
     const val UNKNOWN_ERROR_MSG = "An unknown error occurred"
 
@@ -20,6 +25,12 @@ object Constants {
     const val SOCKET_BIND_DELAY_IN_MS = 500L
 
     const val RPC_DEFAULT_TIMEOUT_IN_MS = 5000
+
+    const val HTTP_TIMEOUT_IN_MS = 30000L
+
+    const val MAX_ATTEMPTS_ME_API = 6
+
+    const val EXPIRY_CHECKER_DELAY_IN_MINS = 10
 
     const val USER_TOKEN = "token"
     const val DEVICE_ID = "deviceId"
