@@ -26,6 +26,8 @@ object Constants {
 
     const val RPC_DEFAULT_TIMEOUT_IN_MS = 5000
 
+    const val HTTP_TIMEOUT_IN_MS = 30000L
+
     const val USER_TOKEN = "token"
     const val DEVICE_ID = "deviceId"
     const val DEVICE_EXPIRY = "deviceExpiry"

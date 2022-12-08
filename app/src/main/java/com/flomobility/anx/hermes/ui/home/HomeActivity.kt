@@ -180,6 +180,10 @@ class HomeActivity : AppCompatActivity() {
                     startSshServer()
                 }
                 is Resource.Error -> {
+                    sendCommandToService(
+                        Constants.ACTION_STOP_SERVICE,
+                        EndlessService::class.java
+                    )
                     when (it.peekContent().errorData?.code) {
                         null -> {
                             var error = it.peekContent().message
@@ -201,7 +205,18 @@ class HomeActivity : AppCompatActivity() {
                             return@observe
                         }
                         400 -> {
-                            showSnackBar("Server Unreachable! (400)")
+                            AlertDialog.getInstance(
+                                "Uh Oh!",
+                                "Server Unreachable! (400)",
+                                "Try again",
+                                noText = "Exit",
+                                yesListener = {
+                                    viewModel.sendInfoRequest(InfoRequest(sharedPreferences.getDeviceID()!!))
+                                },
+                                noListener = {
+                                    exitProcess(0)
+                                }
+                            ).show(supportFragmentManager, AlertDialog.TAG)
                         }
                         401 -> {
                             showSnackBar("Session expired.")
@@ -209,11 +224,22 @@ class HomeActivity : AppCompatActivity() {
                         }
                         else -> {
                             val error = it.peekContent().errorData?.message
-                            showSnackBar(error)
+                            AlertDialog.getInstance(
+                                "Uh Oh!",
+                                "$error ",
+                                "Try again",
+                                noText = "Exit",
+                                yesListener = {
+                                    viewModel.sendInfoRequest(InfoRequest(sharedPreferences.getDeviceID()!!))
+                                },
+                                noListener = {
+                                    exitProcess(0)
+                                }
+                            ).show(supportFragmentManager, AlertDialog.TAG)
                         }
                     }
                 }
-                null -> TODO()
+                null -> Unit
             }
         }
         assetManager.getAssetsLiveData().observe(this@HomeActivity) { assets ->

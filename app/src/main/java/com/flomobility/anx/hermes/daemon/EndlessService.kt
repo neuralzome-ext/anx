@@ -274,8 +274,7 @@ class EndlessService : LifecycleService(), TerminalTask.TermuxTaskClient,
         expiryCheckerJob?.cancel()
         socketManager.destroy()
         assetManager.stopAllAssets()
-        stopForeground(true)
-        stopSelf()
+        actionStopService()
         if(this::currentNotificationBuilder.isInitialized) {
             currentNotificationBuilder.clearActions()
         }
