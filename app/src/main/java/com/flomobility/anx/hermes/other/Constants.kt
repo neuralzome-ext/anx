@@ -13,9 +13,10 @@ object Constants {
     const val NOTIFICATION_CHANNEL_NAME = "ANX Comms"
     const val NOTIFICATION_ID = 1
 
-    const val INSTALLER_CHANNEL_ID = "intaller_service_channel"
-    const val INSTALLER_CHANNEL_NAME = "ANX Installer"
-    const val INSTALLER_ID = 2
+    const val INSTALLER_NOTIFICATION_CHANNEL_ID = "installer_service_channel"
+    const val INSTALLER_NOTIFICATION_CHANNEL_NAME = "ANX Installer"
+    const val INSTALLER_SERVICE_NOTIFICATION_ID = 2
+    const val INSTALLER_NOTIFICATION_ID = 3
 
     const val UNKNOWN_ERROR_MSG = "An unknown error occurred"
 
