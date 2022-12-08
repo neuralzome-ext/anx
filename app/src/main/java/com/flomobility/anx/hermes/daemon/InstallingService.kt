@@ -185,12 +185,10 @@ class InstallingService : LifecycleService() {
                 }
                 Constants.ACTION_STOP_SERVICE -> {
                     killService()
-                    actionStopService()
                     Timber.d("Stopped service")
                 }
                 Constants.ACTION_STOP_AND_EXIT -> {
                     killService()
-                    actionStopService()
                     Timber.d("Stopped service")
                     exitProcess(0)
                 }
@@ -249,8 +247,8 @@ class InstallingService : LifecycleService() {
 
     private fun killService() {
         isRunning = false
-        stopForeground(true)
-        stopSelf()
+        PRDownloader.cancelAll()
+        actionStopService()
         if(this::currentNotificationBuilder.isInitialized) {
             currentNotificationBuilder.clearActions()
         }

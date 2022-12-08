@@ -230,7 +230,10 @@ echo "done"
                     "Logout",
                     "Cancel",
                     yesListener = {
-                        PRDownloader.cancelAll()
+                        sendCommandToService(
+                            Constants.ACTION_STOP_SERVICE,
+                            InstallingService::class.java
+                        )
                         sharedPreferences.clear()
                         LoginActivity.navigateToLogin(this@DownloadActivity)
                         finish()
