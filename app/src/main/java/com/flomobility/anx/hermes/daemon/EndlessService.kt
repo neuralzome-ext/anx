@@ -8,9 +8,6 @@ import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
-import android.os.Build
-import android.os.Handler
-import android.os.Looper
 import android.net.Uri
 import android.net.wifi.WifiManager
 import android.os.*
@@ -19,7 +16,6 @@ import android.widget.ArrayAdapter
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.LifecycleService
-import androidx.lifecycle.lifecycleScope
 import com.flomobility.anx.R
 import com.flomobility.anx.app.TerminalActivity
 import com.flomobility.anx.app.settings.properties.FloAppSharedProperties
@@ -35,6 +31,7 @@ import com.flomobility.anx.hermes.other.Constants.ACTION_STOP_SERVICE
 import com.flomobility.anx.hermes.other.Constants.NOTIFICATION_CHANNEL_ID
 import com.flomobility.anx.hermes.other.Constants.NOTIFICATION_CHANNEL_NAME
 import com.flomobility.anx.hermes.other.Constants.NOTIFICATION_ID
+import com.flomobility.anx.hermes.ui.home.HomeActivity
 import com.flomobility.anx.hermes.usb.UsbPortManager
 import com.flomobility.anx.shared.data.DataUtils
 import com.flomobility.anx.shared.data.IntentUtils
@@ -44,20 +41,18 @@ import com.flomobility.anx.shared.models.errors.Errno
 import com.flomobility.anx.shared.packages.PermissionUtils
 import com.flomobility.anx.shared.settings.preferences.FloAppSharedPreferences
 import com.flomobility.anx.shared.shell.*
-import com.flomobility.anx.shared.terminal.TerminalSessionClientBase
 import com.flomobility.anx.shared.terminal.TerminalConstants
 import com.flomobility.anx.shared.terminal.TerminalConstants.TERMUX_APP.TERMUX_ACTIVITY
 import com.flomobility.anx.shared.terminal.TerminalConstants.TERMUX_APP.TERMUX_SERVICE
+import com.flomobility.anx.shared.terminal.TerminalSessionClientBase
 import com.flomobility.anx.terminal.TerminalSession
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import timber.log.Timber
 import java.util.*
 import javax.inject.Inject
-import kotlin.collections.ArrayList
 import kotlin.system.exitProcess
 
 @AndroidEntryPoint
@@ -81,8 +76,8 @@ class EndlessService : LifecycleService(), TerminalTask.TermuxTaskClient,
         val eventsFlow = events.receiveAsFlow()
 
         sealed class Events {
-            object Logout: Events()
-            object Nothing: Events()
+            object Logout : Events()
+            object Nothing : Events()
         }
     }
 
@@ -172,14 +167,14 @@ class EndlessService : LifecycleService(), TerminalTask.TermuxTaskClient,
                     }
                 }
                 ACTION_STOP_SERVICE -> {
-                    if(isRunning) {
+                    if (isRunning) {
                         killService()
                         actionStopService()
                         Timber.d("Stopped service")
                     }
                 }
                 ACTION_STOP_AND_EXIT -> {
-                    if(isRunning) {
+                    if (isRunning) {
                         killService()
                         actionStopService()
                         Timber.d("Stopped service")
@@ -244,6 +239,15 @@ class EndlessService : LifecycleService(), TerminalTask.TermuxTaskClient,
                 if (Build.VERSION.SDK_INT >= 31) PendingIntent.FLAG_IMMUTABLE else PendingIntent.FLAG_UPDATE_CURRENT
             )
         currentNotificationBuilder = baseNotificationBuilder
+        currentNotificationBuilder = currentNotificationBuilder
+            .setContentIntent(
+                PendingIntent.getActivity(
+                    this,
+                    0,
+                    Intent(this, HomeActivity::class.java),
+                    0
+                )
+            )
         currentNotificationBuilder =
             currentNotificationBuilder.addAction(R.drawable.ic_stop, "Exit", pendingIntent)
         startForeground(NOTIFICATION_ID, currentNotificationBuilder.build())
@@ -275,7 +279,7 @@ class EndlessService : LifecycleService(), TerminalTask.TermuxTaskClient,
         socketManager.destroy()
         assetManager.stopAllAssets()
         actionStopService()
-        if(this::currentNotificationBuilder.isInitialized) {
+        if (this::currentNotificationBuilder.isInitialized) {
             currentNotificationBuilder.clearActions()
         }
     }
@@ -1076,12 +1080,11 @@ class EndlessService : LifecycleService(), TerminalTask.TermuxTaskClient,
         expiryCheckerJob = CoroutineScope(dispatcher).launch(dispatcher) {
             while (true) {
                 try {
-                    if(isExpired(sharedPreferences.getDeviceExpiry())) {
+                    if (isExpired(sharedPreferences.getDeviceExpiry())) {
                         sharedPreferences.clear() // clears expiry and token
                         events.send(Events.Logout)
                     }
-                }
-                catch (t: Throwable) {
+                } catch (t: Throwable) {
                     Timber.e(t)
                 }
                 delay(10 * 60 * 1000L)

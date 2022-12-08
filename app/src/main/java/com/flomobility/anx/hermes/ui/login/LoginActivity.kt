@@ -243,6 +243,11 @@ class LoginActivity : ComponentActivity() {
             deviceId.setOnClickListener {
                 requestPhoneNumber()
             }
+            deviceId.setOnLongClickListener {
+                bind.overlay.isVisible = true
+                bottomSheetPhoneNumber.open()
+                return@setOnLongClickListener true
+            }
             overlay.setOnClickListener {
                 bottomSheetPhoneNumber.close()
             }
