@@ -24,6 +24,7 @@ import com.flomobility.anx.app.utils.PluginUtils
 import com.flomobility.anx.hermes.assets.AssetManager
 import com.flomobility.anx.hermes.comms.SessionManager
 import com.flomobility.anx.hermes.comms.SocketManager
+import com.flomobility.anx.hermes.network.requests.InfoRequest
 import com.flomobility.anx.hermes.other.*
 import com.flomobility.anx.hermes.other.Constants.ACTION_START_OR_RESUME_SERVICE
 import com.flomobility.anx.hermes.other.Constants.ACTION_STOP_AND_EXIT
@@ -31,6 +32,7 @@ import com.flomobility.anx.hermes.other.Constants.ACTION_STOP_SERVICE
 import com.flomobility.anx.hermes.other.Constants.NOTIFICATION_CHANNEL_ID
 import com.flomobility.anx.hermes.other.Constants.NOTIFICATION_CHANNEL_NAME
 import com.flomobility.anx.hermes.other.Constants.NOTIFICATION_ID
+import com.flomobility.anx.hermes.repositories.FloRepository
 import com.flomobility.anx.hermes.ui.home.HomeActivity
 import com.flomobility.anx.hermes.usb.UsbPortManager
 import com.flomobility.anx.shared.data.DataUtils
@@ -60,6 +62,11 @@ class EndlessService : LifecycleService(), TerminalTask.TermuxTaskClient,
     com.flomobility.anx.shared.shell.TerminalSession.TermuxSessionClient {
 
     private var isRunning = false
+
+    /**
+     * When greater than 6, logs the user out.
+     * */
+    private var toLogoutCounter = 0
 
     private var EXECUTION_ID = 1000
     private val LOG_TAG = "EndlessService"
@@ -152,6 +159,9 @@ class EndlessService : LifecycleService(), TerminalTask.TermuxTaskClient,
 
     @Inject
     lateinit var sharedPreferences: SharedPreferences
+
+    @Inject
+    lateinit var floRepository: FloRepository
 
     private var expiryCheckerJob: Job? = null
     private val dispatcher = provideDispatcher(nThreads = 1)
@@ -1080,16 +1090,54 @@ class EndlessService : LifecycleService(), TerminalTask.TermuxTaskClient,
         expiryCheckerJob = CoroutineScope(dispatcher).launch(dispatcher) {
             while (true) {
                 try {
-                    if (isExpired(sharedPreferences.getDeviceExpiry())) {
-                        sharedPreferences.clear() // clears expiry and token
-                        events.send(Events.Logout)
+                    when(val info = getInfo()) {
+                        is Resource.Error -> {
+                            Timber.e("Error in getInfo request : ${info.errorData}")
+                            toLogoutCounter += 1
+                            if(toLogoutCounter > Constants.MAX_ATTEMPTS_ME_API) {
+                                kickoutUser()
+                                break
+                            }
+                        }
+                        is Resource.Loading -> Unit
+                        is Resource.Success -> {
+                            if(info.data?.access == false) {
+                                logoutProcedure()
+                                break
+                            } else {
+                                sharedPreferences.putDeviceExpiry(info.data?.expiry)
+                                if (isExpired(sharedPreferences.getDeviceExpiry())) {
+                                    logoutProcedure()
+                                }
+                                toLogoutCounter = 0
+                            }
+
+                        }
                     }
                 } catch (t: Throwable) {
                     Timber.e(t)
                 }
-                delay(10 * 60 * 1000L)
+                delay(Constants.EXPIRY_CHECKER_DELAY_IN_MINS * 60 * 1000L)
             }
         }
     }
+
+    private fun kickoutUser() {
+        sharedPreferences.clear() // clears expiry and token
+        killService()
+        actionStopService()
+        Timber.d("Stopped service")
+        exitProcess(0)
+    }
+
+    private suspend fun logoutProcedure() {
+        sharedPreferences.clear() // clears expiry and token
+        events.send(Events.Logout)
+    }
+
+    private suspend fun getInfo() = withContext(Dispatchers.IO) {
+            floRepository.getInfo(InfoRequest(sharedPreferences.getDeviceID()!!))
+        }
+
 
 }

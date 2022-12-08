@@ -28,6 +28,10 @@ object Constants {
 
     const val HTTP_TIMEOUT_IN_MS = 30000L
 
+    const val MAX_ATTEMPTS_ME_API = 6
+
+    const val EXPIRY_CHECKER_DELAY_IN_MINS = 10
+
     const val USER_TOKEN = "token"
     const val DEVICE_ID = "deviceId"
     const val DEVICE_EXPIRY = "deviceExpiry"
