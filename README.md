@@ -1,10 +1,10 @@
 ## Anx App
-> Android application providing access to phone's hardware and a modified ubuntu 20.04 environment with preloaded libraries for robotics
+> Android application providing access to phone's hardware over a modified ubuntu 20.04 environment with preloaded libraries for robotics
 
 ### Terminology
 > Asset - an entity of the phone for which access is granted via an API.
 
-Implements [api docs](https://github.com/flomobility/api_docs/tree/v0.1.1)
+Implements [api docs](https://github.com/flomobility/api_docs/tree/v0.1.2)
 Refer [anx docs wiki](https://github.com/flomobility/anx_docs/wiki)
 
 ### Style guide
