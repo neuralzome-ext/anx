@@ -222,7 +222,7 @@ android {
         dev {
             debuggable true
             minifyEnabled false
-            signingConfig signingConfigs.flo
+            signingConfig signingConfigs.debug
             manifestPlaceholders.TERMINAL_PACKAGE_NAME = "com.flomobility.anx"
             firebaseCrashlytics {
                 mappingFileUploadEnabled false
@@ -245,18 +245,18 @@ android {
             resValue "string", "application_name", "anx"
         }
 
-        debug {
-            signingConfig signingConfigs.flo
+/*        debug {
+            signingConfig signingConfigs.debug
             debuggable true
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             firebaseCrashlytics {
                 mappingFileUploadEnabled false
             }
-            manifestPlaceholders.TERMINAL_PACKAGE_NAME = "com.flomobility.anx.debug"
-            applicationIdSuffix ".debug"
+            manifestPlaceholders.TERMINAL_PACKAGE_NAME = "com.flomobility.anx"
+//            applicationIdSuffix ".debug"
             resValue "string", "application_name", "(Debug)anx"
-        }
+        }*/
     }
 
     compileOptions {
