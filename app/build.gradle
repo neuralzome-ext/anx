@@ -203,12 +203,12 @@ android {
         def KEY_ALIAS = "KEY_ALIAS"
         def KEY_PASSWORD = "KEY_PASSWORD"
 
-        flo {
+        /*flo {
             storeFile file(properties.getProperty(KEYSTORE_FILE_PATH))
             storePassword properties.getProperty(KEYSTORE_PASSWORD)
             keyAlias properties.getProperty(KEY_ALIAS)
             keyPassword properties.getProperty(KEY_PASSWORD)
-        }
+        }*/
 
         debug {
             storeFile file('testkey_untrusted.jks')
@@ -235,7 +235,7 @@ android {
             minifyEnabled true
             shrinkResources true // Reproducible builds
             debuggable true
-            signingConfig signingConfigs.flo
+            signingConfig signingConfigs.debug
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             debuggable false
             firebaseCrashlytics {
@@ -243,6 +243,14 @@ android {
             }
             manifestPlaceholders.TERMINAL_PACKAGE_NAME = "com.flomobility.anx"
             resValue "string", "application_name", "anx"
+        }
+        headless {
+            debuggable true
+            signingConfig signingConfigs.debug
+            manifestPlaceholders.TERMINAL_PACKAGE_NAME = "com.flomobility.anx"
+            versionNameSuffix "-headless"
+            resValue "string", "application_name", "(H)anx"
+            matchingFallbacks = ['dev']
         }
 
 /*        debug {
@@ -292,7 +300,7 @@ android {
     applicationVariants.all { variant ->
         variant.outputs.all { output ->
             switch (variant.buildType.name) {
-                case "dev":
+                case "dev" && "headless":
                     outputFileName = new File("anx-app_dev_v" + defaultConfig.versionName + ".apk")
                     break
                 case "debug":

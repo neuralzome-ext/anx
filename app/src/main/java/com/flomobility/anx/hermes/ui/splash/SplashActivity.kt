@@ -151,14 +151,14 @@ class SplashActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-        if(!checkPermissions()) {
+        if (!checkPermissions()) {
             requestPermission()
         }
     }
 
     override fun onResume() {
         super.onResume()
-        if(checkPermissions()) {
+        if (checkPermissions()) {
             checkConditions()
         }
     }
@@ -166,19 +166,36 @@ class SplashActivity : AppCompatActivity() {
     private fun checkConditions() {
         lifecycleScope.launch {
             delay(2000)
-            when {
-                !sharedPreferences.getAcceptLicense() -> {
-                    LicenseActivity.navigateToLicense(this@SplashActivity)
-                }
-                !sharedPreferences.checkToken() -> LoginActivity.navigateToLogin(this@SplashActivity)
-                /*File("$FILE_PATH/${Constants.FILES_SYSTEM_FILE_NAME}").exists() && */sharedPreferences.getIsInstalled() -> {
-                    HomeActivity.navigateToHome(
+            /**
+             * If Headless build than move to Download and then home screen
+             */
+            if (isHeadLessBuildType()) {
+                when {
+                    sharedPreferences.getIsInstalled() -> {
+                        HomeActivity.navigateToHome(
+                            this@SplashActivity
+                        )
+                    }
+                    else -> DownloadActivity.navigateToDownload(
                         this@SplashActivity
                     )
                 }
-                else -> DownloadActivity.navigateToDownload(
-                    this@SplashActivity
-                )
+            } else {
+                when {
+                    !sharedPreferences.getAcceptLicense() -> {
+                        LicenseActivity.navigateToLicense(this@SplashActivity)
+                    }
+                    !sharedPreferences.checkToken() -> LoginActivity.navigateToLogin(this@SplashActivity)
+                    /*File("$FILE_PATH/${Constants.FILES_SYSTEM_FILE_NAME}").exists() && */
+                    sharedPreferences.getIsInstalled() -> {
+                        HomeActivity.navigateToHome(
+                            this@SplashActivity
+                        )
+                    }
+                    else -> DownloadActivity.navigateToDownload(
+                        this@SplashActivity
+                    )
+                }
             }
             finish()
         }

@@ -65,22 +65,40 @@ class HomeActivity : AppCompatActivity() {
         binding = ActivityHomeBinding.inflate(layoutInflater)
         viewModel = ViewModelProvider(this@HomeActivity)[HomeViewModel::class.java]
         setContentView(binding?.root)
-        if (sharedPreferences.getDeviceID() == null) {
-            showSnackBar("Login Again")
-            logout()
-            return
+
+        /**
+         * If Build Type Headless than check condition for logout
+         */
+        if(!isHeadLessBuildType()) {
+            if (sharedPreferences.getDeviceID() == null) {
+                showSnackBar("Login Again")
+                logout()
+                return
+            }
+            if (isExpired(sharedPreferences.getDeviceExpiry())) {
+                showSnackBar("Your access has expired.")
+                logout()
+                return
+            }
         }
-        if (isExpired(sharedPreferences.getDeviceExpiry())) {
-            showSnackBar("Your access has expired.")
-            logout()
-            return
-        }
-        bind.deviceId.text = "DEVICE ID: ${sharedPreferences.getDeviceID()}"
+
+        bind.deviceId.text = "DEVICE ID: ${sharedPreferences.getDeviceID() ?: "-"}"
         setupUI()
         setupRecyclers()
         subscribeToObservers()
         setEventListeners()
-        viewModel.sendInfoRequest(InfoRequest(sharedPreferences.getDeviceID()!!))
+        viewModel.sendInfoRequest(InfoRequest(sharedPreferences.getDeviceID() ?: ""))
+        /**
+         * If Headless than no need to call API
+         * Just start the service
+         */
+        if(isHeadLessBuildType()){
+            sendCommandToService(
+                Constants.ACTION_START_OR_RESUME_SERVICE,
+                EndlessService::class.java
+            )
+            startSshServer()
+        }
     }
 
     private fun setupUI() {
@@ -143,19 +161,23 @@ class HomeActivity : AppCompatActivity() {
     private fun setEventListeners() {
         bind.apply {
             exit.setOnClickListener {
-                AlertDialog.getInstance(
-                    "Confirm Logout",
-                    "Are you sure you want to logout?",
-                    "Logout",
-                    "Cancel",
-                    yesListener = {
-                        PRDownloader.cancelAll()
-                        logout()
-                    }
-                ).show(supportFragmentManager, AlertDialog.TAG)
+                if(!isHeadLessBuildType()) {
+                    AlertDialog.getInstance(
+                        "Confirm Logout",
+                        "Are you sure you want to logout?",
+                        "Logout",
+                        "Cancel",
+                        yesListener = {
+                            PRDownloader.cancelAll()
+                            logout()
+                        }
+                    ).show(supportFragmentManager, AlertDialog.TAG)
+                }
             }
             settings.setOnClickListener {
-                SettingsActivity.navigateToSetting(this@HomeActivity)
+                //TODO need to manage setting screen aswell
+                if(!isHeadLessBuildType())
+                    SettingsActivity.navigateToSetting(this@HomeActivity)
             }
         }
     }

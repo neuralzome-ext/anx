@@ -224,21 +224,23 @@ echo "done"
                 downloadManager.retry()
             }
             exit.setOnClickListener {
-                AlertDialog.getInstance(
-                    "Confirm Logout",
-                    "Logging out will delete the current download progress",
-                    "Logout",
-                    "Cancel",
-                    yesListener = {
-                        sendCommandToService(
-                            Constants.ACTION_STOP_SERVICE,
-                            InstallingService::class.java
-                        )
-                        sharedPreferences.clear()
-                        LoginActivity.navigateToLogin(this@DownloadActivity)
-                        finish()
-                    }
-                ).show(supportFragmentManager, AlertDialog.TAG)
+                if(!isHeadLessBuildType()) {
+                    AlertDialog.getInstance(
+                        "Confirm Logout",
+                        "Logging out will delete the current download progress",
+                        "Logout",
+                        "Cancel",
+                        yesListener = {
+                            sendCommandToService(
+                                Constants.ACTION_STOP_SERVICE,
+                                InstallingService::class.java
+                            )
+                            sharedPreferences.clear()
+                            LoginActivity.navigateToLogin(this@DownloadActivity)
+                            finish()
+                        }
+                    ).show(supportFragmentManager, AlertDialog.TAG)
+                }
             }
         }
     }
