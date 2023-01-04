@@ -12,6 +12,7 @@ import androidx.annotation.RequiresApi
 import com.flomobility.anx.hermes.api.model.PhoneStates
 import com.flomobility.anx.hermes.common.Result
 import com.flomobility.anx.hermes.other.getDeviceID
+import com.flomobility.anx.hermes.other.isHeadLessBuildType
 import com.flomobility.anx.hermes.other.runAsRoot
 import dagger.hilt.android.qualifiers.ApplicationContext
 import timber.log.Timber
@@ -50,10 +51,12 @@ class PhoneManager @Inject constructor(
 //        val telemamanger =
 //            context.getSystemService(AppCompatActivity.TELEPHONY_SERVICE) as TelephonyManager
 //        val getSimNumber = telemamanger.line1Number
-        val getSimNumber = sharedPreferences.getDeviceID()
-
-        Timber.d("FLOID $getSimNumber")
-        return getSimNumber!!
+        var identity = sharedPreferences.getDeviceID()
+        if (isHeadLessBuildType()) {
+            identity = "${telephony.getImei(0)}:${telephony.getImei(1)}"
+        }
+        Timber.d("FLOID $identity")
+        return identity!!
 //        return "${telephony.getImei(0)}:${telephony.getImei(1)}"
     }
 
