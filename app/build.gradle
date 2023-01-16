@@ -246,11 +246,14 @@ android {
         }
         headless {
             debuggable true
-            signingConfig signingConfigs.debug
+            minifyEnabled false
+            signingConfig signingConfigs.flo
             manifestPlaceholders.TERMINAL_PACKAGE_NAME = "com.flomobility.anx"
             versionNameSuffix "-headless"
             resValue "string", "application_name", "(H)anx"
-            matchingFallbacks = ['dev']
+            firebaseCrashlytics {
+                mappingFileUploadEnabled false
+            }
         }
 
 /*        debug {
