@@ -132,11 +132,11 @@ class AssetDebugActivity : ComponentActivity() {
             viewModel.setDebug(true)
         }
         viewModel.assets.observe(this) { assets ->
-            if(assets.isNullOrEmpty()){
+            val filteredAssets = assets.filter { it.type == assetType }.sortedBy { it.id }
+            if(filteredAssets.isNullOrEmpty()){
                 finish()
                 return@observe
             }
-            val filteredAssets = assets.filter { it.type == assetType }.sortedBy { it.id }
             updateSpinner(filteredAssets)
             if(viewModel.currentAsset.value in filteredAssets) {
                 binding.assetSelector.setSelection(filteredAssets.indexOf(viewModel.currentAsset.value))
