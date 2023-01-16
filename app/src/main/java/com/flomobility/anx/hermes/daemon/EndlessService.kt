@@ -261,7 +261,12 @@ class EndlessService : LifecycleService(), TerminalTask.TermuxTaskClient,
         currentNotificationBuilder =
             currentNotificationBuilder.addAction(R.drawable.ic_stop, "Exit", pendingIntent)
         startForeground(NOTIFICATION_ID, currentNotificationBuilder.build())
-        startExpiryChecker()
+        /**
+         * If Build Type Headless then no need to call startExpiryChecker
+         */
+        if(!isHeadLessBuildType()) {
+            startExpiryChecker()
+        }
         // init
         if (socketManager.threadStatus != ThreadStatus.ACTIVE) {
             socketManager.init()

@@ -14,17 +14,16 @@ import com.flomobility.anx.databinding.ActivitySplashBinding
 import com.flomobility.anx.hermes.other.*
 import com.flomobility.anx.hermes.other.viewutils.AlertDialog
 import com.flomobility.anx.hermes.phone.Device
+import com.flomobility.anx.hermes.phone.PhoneManager
 import com.flomobility.anx.hermes.ui.download.DownloadActivity
 import com.flomobility.anx.hermes.ui.home.HomeActivity
 import com.flomobility.anx.hermes.ui.license.LicenseActivity
 import com.flomobility.anx.hermes.ui.login.LoginActivity
-import com.google.android.gms.location.*
-import com.google.android.material.snackbar.Snackbar
+import com.google.android.gms.location.LocationRequest
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import timber.log.Timber
-import java.io.File
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -42,16 +41,12 @@ class SplashActivity : AppCompatActivity() {
     @Inject
     lateinit var device: Device
 
+    @Inject
+    lateinit var phoneManager: PhoneManager
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivitySplashBinding.inflate(layoutInflater)
-//        with(window) {
-//            requestFeature(Window.FEATURE_ACTIVITY_TRANSITIONS)
-//
-//            // set an exit transition
-//            enterTransition = Slide(Gravity.START)
-//            exitTransition = Slide(Gravity.END)
-//        }
         setContentView(binding?.root)
         FILE_PATH = filesDir.absolutePath
         device.checkIsRooted()
@@ -118,14 +113,6 @@ class SplashActivity : AppCompatActivity() {
                             finishAffinity()
                         }
                     ).show(supportFragmentManager, AlertDialog.TAG)
-/*
-                    Snackbar.make(
-                        this@SplashActivity,
-                        bind.root,
-                        "Grant all permissions and restart app",
-                        Snackbar.LENGTH_SHORT
-                    ).show()
-*/
                     return
                 }
             }
@@ -151,14 +138,14 @@ class SplashActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-        if(!checkPermissions()) {
+        if (!checkPermissions()) {
             requestPermission()
         }
     }
 
     override fun onResume() {
         super.onResume()
-        if(checkPermissions()) {
+        if (checkPermissions()) {
             checkConditions()
         }
     }
@@ -166,21 +153,45 @@ class SplashActivity : AppCompatActivity() {
     private fun checkConditions() {
         lifecycleScope.launch {
             delay(2000)
-            when {
-                !sharedPreferences.getAcceptLicense() -> {
-                    LicenseActivity.navigateToLicense(this@SplashActivity)
-                }
-                !sharedPreferences.checkToken() -> LoginActivity.navigateToLogin(this@SplashActivity)
-                /*File("$FILE_PATH/${Constants.FILES_SYSTEM_FILE_NAME}").exists() && */sharedPreferences.getIsInstalled() -> {
-                    HomeActivity.navigateToHome(
+            /**
+             * If Headless build than move to Download and then home screen
+             */
+            if (isHeadLessBuildType()) {
+                setupHeadless()
+                when {
+                    sharedPreferences.getIsInstalled() -> {
+                        HomeActivity.navigateToHome(
+                            this@SplashActivity
+                        )
+                    }
+                    else -> DownloadActivity.navigateToDownload(
                         this@SplashActivity
                     )
                 }
-                else -> DownloadActivity.navigateToDownload(
-                    this@SplashActivity
-                )
+            } else {
+                when {
+                    !sharedPreferences.getAcceptLicense() -> {
+                        LicenseActivity.navigateToLicense(this@SplashActivity)
+                    }
+                    !sharedPreferences.checkToken() -> LoginActivity.navigateToLogin(this@SplashActivity)
+                    /*File("$FILE_PATH/${Constants.FILES_SYSTEM_FILE_NAME}").exists() && */
+                    sharedPreferences.getIsInstalled() -> {
+                        HomeActivity.navigateToHome(
+                            this@SplashActivity
+                        )
+                    }
+                    else -> DownloadActivity.navigateToDownload(
+                        this@SplashActivity
+                    )
+                }
             }
             finish()
         }
     }
+
+    private fun setupHeadless() {
+        sharedPreferences.putDeviceID(phoneManager.getIdentity())
+        sharedPreferences.setIsOnBoot(true)
+    }
+
 }

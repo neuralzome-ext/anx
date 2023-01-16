@@ -4,13 +4,16 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.flomobility.anx.FloApplication
 import com.flomobility.anx.hermes.network.requests.InfoRequest
 import com.flomobility.anx.hermes.network.responses.InfoResponse
 import com.flomobility.anx.hermes.other.Event
 import com.flomobility.anx.hermes.other.Resource
+import com.flomobility.anx.hermes.other.isHeadLessBuildType
 import com.flomobility.anx.hermes.repositories.FloRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -22,10 +25,12 @@ class HomeViewModel @Inject constructor(
     val info: LiveData<Event<Resource<InfoResponse>>> = _info
 
     fun sendInfoRequest(info: InfoRequest) {
-        _info.value = Event(Resource.Loading())
-        viewModelScope.launch {
-            _info.value = Event(repository.getInfo(info))
+        Timber.d("Is Headless App : ${isHeadLessBuildType()}")
+        if(!isHeadLessBuildType()) {
+            _info.value = Event(Resource.Loading())
+            viewModelScope.launch {
+                _info.value = Event(repository.getInfo(info))
+            }
         }
     }
-
 }

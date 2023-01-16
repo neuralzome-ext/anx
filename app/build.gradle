@@ -235,7 +235,7 @@ android {
             minifyEnabled true
             shrinkResources true // Reproducible builds
             debuggable true
-            signingConfig signingConfigs.flo
+            signingConfig signingConfigs.debug
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             debuggable false
             firebaseCrashlytics {
@@ -243,6 +243,17 @@ android {
             }
             manifestPlaceholders.TERMINAL_PACKAGE_NAME = "com.flomobility.anx"
             resValue "string", "application_name", "anx"
+        }
+        headless {
+            debuggable true
+            minifyEnabled false
+            signingConfig signingConfigs.flo
+            manifestPlaceholders.TERMINAL_PACKAGE_NAME = "com.flomobility.anx"
+            versionNameSuffix "-headless"
+            resValue "string", "application_name", "(H)anx"
+            firebaseCrashlytics {
+                mappingFileUploadEnabled false
+            }
         }
 
 /*        debug {
@@ -292,7 +303,7 @@ android {
     applicationVariants.all { variant ->
         variant.outputs.all { output ->
             switch (variant.buildType.name) {
-                case "dev":
+                case "dev" && "headless":
                     outputFileName = new File("anx-app_dev_v" + defaultConfig.versionName + ".apk")
                     break
                 case "debug":
