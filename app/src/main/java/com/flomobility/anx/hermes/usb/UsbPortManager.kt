@@ -251,7 +251,7 @@ class UsbPortManager @Inject constructor(
             try {
                 while (!Thread.currentThread().isInterrupted) {
                     val keys = mutableSetOf<Int>()
-                    keys.addAll(unAuthorizedDevices.keys)
+                    keys.addAll(unAuthorizedDevices.keys.sortedBy { it })
                     for (key in keys) {
                         val secureDevice =
                             unAuthorizedDevices[key] ?: throw Throwable("Null secure device")
