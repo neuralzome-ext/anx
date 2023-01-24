@@ -5,10 +5,7 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
-import com.flomobility.anx.hermes.api.model.AngularVelocity
-import com.flomobility.anx.hermes.api.model.Imu
-import com.flomobility.anx.hermes.api.model.LinearAcceleration
-import com.flomobility.anx.hermes.api.model.Quaternion
+import com.flomobility.anx.hermes.api.model.*
 import com.flomobility.anx.hermes.assets.AssetState
 import com.flomobility.anx.hermes.assets.AssetType
 import com.flomobility.anx.hermes.assets.BaseAsset
@@ -20,7 +17,6 @@ import com.flomobility.anx.hermes.other.handleExceptions
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.zeromq.SocketType
 import org.zeromq.ZContext
@@ -46,24 +42,45 @@ class PhoneImu @Inject constructor(
                 return
             } else {
                 when (event.sensor.type) {
+                    Sensor.TYPE_LINEAR_ACCELERATION -> {
+                        linearAcceleration = Vector3d(
+                            event.values[0].toDouble(),
+                            event.values[1].toDouble(),
+                            event.values[2].toDouble()
+                        )
+                    }
                     Sensor.TYPE_GYROSCOPE -> {
-                        angularVelocity = AngularVelocity(
+                        angularVelocity = Vector3d(
                             event.values[0].toDouble(),
                             event.values[1].toDouble(),
                             event.values[2].toDouble()
                         )
                     }
                     Sensor.TYPE_ROTATION_VECTOR -> {
-                        quaternion = Quaternion(
+                        orientation = Vector4d(
                             event.values[0].toDouble(),
                             event.values[1].toDouble(),
                             event.values[2].toDouble(),
                             event.values[3].toDouble()
                         )
                     }
-                    Sensor.TYPE_LINEAR_ACCELERATION -> {
-                        linearAcceleration =
-                            LinearAcceleration(
+                    Sensor.TYPE_ACCELEROMETER_UNCALIBRATED -> {
+                        rawAcceleration = Vector3d(
+                            event.values[0].toDouble(),
+                            event.values[1].toDouble(),
+                            event.values[2].toDouble()
+                        )
+                    }
+                    Sensor.TYPE_GYROSCOPE_UNCALIBRATED -> {
+                        rawAngularVelocity = Vector3d(
+                            event.values[0].toDouble(),
+                            event.values[1].toDouble(),
+                            event.values[2].toDouble(),
+                        )
+                    }
+                    Sensor.TYPE_MAGNETIC_FIELD -> {
+                        magneticField =
+                            Vector3d(
                                 event.values[0].toDouble(),
                                 event.values[1].toDouble(),
                                 event.values[2].toDouble()
@@ -78,11 +95,17 @@ class PhoneImu @Inject constructor(
         }
     }
 
-    private var angularVelocity: AngularVelocity? = null
+    private var angularVelocity: Vector3d? = null
 
-    private var linearAcceleration: LinearAcceleration? = null
+    private var linearAcceleration: Vector3d? = null
 
-    private var quaternion: Quaternion? = null
+    private var orientation: Vector4d? = null
+
+    private var rawAngularVelocity: Vector3d? = null
+
+    private var rawAcceleration: Vector3d? = null
+
+    private var magneticField: Vector3d? = null
 
     private val _config = Config()
 
@@ -112,9 +135,12 @@ class PhoneImu @Inject constructor(
     }
 
     override fun canRegister(): Boolean {
-        if(sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE) == null) return false
-        if(sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION) == null) return false
-        if(sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR) == null) return false
+        if (sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER_UNCALIBRATED) == null) return false
+        if (sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE_UNCALIBRATED) == null) return false
+        if (sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD) == null) return false
+        if (sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION) == null) return false
+        if (sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE) == null) return false
+        if (sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR) == null) return false
         return true
     }
 
@@ -157,21 +183,30 @@ class PhoneImu @Inject constructor(
     override fun destroy() {
         angularVelocity = null
         linearAcceleration = null
-        quaternion = null
+        orientation = null
+        rawAcceleration = null
+        rawAngularVelocity = null
+        magneticField = null
         publisherThread = null
     }
 
     private fun getImuData(): Imu {
         return Imu.new(
-            linearAcceleration,
-            angularVelocity,
-            quaternion
+            filtered = Imu.Filtered(
+                acceleration = linearAcceleration ?: Vector3d(0.0, 0.0, 0.0),
+                angularVelocity = angularVelocity ?: Vector3d(0.0, 0.0, 0.0),
+                orientation = orientation ?: Vector4d(0.0, 0.0, 0.0, 0.0)
+            ), raw = Imu.Raw(
+                acceleration = rawAcceleration ?: Vector3d(0.0, 0.0, 0.0),
+                angularVelocity = rawAngularVelocity ?: Vector3d(0.0, 0.0, 0.0),
+                magneticField = magneticField ?: Vector3d(0.0, 0.0, 0.0)
+            )
         )
     }
 
     private fun registerImu(rate: Rate) {
         with(sensorManager) {
-            getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)?.also { magnetometer ->
+            getDefaultSensor(Sensor.TYPE_GYROSCOPE)?.also { magnetometer ->
                 registerListener(
                     sensorEventListeners,
                     magnetometer,
@@ -179,7 +214,7 @@ class PhoneImu @Inject constructor(
 //                    rate.toMicros().toInt()
                 )
             }
-            getDefaultSensor(Sensor.TYPE_GYROSCOPE)?.also { gyroscope ->
+            getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION)?.also { gyroscope ->
                 registerListener(
                     sensorEventListeners,
                     gyroscope,
@@ -187,7 +222,31 @@ class PhoneImu @Inject constructor(
 //                    rate.toMicros().toInt()
                 )
             }
-            getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION)?.also { linearAcc ->
+            getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)?.also { linearAcc ->
+                registerListener(
+                    sensorEventListeners,
+                    linearAcc,
+                    SensorManager.SENSOR_DELAY_FASTEST
+//                    rate.toMicros().toInt()
+                )
+            }
+            getDefaultSensor(Sensor.TYPE_GYROSCOPE_UNCALIBRATED)?.also { magnetometer ->
+                registerListener(
+                    sensorEventListeners,
+                    magnetometer,
+                    SensorManager.SENSOR_DELAY_FASTEST
+//                    rate.toMicros().toInt()
+                )
+            }
+            getDefaultSensor(Sensor.TYPE_ACCELEROMETER_UNCALIBRATED)?.also { gyroscope ->
+                registerListener(
+                    sensorEventListeners,
+                    gyroscope,
+                    SensorManager.SENSOR_DELAY_FASTEST
+//                    rate.toMicros().toInt()
+                )
+            }
+            getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD)?.also { linearAcc ->
                 registerListener(
                     sensorEventListeners,
                     linearAcc,
@@ -221,7 +280,7 @@ class PhoneImu @Inject constructor(
                         /*GlobalScope.launch {
                             assetOut.send(jsonStr)
                         }*/
-                        if(debug) {
+                        if (debug) {
                             CoroutineScope(dispatcher).launch(dispatcher) {
                                 assetOut.send(jsonStr)
                             }

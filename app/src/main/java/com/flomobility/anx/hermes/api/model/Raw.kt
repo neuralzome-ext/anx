@@ -5,7 +5,7 @@ import com.google.gson.reflect.TypeToken
 
 data class Raw(
     @SerializedName("data")
-    val data: String = ""
+    var data: String = ""
 ) {
     companion object {
         val type = object : TypeToken<Raw>() {}.type

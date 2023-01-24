@@ -54,6 +54,8 @@ class UsbSerial : BaseAsset() {
 
     private val deviceOpenMutex = ReentrantLock(true)
 
+    private val gson = GsonUtils.getGson()
+
     private val buffer = ProtocolBuffer(ProtocolBuffer.TEXT)
     private val mCallback = UsbSerialInterface.UsbReadCallback { arg ->
         buffer.appendData(arg)
@@ -172,6 +174,8 @@ class UsbSerial : BaseAsset() {
 
         lateinit var socket: ZMQ.Socket
 
+        private var rawData = Raw()
+
         private var handler: ReaderHandler? = null
 
         private var isAlive = AtomicBoolean(false)
@@ -242,15 +246,17 @@ class UsbSerial : BaseAsset() {
         private fun ZMQ.Socket.sendRaw(bytes: ByteArray, flags: Int = 0) {
             val rawData = Raw(data = String(bytes, ZMQ.CHARSET))
 //            Timber.d("${this@UsbSerial.type.alias}-${this@UsbSerial.id} Sending raw data : $rawData")
-            send(GsonUtils.getGson().toJson(rawData), flags)
+            send(gson.toJson(rawData), flags)
         }
 
         private fun ZMQ.Socket.sendRaw(str: String, flags: Int = 0) {
-            val rawData = Raw(data = str)
+            rawData.data = str
 //            Timber.d("${this@UsbSerial.type.alias}-${this@UsbSerial.id} Sending raw data : $rawData")
-            val jsonStr = GsonUtils.getGson().toJson(rawData)
-            CoroutineScope(dispatcher).launch(dispatcher) {
-                assetOut.send(jsonStr)
+            val jsonStr = gson.toJson(rawData)
+            if (debug) {
+                CoroutineScope(dispatcher).launch(dispatcher) {
+                    assetOut.send(jsonStr)
+                }
             }
 /*            GlobalScope.launch {
                 assetOut.send(jsonStr)
@@ -287,7 +293,7 @@ class UsbSerial : BaseAsset() {
                             if (poller.pollin(0)) {
                                 val recvBytes = socket.recv(0)
                                 val dataRecv = String(recvBytes, ZMQ.CHARSET)
-                                val rawData = GsonUtils.getGson().fromJson<Raw>(
+                                val rawData = gson.fromJson<Raw>(
                                     dataRecv,
                                     Raw.type
                                 )
