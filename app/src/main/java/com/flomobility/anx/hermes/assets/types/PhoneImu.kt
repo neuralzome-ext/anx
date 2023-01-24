@@ -46,22 +46,21 @@ class PhoneImu @Inject constructor(
                 return
             } else {
                 when (event.sensor.type) {
-                    Sensor.TYPE_GYROSCOPE -> {
+                    Sensor.TYPE_ACCELEROMETER_UNCALIBRATED   -> {
                         angularVelocity = AngularVelocity(
                             event.values[0].toDouble(),
                             event.values[1].toDouble(),
                             event.values[2].toDouble()
                         )
                     }
-                    Sensor.TYPE_ROTATION_VECTOR -> {
+                    Sensor.TYPE_GYROSCOPE_UNCALIBRATED -> {
                         quaternion = Quaternion(
                             event.values[0].toDouble(),
                             event.values[1].toDouble(),
                             event.values[2].toDouble(),
-                            event.values[3].toDouble()
                         )
                     }
-                    Sensor.TYPE_LINEAR_ACCELERATION -> {
+                    Sensor.TYPE_MAGNETIC_FIELD ->   {
                         linearAcceleration =
                             LinearAcceleration(
                                 event.values[0].toDouble(),

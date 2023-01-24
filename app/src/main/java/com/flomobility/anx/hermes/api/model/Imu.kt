@@ -15,7 +15,7 @@ data class Imu(
             return Imu(
                 linearAcceleration ?: LinearAcceleration(0.0, 0.0, 0.0),
                 angularVelocity ?: AngularVelocity(0.0, 0.0, 0.0),
-                quaternion ?: Quaternion(0.0, 0.0, 0.0, 1.0)
+                quaternion ?: Quaternion(0.0, 0.0, 0.0)
             )
         }
     }
@@ -24,7 +24,7 @@ data class Imu(
         val imuMap = hashMapOf(
             "a" to listOf(linearAcceleration.x, linearAcceleration.y, linearAcceleration.z),
             "w" to listOf(angularVelocity.x, angularVelocity.y, angularVelocity.z),
-            "q" to listOf(quaternion.x, quaternion.y, quaternion.z, quaternion.w)
+            "mu" to listOf(quaternion.x, quaternion.y, quaternion.z)
 
         )
         return GsonUtils.getGson().toJson(imuMap)
