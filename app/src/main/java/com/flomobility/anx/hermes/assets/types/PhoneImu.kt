@@ -111,9 +111,9 @@ class PhoneImu @Inject constructor(
     }
 
     override fun canRegister(): Boolean {
-        if(sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE) == null) return false
-        if(sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION) == null) return false
-        if(sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR) == null) return false
+        if(sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER_UNCALIBRATED) == null) return false
+        if(sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE_UNCALIBRATED) == null) return false
+        if(sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD) == null) return false
         return true
     }
 
@@ -170,7 +170,7 @@ class PhoneImu @Inject constructor(
 
     private fun registerImu(rate: Rate) {
         with(sensorManager) {
-            getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)?.also { magnetometer ->
+            getDefaultSensor(Sensor.TYPE_GYROSCOPE_UNCALIBRATED)?.also { magnetometer ->
                 registerListener(
                     sensorEventListeners,
                     magnetometer,
@@ -178,7 +178,7 @@ class PhoneImu @Inject constructor(
 //                    rate.toMicros().toInt()
                 )
             }
-            getDefaultSensor(Sensor.TYPE_GYROSCOPE)?.also { gyroscope ->
+            getDefaultSensor(Sensor.TYPE_ACCELEROMETER_UNCALIBRATED)?.also { gyroscope ->
                 registerListener(
                     sensorEventListeners,
                     gyroscope,
@@ -186,7 +186,7 @@ class PhoneImu @Inject constructor(
 //                    rate.toMicros().toInt()
                 )
             }
-            getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION)?.also { linearAcc ->
+            getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD)?.also { linearAcc ->
                 registerListener(
                     sensorEventListeners,
                     linearAcc,
