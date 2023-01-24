@@ -222,7 +222,7 @@ android {
         dev {
             debuggable true
             minifyEnabled false
-            signingConfig signingConfigs.debug
+            signingConfig signingConfigs.flo
             manifestPlaceholders.TERMINAL_PACKAGE_NAME = "com.flomobility.anx"
             firebaseCrashlytics {
                 mappingFileUploadEnabled false
