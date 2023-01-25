@@ -7,3 +7,32 @@ java {
     sourceCompatibility = JavaVersion.VERSION_1_7
     targetCompatibility = JavaVersion.VERSION_1_7
 }
+
+dependencies {
+    implementation 'com.google.protobuf:protobuf-java:3.21.12'
+    implementation 'com.google.protobuf:protobuf-kotlin:3.21.12'
+}
+
+task generateProtoc(description: 'Build java files from proto files') {
+    println('Creating java files from .proto files')
+    def anxProtoDirPath = rootDir.path + "/api_docs/anx"
+    def buildDir = projectDir.path + "/src/main/java"
+
+    Properties properties = new Properties()
+    properties.load(new FileInputStream(project.rootProject.file('local.properties')))
+    def protocPath = properties.getProperty("protoc.path")
+
+    fileTree(anxProtoDirPath).forEach { file ->
+        if (file.name.contains('.proto')) {
+            exec {
+                workingDir anxProtoDirPath
+                commandLine protocPath, "--proto_path=.", "--java_out="+buildDir, "--kotlin_out="+buildDir, file.name
+            }
+        }
+    }
+    println("Created java files. Check ")
+}
+
+tasks.withType(JavaCompile) {
+    compileTask -> compileTask.dependsOn generateProtoc
+}
