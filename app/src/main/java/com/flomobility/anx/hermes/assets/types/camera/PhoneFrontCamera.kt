@@ -189,8 +189,8 @@ class PhoneFrontCamera @Inject constructor(
                         CameraMetadata.CONTROL_AF_MODE_OFF,
                     )
                     .setCaptureRequestOption(
-                        CaptureRequest.CONTROL_AE_EXPOSURE_COMPENSATION,
-                        2,
+                        CaptureRequest.CONTROL_AE_ANTIBANDING_MODE,
+                        CameraMetadata.CONTROL_AE_ANTIBANDING_MODE_AUTO,
                     )
                     /*.setCaptureRequestOption(
                         CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE,
