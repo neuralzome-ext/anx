@@ -273,6 +273,7 @@ class PhoneImu @Inject constructor(
                 // wait to bind
                 Thread.sleep(500)
                 Timber.d("[Publishing] imu on ${config.portPub} at delay of ${1000L / (config.fps.value as Int)}")
+                val rate = Rate(hz = config.fps.value)
                 while (!Thread.currentThread().isInterrupted) {
                     try {
                         val jsonStr = this@PhoneImu.getImuData().toJson()
@@ -286,7 +287,7 @@ class PhoneImu @Inject constructor(
                             }
                         }
                         socket.send(jsonStr.toByteArray(ZMQ.CHARSET), ZMQ.DONTWAIT)
-                        Thread.sleep(1000L / (config.fps.value as Int))
+                        rate.sleep()
                     } catch (e: InterruptedException) {
                         Timber.i("Publisher closed")
                         socket.unbind(address)
