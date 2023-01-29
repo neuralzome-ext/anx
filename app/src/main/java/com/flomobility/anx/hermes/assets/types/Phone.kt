@@ -8,6 +8,7 @@ import com.flomobility.anx.hermes.assets.AssetState
 import com.flomobility.anx.hermes.assets.AssetType
 import com.flomobility.anx.hermes.assets.BaseAsset
 import com.flomobility.anx.hermes.assets.BaseAssetConfig
+import com.flomobility.anx.hermes.common.Rate
 import com.flomobility.anx.hermes.common.Result
 import com.flomobility.anx.hermes.other.Constants
 import com.flomobility.anx.hermes.other.handleExceptions
@@ -21,6 +22,7 @@ import org.zeromq.SocketType
 import org.zeromq.ZContext
 import org.zeromq.ZMQ
 import timber.log.Timber
+import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -80,7 +82,8 @@ class Phone @Inject constructor(
             return Result(success = false, message = e.message ?: Constants.UNKNOWN_ERROR_MSG)
         }) {
             updateState(AssetState.IDLE)
-            publisherThread?.interrupt()
+            publisherThread?.interrupt?.set(true)
+            publisherThread?.join()
             publisherThread = null
             return Result(success = true)
         }
@@ -95,6 +98,8 @@ class Phone @Inject constructor(
 
         lateinit var socket: ZMQ.Socket
 
+        val interrupt = AtomicBoolean(false)
+
         override fun run() {
             val address = "tcp://*:${_config.portPub}"
             try {
@@ -104,7 +109,8 @@ class Phone @Inject constructor(
                     socket.bind(address)
                     // wait
                     sleep(500)
-                    while (!currentThread().isInterrupted) {
+                    val rate = Rate(hz = _config.fps.value)
+                    while (!interrupt.get()) {
                         try {
                             val battery = phoneManager.getBatteryInfo()
                             val cpuRam = phoneManager.getMemoryInfo()
@@ -133,7 +139,7 @@ class Phone @Inject constructor(
                                 assetOut.send(jsonStr)
                             }*/
                             socket.send(jsonStr.toByteArray(ZMQ.CHARSET), 0)
-                            sleep(1000L / _config.fps.value)
+                            rate.sleep()
                         } catch (e: InterruptedException) {
                             break
                         } catch (e: Exception) {
@@ -141,6 +147,10 @@ class Phone @Inject constructor(
                         }
                     }
                     Timber.d("Stopping phone-${this@Phone._id} publisher")
+                    socket.linger = 0
+                    socket.unbind(address)
+                    sleep(500)
+                    socket.close()
                 }
             } catch (e: Exception) {
                 Timber.e(e)
