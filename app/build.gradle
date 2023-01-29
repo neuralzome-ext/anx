@@ -143,8 +143,8 @@ android {
         applicationId "com.flomobility.anx"
         minSdkVersion project.properties.minSdkVersion.toInteger()
         targetSdkVersion project.properties.targetSdkVersion.toInteger()
-        versionCode 12
-        versionName "0.8.3"
+        versionCode 13
+        versionName "0.8.4"
 
         Properties properties = new Properties()
         properties.load(project.rootProject.file('local.properties').newDataInputStream())
@@ -235,7 +235,7 @@ android {
             minifyEnabled true
             shrinkResources true // Reproducible builds
             debuggable true
-            signingConfig signingConfigs.debug
+            signingConfig signingConfigs.flo
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             debuggable false
             firebaseCrashlytics {
@@ -303,11 +303,11 @@ android {
     applicationVariants.all { variant ->
         variant.outputs.all { output ->
             switch (variant.buildType.name) {
-                case "dev" && "headless":
+                case "dev":
                     outputFileName = new File("anx-app_dev_v" + defaultConfig.versionName + ".apk")
                     break
-                case "debug":
-                    outputFileName = new File("anx-app_debug_v" + defaultConfig.versionName + ".apk")
+                case "headless":
+                    outputFileName = new File("anx-app_headless_v" + defaultConfig.versionName + ".apk")
                     break
                 case "release":
                     outputFileName = new File("anx-app_release_v" + defaultConfig.versionName + ".apk")
