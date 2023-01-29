@@ -83,7 +83,7 @@ class PhoneFrontCamera @Inject constructor(
 
     init {
         GlobalScope.launch(Dispatchers.Main) {
-            if(!canRegister()) return@launch
+            if (!canRegister()) return@launch
             camera = cameraProvider.bindToLifecycle(
                 ProcessLifecycleOwner.get(),
                 cameraSelector
@@ -137,7 +137,7 @@ class PhoneFrontCamera @Inject constructor(
     }
 
     override fun canRegister(): Boolean {
-        if(!cameraProvider.hasCamera(cameraSelector)) {
+        if (!cameraProvider.hasCamera(cameraSelector)) {
             Timber.e("Front camera not present")
             return false
         }
@@ -188,6 +188,10 @@ class PhoneFrontCamera @Inject constructor(
                         CaptureRequest.CONTROL_AF_MODE,
                         CameraMetadata.CONTROL_AF_MODE_OFF,
                     )
+                    .setCaptureRequestOption(
+                        CaptureRequest.CONTROL_AE_ANTIBANDING_MODE,
+                        CameraMetadata.CONTROL_AE_ANTIBANDING_MODE_AUTO,
+                    )
                     /*.setCaptureRequestOption(
                         CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE,
                         Range(_config.stream.value.fps, _config.stream.value.fps)
@@ -220,7 +224,7 @@ class PhoneFrontCamera @Inject constructor(
 //                        val imageBuffer = image.image?.planes?.toNV21(image.width, image.height)
                         val img = image.toJpeg()
                         streamingThread?.publishFrame(
-                             img ?: throw Throwable("Couldn't get JPEG image")
+                            img ?: throw Throwable("Couldn't get JPEG image")
                         )
                         if (debug) {
                             CoroutineScope(dispatcher).launch(dispatcher) {

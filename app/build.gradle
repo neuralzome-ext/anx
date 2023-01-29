@@ -143,8 +143,8 @@ android {
         applicationId "com.flomobility.anx"
         minSdkVersion project.properties.minSdkVersion.toInteger()
         targetSdkVersion project.properties.targetSdkVersion.toInteger()
-        versionCode 12
-        versionName "0.8.3"
+        versionCode 13
+        versionName "0.8.4"
 
         Properties properties = new Properties()
         properties.load(project.rootProject.file('local.properties').newDataInputStream())
@@ -244,19 +244,30 @@ android {
             manifestPlaceholders.TERMINAL_PACKAGE_NAME = "com.flomobility.anx"
             resValue "string", "application_name", "anx"
         }
-
-        debug {
+        headless {
+            debuggable true
+            minifyEnabled false
             signingConfig signingConfigs.flo
+            manifestPlaceholders.TERMINAL_PACKAGE_NAME = "com.flomobility.anx"
+            versionNameSuffix "-headless"
+            resValue "string", "application_name", "(H)anx"
+            firebaseCrashlytics {
+                mappingFileUploadEnabled false
+            }
+        }
+
+/*        debug {
+            signingConfig signingConfigs.debug
             debuggable true
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             firebaseCrashlytics {
                 mappingFileUploadEnabled false
             }
-            manifestPlaceholders.TERMINAL_PACKAGE_NAME = "com.flomobility.anx.debug"
-            applicationIdSuffix ".debug"
+            manifestPlaceholders.TERMINAL_PACKAGE_NAME = "com.flomobility.anx"
+//            applicationIdSuffix ".debug"
             resValue "string", "application_name", "(Debug)anx"
-        }
+        }*/
     }
 
     compileOptions {
@@ -295,8 +306,8 @@ android {
                 case "dev":
                     outputFileName = new File("anx-app_dev_v" + defaultConfig.versionName + ".apk")
                     break
-                case "debug":
-                    outputFileName = new File("anx-app_debug_v" + defaultConfig.versionName + ".apk")
+                case "headless":
+                    outputFileName = new File("anx-app_headless_v" + defaultConfig.versionName + ".apk")
                     break
                 case "release":
                     outputFileName = new File("anx-app_release_v" + defaultConfig.versionName + ".apk")

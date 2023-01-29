@@ -41,6 +41,9 @@ android {
 		dev{
 			minifyEnabled false
 		}
+        headless {
+            minifyEnabled false
+        }
         release {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'

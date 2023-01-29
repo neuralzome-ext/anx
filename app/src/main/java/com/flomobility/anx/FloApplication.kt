@@ -48,6 +48,7 @@ class FloApplication: Application() {
         const val DEV = "dev"
         const val STAGING = "staging"
         const val RELEASE = "release"
+        const val HEADLESS = "headless"
     }
 
     companion object {

@@ -188,6 +188,11 @@ class PhoneBackCamera @Inject constructor(
                         CaptureRequest.CONTROL_AF_MODE,
                         CameraMetadata.CONTROL_AF_MODE_OFF,
                     )
+                    .setCaptureRequestOption(CaptureRequest.LENS_FOCUS_DISTANCE, 1f)
+                    .setCaptureRequestOption(
+                        CaptureRequest.CONTROL_AE_ANTIBANDING_MODE,
+                        CameraMetadata.CONTROL_AE_ANTIBANDING_MODE_AUTO,
+                    )
                     /*.setCaptureRequestOption(
                         CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE,
                         Range(_config.stream.value.fps, _config.stream.value.fps)

@@ -5,6 +5,8 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.os.Build
 import android.text.ClipboardManager
+import com.flomobility.anx.BuildConfig
+import com.flomobility.anx.FloApplication
 import com.flomobility.anx.hermes.model.IpAddress
 import com.flomobility.anx.hermes.other.Constants.DEVICE_EXPIRY
 import com.flomobility.anx.hermes.other.Constants.DEVICE_ID
@@ -282,3 +284,6 @@ fun SharedPreferences.clear() {
 fun SharedPreferences.clearAll() {
     this.edit().clear().apply()
 }
+
+fun isHeadLessBuildType() = BuildConfig.BUILD_TYPE.contentEquals(FloApplication.BuildType.HEADLESS)
+
