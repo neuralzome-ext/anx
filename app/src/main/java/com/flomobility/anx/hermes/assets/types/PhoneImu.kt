@@ -22,6 +22,7 @@ import org.zeromq.SocketType
 import org.zeromq.ZContext
 import org.zeromq.ZMQ
 import timber.log.Timber
+import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -109,7 +110,7 @@ class PhoneImu @Inject constructor(
 
     private val _config = Config()
 
-    private var publisherThread: Thread? = null
+    private var publisherThread: PublisherThread? = null
 
     override val id: String
         get() = "0"
@@ -159,7 +160,7 @@ class PhoneImu @Inject constructor(
         }) {
             updateState(AssetState.STREAMING)
             registerImu(Rate(hz = _config.fps.value as Int))
-            publisherThread = Thread(Publisher(_config), "$type-$id-publisher-thread")
+            publisherThread = PublisherThread(_config)
             publisherThread?.start()
             return Result(success = true)
         }
@@ -172,7 +173,8 @@ class PhoneImu @Inject constructor(
             return Result(success = false, message = e.message ?: Constants.UNKNOWN_ERROR_MSG)
         }) {
             updateState(AssetState.IDLE)
-            publisherThread?.interrupt()
+            publisherThread?.interrupt?.set(true)
+            publisherThread?.join()
             publisherThread = null
             unregisterImu()
             return Result(success = true)
@@ -261,9 +263,15 @@ class PhoneImu @Inject constructor(
         sensorManager.unregisterListener(sensorEventListeners)
     }
 
-    inner class Publisher(val config: Config) : Runnable {
+    inner class PublisherThread(val config: Config) : Thread() {
 
         lateinit var socket: ZMQ.Socket
+
+        val interrupt = AtomicBoolean(false)
+
+        init {
+            name = "${this@PhoneImu.name}-publisher-thread"
+        }
 
         override fun run() {
             ZContext().use { ctx ->
@@ -274,7 +282,7 @@ class PhoneImu @Inject constructor(
                 Thread.sleep(500)
                 Timber.d("[Publishing] imu on ${config.portPub} at delay of ${1000L / (config.fps.value as Int)}")
                 val rate = Rate(hz = config.fps.value)
-                while (!Thread.currentThread().isInterrupted) {
+                while (!interrupt.get()) {
                     try {
                         val jsonStr = this@PhoneImu.getImuData().toJson()
 //                        Timber.d("[Publishing] -- imu : $jsonStr")
@@ -288,10 +296,6 @@ class PhoneImu @Inject constructor(
                         }
                         socket.send(jsonStr.toByteArray(ZMQ.CHARSET), ZMQ.DONTWAIT)
                         rate.sleep()
-                    } catch (e: InterruptedException) {
-                        Timber.i("Publisher closed")
-                        socket.unbind(address)
-                        socket.close()
                     } catch (e: Exception) {
                         Timber.e(e)
                         return
