@@ -45,7 +45,7 @@
     <uses-feature android:name="android.hardware.usb.host" />
     <uses-feature android:name="android.hardware.usb.host" />
 
-    <uses-permission android:name="android.permission.VIBRATE"/>
+    <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
@@ -73,6 +73,13 @@
         android:supportsRtl="false"
         android:theme="@style/Theme.Flo"
         android:usesCleartextTraffic="true">
+        <activity
+            android:name=".hermes.ui.wifi.WifiActivity"
+            android:exported="true">
+            <meta-data
+                android:name="android.app.lib_name"
+                android:value="" />
+        </activity>
         <activity
             android:name=".hermes.ui.asset_debug.AssetDebugActivity"
             android:exported="false" />
@@ -108,11 +115,11 @@
             android:name=".hermes.ui.splash.SplashActivity"
             android:exported="true"
             android:theme="@style/SplashTheme">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
+                        <intent-filter>
+                            <action android:name="android.intent.action.MAIN" />
 
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
+                            <category android:name="android.intent.category.LAUNCHER" />
+                        </intent-filter>
         </activity>
         <activity android:name=".hermes.ui.login.LoginActivity" />
         <activity
@@ -126,7 +133,6 @@
             android:name=".hermes.daemon.EndlessService"
             android:exported="true"
             android:foregroundServiceType="dataSync" />
-
         <service
             android:name=".hermes.daemon.InstallingService"
             android:exported="true"
