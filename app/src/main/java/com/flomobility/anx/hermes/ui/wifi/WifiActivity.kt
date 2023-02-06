@@ -2,31 +2,27 @@ package com.flomobility.anx.hermes.ui.wifi
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
 import android.view.View
-import android.widget.Button
-import android.widget.EditText
-import com.flomobility.anx.databinding.ActivityHomeBinding
 import com.flomobility.anx.databinding.ActivityWifiBinding
-import com.flomobility.anx.hermes.daemon.WiFiManager
+import com.flomobility.anx.hermes.wifi.WiFiManager
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class WifiActivity : AppCompatActivity(), View.OnClickListener {
 
     private var binding: ActivityWifiBinding? = null
     private val bind get() = binding!!
     var networkSSID: String? = null
     var networkPassword: String? = null
-    var wiFiManager: WiFiManager? = null
+
+    @Inject
+    lateinit var wiFiManager: WiFiManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityWifiBinding.inflate(layoutInflater)
         setContentView(binding?.root)
-
-        if (wiFiManager == null) {
-            wiFiManager = WiFiManager(applicationContext)
-        }
-
         onClickEvents()
     }
 

@@ -1,6 +1,7 @@
 package com.flomobility.anx.hermes.ui.home
 
 import android.content.*
+import android.net.wifi.WifiManager
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
@@ -53,6 +54,7 @@ class HomeActivity : AppCompatActivity() {
     private var binding: ActivityHomeBinding? = null
     private val bind get() = binding!!
     private lateinit var viewModel: HomeViewModel
+    private lateinit var wifiManager: WifiManager
 
     @Inject
     lateinit var sharedPreferences: SharedPreferences
@@ -65,6 +67,7 @@ class HomeActivity : AppCompatActivity() {
         binding = ActivityHomeBinding.inflate(layoutInflater)
         viewModel = ViewModelProvider(this@HomeActivity)[HomeViewModel::class.java]
         setContentView(binding?.root)
+//        enableWifi()
 
         /**
          * If Build Type Headless than check condition for logout
@@ -99,6 +102,14 @@ class HomeActivity : AppCompatActivity() {
             )
             startSshServer()
         }
+    }
+
+    /*
+    method call on enableWifi
+     */
+    private fun enableWifi(){
+        wifiManager = applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
+        wifiManager.isWifiEnabled = true
     }
 
     private fun setupUI() {
