@@ -24,3 +24,14 @@ data class SignalRequest(
         val type = object : TypeToken<SignalRequest>() {}.type
     }
 }
+
+data class ConnectWifiRequest(
+    @SerializedName("ssid")
+    val ssid: String,
+    @SerializedName("password")
+    val password: String
+) {
+    companion object {
+        val type = object : TypeToken<ConnectWifiRequest>() {}.type
+    }
+}

@@ -14,7 +14,8 @@ class SocketManager @Inject constructor(
     private val startAssetHandler: StartAssetHandler,
     private val stopAssetHandler: StopAssetHandler,
     private val getIdentityHandler: GetIdentityHandler,
-    private val signalRpcHandler: SignalRpcHandler
+    private val signalRpcHandler: SignalRpcHandler,
+    private val connectWifiHandler: ConnectWifiHandler
 ) {
 
     var threadStatus = ThreadStatus.IDLE
@@ -25,6 +26,7 @@ class SocketManager @Inject constructor(
     var stopAssetHandlerThread: Thread? = null
     var getIdentityHandlerThread: Thread? = null
     var signalRpcHandlerThread: Thread? = null
+    var connectWifiHandlerThread: Thread? = null
 
     fun init() {
         threadStatus = ThreadStatus.ACTIVE
@@ -43,6 +45,9 @@ class SocketManager @Inject constructor(
 
         signalRpcHandlerThread = Thread(signalRpcHandler, "signal-rpc-socket-thread")
         signalRpcHandlerThread?.start()
+
+        connectWifiHandlerThread = Thread(connectWifiHandler, "connect-wifi-socket-thread")
+        connectWifiHandlerThread?.start()
     }
 
     fun doOnSubscribed(func: (Boolean) -> Unit) {
@@ -67,11 +72,15 @@ class SocketManager @Inject constructor(
         signalRpcHandler.interrupt.set(true)
         signalRpcHandlerThread?.join()
 
+        connectWifiHandler.interrupt.set(true)
+        connectWifiHandlerThread?.join()
+
         subscribeAssetHandlerThread = null
         startAssetHandlerThread = null
         stopAssetHandlerThread = null
         getIdentityHandlerThread = null
         signalRpcHandlerThread = null
+        connectWifiHandlerThread = null
     }
 
     companion object {
@@ -80,5 +89,6 @@ class SocketManager @Inject constructor(
         const val STOP_ASSET_SOCKET_ADDR = "tcp://*:10002"
         const val GET_IDENTITY_SOCKET_ADDR = "tcp://*:10004"
         const val SIGNAL_RPC_SOCKET_ADDR = "tcp://*:10005"
+        const val CONNECT_WIFI_SOCKET_ADDR = "tcp://*:10006"
     }
 }
