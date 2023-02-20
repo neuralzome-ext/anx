@@ -1,6 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <style name="DarkTheme" parent="Theme.AppCompat">
+        <item name="color_toolbar_border">@color/toolbarDark</item>
+        <item name="ic_color">?android:attr/colorControlNormal</item>
+    </style>
+
+    <style name="LightTheme" parent="Theme.AppCompat.Light">
+        <item name="color_toolbar_border">@color/toolbarLight</item>
+        <item name="ic_color">?android:attr/colorControlNormal</item>
+    </style>
+
     <style name="Theme.Terminal" parent="@android:style/Theme.Material.Light.NoActionBar">
         <item name="android:statusBarColor">#000000</item>
         <item name="android:colorPrimary">#FF000000</item>

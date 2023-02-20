@@ -18,16 +18,14 @@ import com.downloader.OnDownloadListener
 import com.downloader.PRDownloader
 import com.downloader.Priority
 import com.flomobility.anx.R
-import com.flomobility.anx.app.PluginResultsService
-import com.flomobility.anx.app.TerminalCommandExecutor
+//import com.flomobility.anx.app.PluginResultsService
+//import com.flomobility.anx.app.TerminalCommandExecutor
 import com.flomobility.anx.hermes.other.Constants
 import com.flomobility.anx.hermes.other.getIsInstalled
 import com.flomobility.anx.hermes.other.provideDispatcher
 import com.flomobility.anx.hermes.other.setIsInstalled
 import com.flomobility.anx.hermes.ui.download.DownloadActivity
 import com.flomobility.anx.hermes.ui.download.DownloadManager
-import com.flomobility.anx.shared.logger.Logger
-import com.flomobility.anx.shared.terminal.TerminalConstants
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
@@ -96,7 +94,7 @@ class InstallingService : LifecycleService() {
     private val receiver: BroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             if (intent != null) {
-                val executionCode =
+                /*val executionCode =
                     intent.getIntExtra(PluginResultsService.RESULT_BROADCAST_EXECUTION_CODE_KEY, -1)
                 val result = intent.getBundleExtra(PluginResultsService.RESULT_BROADCAST_RESULT_KEY)
                 when (executionCode) {
@@ -107,7 +105,7 @@ class InstallingService : LifecycleService() {
                             onInstallationDone(exitCode)
                         }
                     }
-                }
+                }*/
             }
         }
     }
@@ -201,13 +199,12 @@ class InstallingService : LifecycleService() {
 
     override fun onBind(intent: Intent): IBinder {
         super.onBind(intent)
-        Logger.logVerbose(LOG_TAG, "onBind")
         return mBinder
     }
 
     private fun startEndlessService() {
-        LocalBroadcastManager.getInstance(this)
-            .registerReceiver(receiver, IntentFilter(PluginResultsService.RESULT_BROADCAST_INTENT))
+//        LocalBroadcastManager.getInstance(this)
+//            .registerReceiver(receiver, IntentFilter(PluginResultsService.RESULT_BROADCAST_INTENT))
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             createNotificationChannel(notificationManager)
         }
@@ -381,7 +378,7 @@ class InstallingService : LifecycleService() {
             sendEvent(Events.InstallingSuccess)
             return
         }
-        lifecycleScope.launch {
+        /*lifecycleScope.launch {
             // Install here
             val terminalCommandExecutor =
                 TerminalCommandExecutor.getInstance(this@InstallingService)
@@ -445,7 +442,7 @@ class InstallingService : LifecycleService() {
                     )
                 }
             })
-        }
+        }*/
     }
 
     private fun sendEvent(event: Events) {
@@ -468,14 +465,12 @@ class InstallingService : LifecycleService() {
 
     /** Request to stop service.  */
     private fun requestStopService() {
-        Logger.logDebug(LOG_TAG, "Requesting to stop service")
         runStopForeground()
         stopSelf()
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        Logger.logVerbose(LOG_TAG, "onDestroy")
         runStopForeground()
         LocalBroadcastManager.getInstance(this).unregisterReceiver(receiver)
     }

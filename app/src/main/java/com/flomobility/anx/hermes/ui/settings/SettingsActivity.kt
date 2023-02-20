@@ -13,7 +13,7 @@ import androidx.browser.customtabs.CustomTabsIntent
 import com.flomobility.anx.R
 import com.flomobility.anx.databinding.ActivitySettingsAnxBinding
 import com.flomobility.anx.databinding.ActivitySettingsBinding
-import com.flomobility.anx.hermes.daemon.EndlessService
+//import com.flomobility.anx.hermes.daemon.EndlessService
 import com.flomobility.anx.hermes.other.*
 import com.flomobility.anx.hermes.other.viewutils.AlertDialog
 import com.flomobility.anx.hermes.ui.home.HomeActivity
@@ -156,7 +156,7 @@ class SettingsActivity : AppCompatActivity() {
 
     private fun logout() {
         sharedPreferences.clear()
-        sendCommandToService(Constants.ACTION_STOP_SERVICE, EndlessService::class.java)
+//        sendCommandToService(Constants.ACTION_STOP_SERVICE, EndlessService::class.java)
         LoginActivity.navigateToLogin(this@SettingsActivity)
         finish()
     }

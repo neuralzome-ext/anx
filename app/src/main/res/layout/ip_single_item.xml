@@ -12,7 +12,6 @@
         android:layout_height="wrap_content"
         android:fontFamily="@font/metropolis_regular_webfont"
         android:padding="6dp"
-        android:text="@string/sample_ip"
         android:textColor="@color/white"
         android:textSize="18sp"/>
 

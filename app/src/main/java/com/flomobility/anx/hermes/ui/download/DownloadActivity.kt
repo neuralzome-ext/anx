@@ -13,7 +13,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.downloader.PRDownloader
-import com.flomobility.anx.app.TerminalInstaller
+//import com.flomobility.anx.app.TerminalInstaller
 import com.flomobility.anx.databinding.ActivityUbuntuSetupBinding
 import com.flomobility.anx.hermes.daemon.InstallingService
 import com.flomobility.anx.hermes.other.*
@@ -187,7 +187,7 @@ echo "done"
     }
 
     private fun createInstallScript() {
-        TerminalInstaller.setupBootstrapIfNeeded(this@DownloadActivity, Runnable {
+        /*TerminalInstaller.setupBootstrapIfNeeded(this@DownloadActivity, Runnable {
             try {
                 val dirPath = "/data/data/com.flomobility.anx/files/home/"
                 val installScriptFile = "install.sh"
@@ -211,7 +211,7 @@ echo "done"
             } catch (e: Exception) {
                 Timber.e(e)
             }
-        })
+        })*/
     }
 
     private fun setEventListeners() {

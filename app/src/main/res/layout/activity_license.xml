@@ -37,7 +37,6 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:fontFamily="@font/metropolis_semibold_webfont"
-        android:text="@string/end_user_license_agreement"
         android:textAppearance="@style/TextAppearance.AppCompat.Title"
         android:textColor="@color/white"
         app:layout_constraintEnd_toEndOf="parent"
@@ -90,7 +89,6 @@
                     android:layout_marginHorizontal="16dp"
                     android:buttonTint="@drawable/checkbox"
                     android:checked="false"
-                    android:text="@string/i_understand_and_agree_to_the_above_agreement"
                     android:textAppearance="@style/TextAppearance.AppCompat.Small"
                     android:textColor="@color/white"
                     app:layout_constraintBottom_toTopOf="@id/btn_agree"
@@ -107,7 +105,6 @@
                     android:enabled="false"
                     android:foreground="?attr/selectableItemBackgroundBorderless"
                     android:fontFamily="@font/metropolis_bold_webfont"
-                    android:text="@string/proceed"
                     android:textColor="@color/white"
                     style="@style/Flo.Button"
                     app:layout_constraintBottom_toBottomOf="parent"
@@ -145,7 +142,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
-                    android:text="@string/try_again" />
+                     />
 
 
             </LinearLayout>

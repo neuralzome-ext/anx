@@ -1,7 +1,6 @@
 package com.flomobility.anx.hermes.other.logutils
 
 import android.util.Log
-import com.google.firebase.crashlytics.FirebaseCrashlytics
 import timber.log.Timber
 
 class CrashReportingTree : Timber.Tree() {
@@ -18,18 +17,6 @@ class CrashReportingTree : Timber.Tree() {
         }
 
         val throwable = t ?: Throwable(message)
-
-        FirebaseCrashlytics.getInstance().apply {
-            setCustomKey(CRASHLYTICS_KEY_PRIORITY, priority)
-            setCustomKey(CRASHLYTICS_KEY_TAG, tag ?: "NO_TAG");
-            setCustomKey(CRASHLYTICS_KEY_MESSAGE, message);
-            recordException(throwable)
-            log("$tag $message")
-            if (didCrashOnPreviousExecution()) {
-                sendUnsentReports()
-            }
-        }
-
 
     }
 

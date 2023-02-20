@@ -1,6 +1,9 @@
 package com.flomobility.anx.hermes.ui.home
 
-import android.content.*
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.SharedPreferences
 import android.net.wifi.WifiManager
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
@@ -13,27 +16,21 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.downloader.PRDownloader
-import com.flomobility.anx.app.PluginResultsService
-import com.flomobility.anx.app.TerminalCommandExecutor
+import com.flomobility.anx.databinding.ActivityHomeBinding
+import com.flomobility.anx.hermes.alerts.Alert
+import com.flomobility.anx.hermes.alerts.AlertManager
 import com.flomobility.anx.hermes.assets.AssetManager
-import com.flomobility.anx.hermes.daemon.EndlessService
 import com.flomobility.anx.hermes.network.requests.InfoRequest
 import com.flomobility.anx.hermes.other.*
 import com.flomobility.anx.hermes.other.viewutils.AlertDialog
 import com.flomobility.anx.hermes.ui.adapter.AssetAdapter
 import com.flomobility.anx.hermes.ui.adapter.IpAdapter
+import com.flomobility.anx.hermes.ui.asset_debug.AssetDebugActivity
 import com.flomobility.anx.hermes.ui.login.LoginActivity
 import com.flomobility.anx.hermes.ui.settings.SettingsActivity
-import com.flomobility.anx.databinding.ActivityHomeBinding
-import com.flomobility.anx.hermes.alerts.Alert
-import com.flomobility.anx.hermes.alerts.AlertManager
-import com.flomobility.anx.hermes.ui.asset_debug.AssetDebugActivity
-import com.flomobility.anx.shared.terminal.TerminalConstants
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
-import timber.log.Timber
 import javax.inject.Inject
 import kotlin.system.exitProcess
 
@@ -72,7 +69,7 @@ class HomeActivity : AppCompatActivity() {
         /**
          * If Build Type Headless than check condition for logout
          */
-        if(!isHeadLessBuildType()) {
+        if (!isHeadLessBuildType()) {
             if (sharedPreferences.getDeviceID() == null) {
                 showSnackBar("Login Again")
                 logout()
@@ -95,11 +92,11 @@ class HomeActivity : AppCompatActivity() {
          * If Headless than no need to call API
          * Just start the service
          */
-        if(isHeadLessBuildType()){
-            sendCommandToService(
-                Constants.ACTION_START_OR_RESUME_SERVICE,
-                EndlessService::class.java
-            )
+        if (isHeadLessBuildType()) {
+            /* sendCommandToService(
+                 Constants.ACTION_START_OR_RESUME_SERVICE,
+                 EndlessService::class.java
+             )*/
             startSshServer()
         }
     }
@@ -107,7 +104,7 @@ class HomeActivity : AppCompatActivity() {
     /*
     method call on enableWifi
      */
-    private fun enableWifi(){
+    private fun enableWifi() {
         wifiManager = applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
         wifiManager.isWifiEnabled = true
     }
@@ -124,8 +121,8 @@ class HomeActivity : AppCompatActivity() {
     private val receiver: BroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             if (intent != null) {
-                when(intent.action) {
-                    PluginResultsService.RESULT_BROADCAST_INTENT -> {
+                when (intent.action) {
+                    /*PluginResultsService.RESULT_BROADCAST_INTENT -> {
                         val executionCode =
                             intent.getIntExtra(PluginResultsService.RESULT_BROADCAST_EXECUTION_CODE_KEY, -1)
                         val result = intent.getBundleExtra(PluginResultsService.RESULT_BROADCAST_RESULT_KEY)
@@ -142,10 +139,11 @@ class HomeActivity : AppCompatActivity() {
                                 }
                             }
                         }
-                    }
+                    }*/
                     AlertManager.ANX_ALERTS_BROADCAST_INTENT -> {
-                        val alert = intent.getParcelableExtra<Alert>(AlertManager.KEY_ANX_ALERT) ?: return
-                        when(alert.priority) {
+                        val alert =
+                            intent.getParcelableExtra<Alert>(AlertManager.KEY_ANX_ALERT) ?: return
+                        when (alert.priority) {
                             Alert.Priority.LOW -> {
                                 // TODO
                             }
@@ -172,7 +170,7 @@ class HomeActivity : AppCompatActivity() {
     private fun setEventListeners() {
         bind.apply {
             exit.setOnClickListener {
-                if(!isHeadLessBuildType()) {
+                if (!isHeadLessBuildType()) {
                     AlertDialog.getInstance(
                         "Confirm Logout",
                         "Are you sure you want to logout?",
@@ -187,7 +185,7 @@ class HomeActivity : AppCompatActivity() {
             }
             settings.setOnClickListener {
                 //TODO need to manage setting screen aswell
-                if(!isHeadLessBuildType())
+                if (!isHeadLessBuildType())
                     SettingsActivity.navigateToSetting(this@HomeActivity)
             }
         }
@@ -206,17 +204,17 @@ class HomeActivity : AppCompatActivity() {
                         return@observe
                     }
                     sharedPreferences.putDeviceExpiry(it.peekContent().data?.expiry)
-                    sendCommandToService(
+                    /*sendCommandToService(
                         Constants.ACTION_START_OR_RESUME_SERVICE,
                         EndlessService::class.java
-                    )
+                    )*/
                     startSshServer()
                 }
                 is Resource.Error -> {
-                    sendCommandToService(
+                    /*sendCommandToService(
                         Constants.ACTION_STOP_SERVICE,
                         EndlessService::class.java
-                    )
+                    )*/
                     when (it.peekContent().errorData?.code) {
                         null -> {
                             var error = it.peekContent().message
@@ -292,20 +290,20 @@ class HomeActivity : AppCompatActivity() {
 
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                EndlessService.eventsFlow.collect { event ->
+                /*EndlessService.eventsFlow.collect { event ->
                     when(event) {
                         is EndlessService.Companion.Events.Nothing -> Unit
                         is EndlessService.Companion.Events.Logout -> {
                             logout()
                         }
                     }
-                }
+                }*/
             }
         }
     }
 
     private fun startSshServer() {
-        val terminalCommandExecutor =
+/*        val terminalCommandExecutor =
             TerminalCommandExecutor.getInstance(this@HomeActivity)
         terminalCommandExecutor.startCommandExecutor(object :
             TerminalCommandExecutor.ITerminalCommandExecutor {
@@ -319,14 +317,14 @@ class HomeActivity : AppCompatActivity() {
             }
 
             override fun onEndlessServiceDisconnected() {}
-        })
+        })*/
     }
 
     private fun setupRecyclers() {
         bind.ipRecycler.layoutManager = LinearLayoutManager(this@HomeActivity)
         bind.ipRecycler.adapter = IpAdapter(this@HomeActivity, getIPAddressList()).apply {
             doOnLongClick { ipAddress ->
-                if(this@HomeActivity.setClipboard("ip_address", ipAddress.address)) {
+                if (this@HomeActivity.setClipboard("ip_address", ipAddress.address)) {
                     showSnackBar("Copied Ip Address to clipboard")
                 }
             }
@@ -377,18 +375,18 @@ class HomeActivity : AppCompatActivity() {
 
     private fun logout() {
         sharedPreferences.clear()
-        sendCommandToService(Constants.ACTION_STOP_SERVICE, EndlessService::class.java)
+//        sendCommandToService(Constants.ACTION_STOP_SERVICE, EndlessService::class.java)
         LoginActivity.navigateToLogin(this@HomeActivity)
         finish()
     }
 
     override fun onStart() {
         super.onStart()
-        LocalBroadcastManager.getInstance(this)
-            .registerReceiver(receiver,
-                IntentFilter(PluginResultsService.RESULT_BROADCAST_INTENT).apply {
-                    addAction(AlertManager.ANX_ALERTS_BROADCAST_INTENT)
-                })
+//        LocalBroadcastManager.getInstance(this)
+//            .registerReceiver(receiver,
+//                IntentFilter(PluginResultsService.RESULT_BROADCAST_INTENT).apply {
+//                    addAction(AlertManager.ANX_ALERTS_BROADCAST_INTENT)
+//                })
     }
 
     override fun onStop() {

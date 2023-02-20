@@ -48,7 +48,7 @@
         android:layout_marginStart="40dp"
         android:layout_marginTop="20dp"
         android:fontFamily="@font/metropolis_regular_webfont"
-        android:text="@string/terms_and_conditions"
+        android:text="terms_and_conditions"
         android:textColor="@color/white"
         android:textSize="16sp" />
 
@@ -63,7 +63,7 @@
         android:layout_marginStart="40dp"
         android:layout_marginTop="20dp"
         android:fontFamily="@font/metropolis_regular_webfont"
-        android:text="@string/privacy_policy"
+        android:text="privacy_policy"
         android:textColor="@color/white"
         android:textSize="16sp" />
 
@@ -78,7 +78,7 @@
         android:layout_marginStart="40dp"
         android:layout_marginTop="20dp"
         android:fontFamily="@font/metropolis_regular_webfont"
-        android:text="@string/docs"
+        android:text="docs"
         android:textColor="@color/white"
         android:textSize="16sp" />
 
@@ -90,7 +90,7 @@
         android:layout_marginStart="40dp"
         android:layout_marginTop="20dp"
         android:fontFamily="@font/metropolis_regular_webfont"
-        android:text="@string/licence_validity"
+        android:text="licence_validity"
         android:textColor="@color/white"
         android:textSize="16sp" />
 
@@ -123,7 +123,7 @@
         android:layout_marginStart="40dp"
         android:layout_marginTop="10dp"
         android:fontFamily="@font/metropolis_thin_webfont"
-        android:text="@string/actions"
+        android:text="actions"
         android:textColor="#FEFEFE"
         android:textSize="14sp" />
 
@@ -135,7 +135,7 @@
         android:layout_marginStart="40dp"
         android:layout_marginTop="20dp"
         android:fontFamily="@font/metropolis_regular_webfont"
-        android:text="@string/start_on_boot"
+        android:text="start_on_boot"
         android:textColor="@color/white"
         android:textSize="16sp" />
 
@@ -157,7 +157,7 @@
         android:layout_marginStart="40dp"
         android:layout_marginTop="30dp"
         android:fontFamily="@font/metropolis_regular_webfont"
-        android:text="@string/logout"
+        android:text="logout"
         android:textColor="@color/white"
         android:textSize="16sp" />
 
