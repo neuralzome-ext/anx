@@ -1,6 +1,7 @@
 plugins {
     id 'java-library'
     id 'org.jetbrains.kotlin.jvm'
+//    id "net.ltgt.errorprone" version "1.4.0"
 }
 
 java {
@@ -9,29 +10,101 @@ java {
 }
 
 dependencies {
-    implementation 'com.google.protobuf:protobuf-java:3.21.12'
-    implementation 'com.google.protobuf:protobuf-kotlin:3.21.12'
+    implementation 'com.google.protobuf:protobuf-java:3.22.0'
+//    implementation 'com.google.protobuf:protobuf-kotlin:3.22.0'
+//    errorprone "com.google.errorprone:error_prone_core:2.9.0"
 }
+
+/*// enable Error Prone for compilation
+tasks.withType(JavaCompile) {
+    options.errorprone {
+        check("all")
+    }
+}*/
 
 task generateProtoc(description: 'Build java files from proto files') {
     println('Creating java files from .proto files')
     def anxProtoDirPath = rootDir.path + "/api_docs/anx"
-    def buildDir = projectDir.path + "/src/main/java"
+    def javaBuildDir = projectDir.path + "/src/main/java"
+    def kotlinBuildDir = projectDir.path + "/src/main/kotlin"
 
-    Properties properties = new Properties()
-    properties.load(new FileInputStream(project.rootProject.file('local.properties')))
-    def protocPath = properties.getProperty("protoc.path")
+    def protoc = getProtoc()
 
     fileTree(anxProtoDirPath).forEach { file ->
         if (file.name.contains('.proto')) {
             exec {
                 workingDir anxProtoDirPath
-                commandLine protocPath, "--proto_path=.", "--java_out="+buildDir, "--kotlin_out="+buildDir, file.name
+                commandLine protoc, "--proto_path=.", "--java_out="+javaBuildDir, /*"--kotlin_out="+kotlinBuildDir,*/ file.name
             }
         }
     }
     println("Created java files. Check ")
 }
+
+def getProtoc() {
+    def arch = getOsArch()
+    def os = getOsName()
+
+    def protoc = ""
+    if (os == "linux") {
+        if(arch == "arm64" || arch == "aarch64") {
+            protoc = "protoc-22.0-linux-aarch_64"
+        }
+        if(arch == "x86_64") {
+            protoc = "protoc-22.0-linux-x86_64"
+        }
+    }
+
+    if (os == "osx") {
+        if(arch == "arm64" || arch == "aarch64") {
+            protoc = "protoc-22.0-osx-aarch_64"
+        }
+        if(arch == "x86_64") {
+            protoc = "protoc-22.0-osx-x86_64"
+        }
+    }
+
+    if (os == "windows") {
+        if(arch == "x64") {
+            protoc = "protoc-22.0-win_64.exe"
+        }
+        if(arch == "x86") {
+            protoc = "protoc-22.0-win_32.exe"
+        }
+    }
+
+    if (protoc == "") {
+        throw new GradleException("***** No protoc found for your machine!! *****")
+    }
+
+    return "${projectDir.path}/third_party/protoc/$protoc"
+}
+
+def getOsName() {
+    final String osName = System.getProperty("os.name").toLowerCase()
+
+    if (osName.contains("linux")) {
+        return ("linux")
+    } else if (osName.contains("mac os x") || osName.contains("darwin") || osName.contains("osx")) {
+        return ("osx")
+    } else if (osName.contains("windows")) {
+        return ("windows")
+    }
+    return ("unix")
+}
+
+def getOsArch() {
+    return (System.getProperty("os.arch"))
+}
+
+task cleanUpProto(type: Delete) {
+    def javaBuildDir = projectDir.path + "/src/main/java/com/flomobility/anx/proto"
+    def kotlinBuildDir = projectDir.path + "/src/main/kotlin/com/flomobility/anx/proto"
+    delete javaBuildDir
+    delete kotlinBuildDir
+}
+
+clean.dependsOn 'cleanUpProto'
 
 tasks.withType(JavaCompile) {
     compileTask -> compileTask.dependsOn generateProtoc
