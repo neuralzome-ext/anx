@@ -1,6 +1,5 @@
 package com.flomobility.anx.receiver;
 
-import static com.flomobility.anx.other.Constants.SERVICE_CHANNEL_ID;
 
 import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
@@ -14,6 +13,8 @@ import com.flomobility.anx.R;
 import com.flomobility.anx.activity.MainActivity;
 
 public class ActionReceiver extends BroadcastReceiver {
+
+    private final static String SERVICE_CHANNEL_ID = "SERVICE_CHANNEL";
 
     final static int NOTIFY_ID = 2;
     static long attemptTime = 0;

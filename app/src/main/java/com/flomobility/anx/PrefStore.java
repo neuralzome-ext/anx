@@ -1,7 +1,5 @@
 package com.flomobility.anx;
 
-import static com.flomobility.anx.other.Constants.SERVICE_CHANNEL_ID;
-
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -30,6 +28,8 @@ import java.util.Locale;
 import com.flomobility.anx.activity.MainActivity;
 
 public class PrefStore {
+
+    private final static String SERVICE_CHANNEL_ID = "SERVICE_CHANNEL";
 
     private final static SettingsStore SETTINGS = new SettingsStore();
     private final static PropertiesStore PROPERTIES = new PropertiesStore();

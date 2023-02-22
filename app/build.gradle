@@ -6,6 +6,7 @@ plugins {
 //    id 'com.google.gms.google-services'
 //    id 'com.google.firebase.crashlytics'
     id 'kotlin-parcelize'
+    id 'project-report'
 }
 
 android {
@@ -41,7 +42,9 @@ android {
         // Timber
         implementation 'com.jakewharton.timber:timber:4.7.1'
 
-        implementation "androidx.security:security-crypto:1.0.0-alpha02"
+        implementation ("androidx.security:security-crypto:1.0.0-alpha02") {
+            exclude group: 'com.google.protobuf', module: ''
+        }
 
         //Multidex
         implementation 'com.android.support:multidex:1.0.3'
@@ -101,7 +104,6 @@ android {
 
         implementation project(':assets')
         implementation project(':device')
-        implementation project(':protoc')
 
         //Location
         implementation 'com.google.android.gms:play-services-location:20.0.0'

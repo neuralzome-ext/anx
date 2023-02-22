@@ -18,8 +18,8 @@ import com.flomobility.anx.hermes.other.*
 import com.flomobility.anx.hermes.ui.download.DownloadActivity
 import com.flomobility.anx.hermes.ui.home.HomeActivity
 import com.github.ybq.android.spinkit.style.ThreeBounce
-import com.google.android.gms.auth.api.identity.GetPhoneNumberHintIntentRequest
-import com.google.android.gms.auth.api.identity.Identity
+//import com.google.android.gms.auth.api.identity.GetPhoneNumberHintIntentRequest
+//import com.google.android.gms.auth.api.identity.Identity
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
@@ -54,10 +54,10 @@ class LoginActivity : ComponentActivity() {
         ActivityResultContracts.StartIntentSenderForResult()
     ) { result ->
         try {
-            val phoneNumber =
+            /*val phoneNumber =
                 Identity.getSignInClient(this@LoginActivity).getPhoneNumberFromIntent(result.data)
             bind.deviceId.text = "DEVICE ID: $phoneNumber"
-            sharedPreferences.putDeviceID(phoneNumber)
+            sharedPreferences.putDeviceID(phoneNumber)*/
         } catch (e: Exception) {
             Timber.e("Phone Number Hint failed")
         }
@@ -126,7 +126,7 @@ class LoginActivity : ComponentActivity() {
      **/
 
     private fun requestPhoneNumber() {
-        val request: GetPhoneNumberHintIntentRequest =
+        /*val request: GetPhoneNumberHintIntentRequest =
             GetPhoneNumberHintIntentRequest.builder().build()
         Identity.getSignInClient(this@LoginActivity)
             .getPhoneNumberHintIntent(request)
@@ -145,7 +145,7 @@ class LoginActivity : ComponentActivity() {
                 bind.overlay.isVisible = true
                 bottomSheetPhoneNumber.open()
 //                showSnackBarWithAction("Couldn't get device ID", indefinite = true, actionText = "Ok")
-            }
+            }*/
     }
 
     private fun subscribeToObservers() {
