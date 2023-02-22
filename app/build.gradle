@@ -178,7 +178,7 @@ android {
         dev {
             debuggable true
             minifyEnabled false
-            signingConfig signingConfigs.flo
+            signingConfig signingConfigs.debug
             versionNameSuffix "-dev"
             applicationIdSuffix ".dev"
             resValue "string", "application_name", "(D)anx"
