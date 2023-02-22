@@ -41,7 +41,6 @@ android {
         // Timber
         implementation 'com.jakewharton.timber:timber:4.7.1'
 
-        implementation "com.google.android.gms:play-services-auth:20.3.0"
         implementation "androidx.security:security-crypto:1.0.0-alpha02"
 
         //Multidex
@@ -99,6 +98,10 @@ android {
 
         implementation project(':usbCameraCommon')
         implementation project(':libuvccamera')
+
+        implementation project(':assets')
+        implementation project(':device')
+        implementation project(':protoc')
 
         //Location
         implementation 'com.google.android.gms:play-services-location:20.0.0'

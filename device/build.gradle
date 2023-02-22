@@ -44,5 +44,8 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
 
+    // ZMQ - JAVA
+    implementation 'org.zeromq:jeromq:0.5.2'
+
     implementation project(":protoc")
 }
