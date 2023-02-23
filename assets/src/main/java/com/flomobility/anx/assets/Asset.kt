@@ -1,9 +1,12 @@
 package com.flomobility.anx.assets
 
-abstract class Asset {
+import com.flomobility.anx.common.Result
+import com.google.protobuf.Message
 
-    abstract fun start(): Boolean
+abstract class Asset<Options: Message> {
 
-    abstract fun stop(): Boolean
+    abstract fun start(options: Options?): Result
+
+    abstract fun stop(): Result
 
 }
