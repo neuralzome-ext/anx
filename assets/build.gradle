@@ -1,5 +1,7 @@
 plugins {
+    id 'kotlin-kapt'
     id 'com.android.library'
+    id 'dagger.hilt.android.plugin'
     id 'org.jetbrains.kotlin.android'
 }
 
@@ -44,5 +46,11 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
 
+    // Dagger-Hilt
+    implementation "com.google.dagger:hilt-android:2.42"
+    implementation 'androidx.camera:camera-video:1.1.0'
+    kapt "com.google.dagger:hilt-compiler:2.42"
+
+    api 'com.google.protobuf:protobuf-java:3.22.0'
     implementation project(":protoc")
 }

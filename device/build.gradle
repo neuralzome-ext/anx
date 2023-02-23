@@ -59,4 +59,5 @@ dependencies {
 
     api 'com.google.protobuf:protobuf-java:3.22.0'
     implementation project(":protoc")
+    implementation project(":assets")
 }
