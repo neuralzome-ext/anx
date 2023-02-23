@@ -2,8 +2,7 @@ package com.flomobility.anx.comms
 
 import com.flomobility.anx.other.Constants
 import com.flomobility.anx.other.sendStdResponse
-import com.flomobility.anx.rpc.GetAnxVersionRpc
-import com.flomobility.anx.rpc.Rpc
+import com.flomobility.anx.rpc.*
 import org.zeromq.SocketType
 import org.zeromq.ZContext
 import org.zeromq.ZMQ
@@ -18,7 +17,27 @@ import javax.inject.Singleton
  * */
 @Singleton
 class DeviceRpcHandler @Inject constructor(
-    private val getAnxVersionRpc: GetAnxVersionRpc
+    private val getAnxVersionRpc: GetAnxVersionRpc,
+    private val getAssetStateRpc: GetAssetStateRpc,
+    private val getAvailableLanguagesRpc: GetAvailableLanguagesRpc,
+    private val getFloOsVersionRpc: GetFloOsVersionRpc,
+    private val getImeiNumbersRpc: GetImeiNumbersRpc,
+    private val getPhoneNumbersRpc: GetPhoneNumbersRpc,
+    private val getIsTtsBusyRpc: IsTtsBusyRpc,
+    private val getRebootRpc: RebootRpc,
+    private val getRestartAnxServiceRpc: RestartAnxServiceRpc,
+    private val getSetHotspotRpc: SetHotspotRpc,
+    private val getSetWifiRpc: SetWifiRpc,
+    private val getShutdownRpc: ShutdownRpc,
+    private val getStartDeviceCameraRpc: StartDeviceCameraRpc,
+    private val getStartDeviceGnssRpc: StartDeviceGnssRpc,
+    private val getStartDeviceImuRpc: StartDeviceImuRpc,
+    private val getStartUsbTetheringRpc: StartUsbTetheringRpc,
+    private val geStopDeviceCameraRpc: StopDeviceCameraRpc,
+    private val getStopDeviceGnssRpc: StopDeviceGnssRpc,
+    private val getStopDeviceImuRpc: StartDeviceImuRpc,
+    private val getStopUsbTetheringRpc: StartUsbTetheringRpc,
+    private val getTtsRpc: TtsRpc
 ) {
 
     private var port: Int = 10008
@@ -33,6 +52,26 @@ class DeviceRpcHandler @Inject constructor(
 
     private fun addAllRpcToRegistry() {
         rpcRegistry[getAnxVersionRpc.name] = getAnxVersionRpc
+        rpcRegistry[getAssetStateRpc.name] = getAssetStateRpc
+        rpcRegistry[getAvailableLanguagesRpc.name] = getAvailableLanguagesRpc
+        rpcRegistry[getFloOsVersionRpc.name] = getFloOsVersionRpc
+        rpcRegistry[getImeiNumbersRpc.name] = getImeiNumbersRpc
+        rpcRegistry[getPhoneNumbersRpc.name] = getPhoneNumbersRpc
+        rpcRegistry[getIsTtsBusyRpc.name] = getIsTtsBusyRpc
+        rpcRegistry[getRebootRpc.name] = getRebootRpc
+        rpcRegistry[getRestartAnxServiceRpc.name] = getRestartAnxServiceRpc
+        rpcRegistry[getSetHotspotRpc.name] = getSetHotspotRpc
+        rpcRegistry[getSetWifiRpc.name] = getSetWifiRpc
+        rpcRegistry[getShutdownRpc.name] = getShutdownRpc
+        rpcRegistry[getStartDeviceCameraRpc.name] = getStartDeviceCameraRpc
+        rpcRegistry[getStartDeviceGnssRpc.name] = getStartDeviceGnssRpc
+        rpcRegistry[getStartDeviceImuRpc.name] = getStartDeviceImuRpc
+        rpcRegistry[getStartUsbTetheringRpc.name] = getStartUsbTetheringRpc
+        rpcRegistry[geStopDeviceCameraRpc.name] = geStopDeviceCameraRpc
+        rpcRegistry[getStopDeviceGnssRpc.name] = getStopDeviceGnssRpc
+        rpcRegistry[getStopDeviceImuRpc.name] = getStopDeviceImuRpc
+        rpcRegistry[getStopUsbTetheringRpc.name] = getStopUsbTetheringRpc
+        rpcRegistry[getTtsRpc.name] = getTtsRpc
     }
 
     fun init(port: Int) {
@@ -99,7 +138,7 @@ class DeviceRpcHandler @Inject constructor(
         }
 
         private fun handleRpc(rpc: Rpc<*, *>?, data: ByteArray) {
-            if(rpc == null) {
+            if (rpc == null) {
                 socket.sendStdResponse(
                     success = false,
                     message = "Invalid RPC received : "
