@@ -136,15 +136,12 @@ class DeviceImu @Inject constructor(
     }
 
     private fun registerImu() {
-        // TODO : add sensor listeners
-
         with(sensorManager) {
             getDefaultSensor(Sensor.TYPE_GYROSCOPE)?.also { magnetometer ->
                 registerListener(
                     sensorEventListeners,
                     magnetometer,
                     SensorManager.SENSOR_DELAY_FASTEST
-//                    rate.toMicros().toInt()
                 )
             }
             getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION)?.also { gyroscope ->
@@ -152,7 +149,6 @@ class DeviceImu @Inject constructor(
                     sensorEventListeners,
                     gyroscope,
                     SensorManager.SENSOR_DELAY_FASTEST
-//                    rate.toMicros().toInt()
                 )
             }
             getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)?.also { linearAcc ->
@@ -160,7 +156,6 @@ class DeviceImu @Inject constructor(
                     sensorEventListeners,
                     linearAcc,
                     SensorManager.SENSOR_DELAY_FASTEST
-//                    rate.toMicros().toInt()
                 )
             }
             getDefaultSensor(Sensor.TYPE_GYROSCOPE_UNCALIBRATED)?.also { magnetometer ->
@@ -168,7 +163,6 @@ class DeviceImu @Inject constructor(
                     sensorEventListeners,
                     magnetometer,
                     SensorManager.SENSOR_DELAY_FASTEST
-//                    rate.toMicros().toInt()
                 )
             }
             getDefaultSensor(Sensor.TYPE_ACCELEROMETER_UNCALIBRATED)?.also { gyroscope ->
@@ -176,7 +170,6 @@ class DeviceImu @Inject constructor(
                     sensorEventListeners,
                     gyroscope,
                     SensorManager.SENSOR_DELAY_FASTEST
-//                    rate.toMicros().toInt()
                 )
             }
             getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD)?.also { linearAcc ->
@@ -184,14 +177,13 @@ class DeviceImu @Inject constructor(
                     sensorEventListeners,
                     linearAcc,
                     SensorManager.SENSOR_DELAY_FASTEST
-//                    rate.toMicros().toInt()
                 )
             }
         }
     }
 
     private fun unRegisterImu() {
-        // TODO : unregister listeners
+        sensorManager.unregisterListener(sensorEventListeners)
     }
 
     override fun start(options: Assets.StartDeviceImu?): Result {
