@@ -1,34 +1,26 @@
 package com.flomobility.anx.rpc
 
+import android.os.Build
+import androidx.annotation.RequiresApi
+import com.flomobility.anx.assets.AssetManager
 import com.flomobility.anx.proto.Common
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class StartDeviceGnssRpc @Inject constructor() :
-    Rpc<Common.Empty, Common.StdResponse>() {
-
-    private fun StartDeviceGnss(): Common.StdResponse? {
-
-        val stdResponse = Common.StdResponse.newBuilder().apply {
-            this.success = true
-            this.message = "Device Gnss started"
-        }.build()
-        return stdResponse
-    }
+class StartDeviceGnssRpc @Inject constructor(
+    private val assetManager: AssetManager
+) : Rpc<Common.Empty, Common.StdResponse>() {
 
     override val name: String
         get() = "StartDeviceGnss"
 
+    @RequiresApi(Build.VERSION_CODES.N)
     override fun execute(req: Common.Empty): Common.StdResponse {
-        val stdResponse = Common.StdResponse.newBuilder()
-        stdResponse.apply {
-            success = StartDeviceGnss()?.success!!
-            message = StartDeviceGnss()?.message
-        }
-        return stdResponse.build()
+        return assetManager.startDeviceGnss(req)
     }
 
+    @RequiresApi(Build.VERSION_CODES.N)
     override fun execute(req: ByteArray): Common.StdResponse {
         return execute(Common.Empty.parseFrom(req))
     }

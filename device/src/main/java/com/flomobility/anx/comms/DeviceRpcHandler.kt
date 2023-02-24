@@ -1,5 +1,6 @@
 package com.flomobility.anx.comms
 
+import android.util.Log
 import com.flomobility.anx.other.Constants
 import com.flomobility.anx.other.sendStdResponse
 import com.flomobility.anx.rpc.*
@@ -40,7 +41,7 @@ class DeviceRpcHandler @Inject constructor(
     private val getTtsRpc: TtsRpc
 ) {
 
-    private var port: Int = 10008
+    private var port: Int = 10002
 
     private var rpcThread: RpcThread? = null
 
@@ -97,7 +98,7 @@ class DeviceRpcHandler @Inject constructor(
                 ZContext().use { ctx ->
                     interrupt.set(false)
 
-                    val address = "tcp://127.0.0.1:$port"
+                    val address = "tcp://localhost:$port"
 
                     socket = ctx.createSocket(SocketType.REP)
                     socket.bind(address)
@@ -114,11 +115,13 @@ class DeviceRpcHandler @Inject constructor(
                             if (poller.pollin(0)) {
                                 socket.recv(0)?.let { bytes ->
                                     if (!socket.hasReceiveMore()) {
+                                        Timber.tag(TAG).i("Invalid RPC")
                                         socket.sendStdResponse(
                                             success = false,
                                             message = "Invalid RPC : No data attached"
                                         )
                                     } else {
+                                        Timber.tag(TAG).i("RPC data")
                                         val data = socket.recv()
                                         val rpcName = String(bytes, ZMQ.CHARSET)
                                         val rpc = rpcRegistry[rpcName]

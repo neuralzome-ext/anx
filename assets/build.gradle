@@ -57,6 +57,9 @@ dependencies {
     // Timber
     implementation 'com.jakewharton.timber:timber:4.7.1'
 
+    // serialization
+    implementation 'com.google.code.gson:gson:2.8.9'
+
     api 'com.google.protobuf:protobuf-java:3.22.0'
     implementation project(":protoc")
 }

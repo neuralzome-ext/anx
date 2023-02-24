@@ -197,7 +197,7 @@ class AssetManager @Inject constructor(
     }
 
     companion object {
-        const val ASSETS_STATE_PUBLISHER_ADDR = "tcp://*:10003"
+        const val ASSETS_STATE_PUBLISHER_ADDR = "tcp://*:100000"
         const val MSG_PUBLISH_ASSET_STATE = 1
     }
 

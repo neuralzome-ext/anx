@@ -6,6 +6,7 @@ import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import com.flomobility.anx.assets.Asset
+import com.flomobility.anx.assets.gnss.DeviceGnss
 import com.flomobility.anx.common.Rate
 import com.flomobility.anx.common.Result
 import com.flomobility.anx.proto.Assets
@@ -216,7 +217,7 @@ class DeviceImu @Inject constructor(
 
         private lateinit var socket: ZMQ.Socket
 
-        private val address = "tcp://127.0.0.1:10003"
+        private val address = "tcp://localhost:10003"
 
         val interrupt = AtomicBoolean(false)
 
@@ -237,6 +238,7 @@ class DeviceImu @Inject constructor(
                         try {
                             socket.send(getImuData().toByteArray(), ZMQ.DONTWAIT)
                             rate.sleep()
+                            Timber.tag(TAG).d("Stopping imu on $address")
                         } catch (e: Exception) {
                             Timber.e(e)
                             return

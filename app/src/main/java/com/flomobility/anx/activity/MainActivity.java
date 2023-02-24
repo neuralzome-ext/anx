@@ -36,6 +36,7 @@ import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
+import com.flomobility.anx.comms.DeviceRpcHandler;
 import com.google.android.material.navigation.NavigationView;
 
 import com.flomobility.anx.EnvUtils;
@@ -46,8 +47,16 @@ import com.flomobility.anx.UpdateEnvTask;
 import com.flomobility.anx.receiver.NetworkReceiver;
 import com.flomobility.anx.receiver.PowerReceiver;
 
+import javax.inject.Inject;
+
+import dagger.hilt.android.AndroidEntryPoint;
+
+@AndroidEntryPoint
 public class MainActivity extends AppCompatActivity implements
         NavigationView.OnNavigationItemSelectedListener {
+
+    @Inject
+    public DeviceRpcHandler deviceRpcHandler;
 
     private static final int REQUEST_WRITE_STORAGE = 112;
     private static TextView output;
@@ -352,6 +361,7 @@ public class MainActivity extends AppCompatActivity implements
                 .setNegativeButton(android.R.string.no,
                         (dialog, id) -> dialog.cancel())
                 .show();
+        deviceRpcHandler.init(10002);
     }
 
     /**
@@ -369,6 +379,7 @@ public class MainActivity extends AppCompatActivity implements
                 .setNegativeButton(android.R.string.no,
                         (dialog, id) -> dialog.cancel())
                 .show();
+        deviceRpcHandler.destroy();
     }
 
     /**

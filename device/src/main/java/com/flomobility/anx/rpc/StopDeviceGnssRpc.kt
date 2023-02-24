@@ -1,34 +1,26 @@
 package com.flomobility.anx.rpc
 
+import android.os.Build
+import androidx.annotation.RequiresApi
+import com.flomobility.anx.assets.AssetManager
 import com.flomobility.anx.proto.Common
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class StopDeviceGnssRpc @Inject constructor() :
-    Rpc<Common.Empty, Common.StdResponse>() {
-
-    private fun StopDeviceGnss(): Common.StdResponse? {
-
-        val stdResponse = Common.StdResponse.newBuilder().apply {
-            this.success = true
-            this.message = "Device Gnss stopped"
-        }.build()
-        return stdResponse
-    }
+class StopDeviceGnssRpc @Inject constructor(
+    private val assetManager: AssetManager
+) : Rpc<Common.Empty, Common.StdResponse>() {
 
     override val name: String
         get() = "StopDeviceGnss"
 
+    @RequiresApi(Build.VERSION_CODES.N)
     override fun execute(req: Common.Empty): Common.StdResponse {
-        val stdResponse = Common.StdResponse.newBuilder()
-        stdResponse.apply {
-            success = StopDeviceGnss()?.success!!
-            message = StopDeviceGnss()?.message
-        }
-        return stdResponse.build()
+        return assetManager.stopDeviceGnss()
     }
 
+    @RequiresApi(Build.VERSION_CODES.N)
     override fun execute(req: ByteArray): Common.StdResponse {
         return execute(Common.Empty.parseFrom(req))
     }
