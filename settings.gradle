@@ -23,8 +23,6 @@ dependencyResolutionManagement {
     }
 }
 include ':app'
-include ':libuvccamera'
-include ':usbCameraCommon'
 include ':protoc'
 include ':assets'
 include ':device'

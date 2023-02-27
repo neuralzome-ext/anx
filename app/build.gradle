@@ -3,8 +3,6 @@ plugins {
     id 'com.android.application'
     id 'dagger.hilt.android.plugin'
     id 'org.jetbrains.kotlin.android'
-//    id 'com.google.gms.google-services'
-//    id 'com.google.firebase.crashlytics'
     id 'kotlin-parcelize'
     id 'project-report'
 }
@@ -70,7 +68,6 @@ android {
         implementation "com.squareup.retrofit2:converter-scalars:$retrofit_version"
         implementation "com.squareup.okhttp3:logging-interceptor:$okhttp_version"
 
-
         // apache commons
         implementation group: 'org.apache.commons', name: 'commons-collections4', version: '4.4'
 
@@ -81,15 +78,6 @@ android {
 
         //Location
         implementation 'com.google.android.gms:play-services-location:20.0.0'
-
-        // usb camera utils
-        implementation("com.serenegiant:common:${commonLibVersion}") {
-            exclude module: 'support-v4'
-        }
-
-        // custom switch
-        implementation 'com.github.angads25:toggle:1.1.0'
-
     }
 
     defaultConfig {
@@ -98,18 +86,6 @@ android {
         targetSdkVersion project.properties.targetSdkVersion.toInteger()
         versionCode 15
         versionName "0.9.0"
-
-        Properties properties = new Properties()
-        properties.load(project.rootProject.file('local.properties').newDataInputStream())
-
-        def FLO_DEVELOPMENT_URL = "FLO_DEVELOPMENT_URL"
-        def FLO_STAGING_URL = "FLO_STAGING_URL"
-        def FLO_PRODUCTION_URL = "FLO_PRODUCTION_URL"
-
-        buildConfigField("String", "FLO_DEVELOPMENT_URL", properties.getProperty(FLO_DEVELOPMENT_URL))
-        buildConfigField("String", "FLO_STAGING_URL", properties.getProperty(FLO_STAGING_URL))
-        buildConfigField("String", "FLO_PRODUCTION_URL", properties.getProperty(FLO_PRODUCTION_URL))
-
 
         if (appVersionName) versionName = appVersionName
         validateVersionName(versionName)
