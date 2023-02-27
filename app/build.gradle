@@ -51,14 +51,9 @@ android {
         implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.1'
         implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.4.1'
 
-        // ZMQ - JAVA
-        implementation 'org.zeromq:jeromq:0.5.2'
-
-
         // Dagger-Hilt
-        implementation "com.google.dagger:hilt-android:2.42"
-        implementation 'androidx.camera:camera-video:1.1.0'
-        kapt "com.google.dagger:hilt-compiler:2.42"
+        implementation "com.google.dagger:hilt-android:${hilt_version}"
+        kapt "com.google.dagger:hilt-compiler:${hilt_version}"
 
         def retrofit_version = '2.9.0'
         def okhttp_version = '4.9.0'
@@ -75,9 +70,6 @@ android {
 
         implementation project(':assets')
         implementation project(':device')
-
-        //Location
-        implementation 'com.google.android.gms:play-services-location:20.0.0'
     }
 
     defaultConfig {

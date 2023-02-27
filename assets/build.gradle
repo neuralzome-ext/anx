@@ -1,6 +1,6 @@
 plugins {
-    id 'kotlin-kapt'
     id 'com.android.library'
+    id 'kotlin-kapt'
     id 'dagger.hilt.android.plugin'
     id 'org.jetbrains.kotlin.android'
 }
@@ -47,19 +47,15 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
 
     // Dagger-Hilt
-    implementation "com.google.dagger:hilt-android:2.42"
-    implementation 'androidx.camera:camera-video:1.1.0'
-    kapt "com.google.dagger:hilt-compiler:2.42"
+    implementation "com.google.dagger:hilt-android:${hilt_version}"
+    kapt "com.google.dagger:hilt-compiler:${hilt_version}"
 
     // ZMQ - JAVA
-    implementation 'org.zeromq:jeromq:0.5.2'
+    implementation "org.zeromq:jeromq:${jeroMQ_version}"
 
     // Timber
-    implementation 'com.jakewharton.timber:timber:4.7.1'
+    implementation "com.jakewharton.timber:timber:${timber_version}"
 
-    // serialization
-    implementation 'com.google.code.gson:gson:2.8.9'
-
-    api 'com.google.protobuf:protobuf-java:3.22.0'
-    implementation project(":protoc")
+    api "com.google.protobuf:protobuf-java:${protobuf_java_version}"
+    implementation project(':common')
 }

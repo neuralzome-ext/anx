@@ -1,9 +1,7 @@
 buildscript {
     dependencies {
         classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.7.20'
-        classpath 'com.google.dagger:hilt-android-gradle-plugin:2.42'
-        classpath 'com.google.firebase:firebase-crashlytics-gradle:2.9.2'
-        classpath 'com.google.gms:google-services:4.3.14'
+        classpath "com.google.dagger:hilt-android-gradle-plugin:${hilt_version}"
     }
 }
 
@@ -17,14 +15,4 @@ plugins {
 
 task clean(type: Delete) {
     delete rootProject.buildDir
-}
-
-ext {
-    commonLibVersion= '2.12.4'
-    versionCompiler = 30
-    versionTarget = 30
-    versionBuildTool = '27.0.3'
-    javaSourceCompatibility = JavaVersion.VERSION_1_8
-    javaTargetCompatibility = JavaVersion.VERSION_1_8
-    supportLibVersion = '26.0.1'
 }

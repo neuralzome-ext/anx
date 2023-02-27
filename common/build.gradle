@@ -10,7 +10,7 @@ java {
 }
 
 dependencies {
-    implementation 'com.google.protobuf:protobuf-java:3.22.0'
+    implementation "com.google.protobuf:protobuf-java:${protobuf_java_version}"
 //    implementation 'com.google.protobuf:protobuf-kotlin:3.22.0'
 //    errorprone "com.google.errorprone:error_prone_core:2.9.0"
 }

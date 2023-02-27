@@ -23,6 +23,6 @@ dependencyResolutionManagement {
     }
 }
 include ':app'
-include ':protoc'
+include ':common'
 include ':assets'
 include ':device'
