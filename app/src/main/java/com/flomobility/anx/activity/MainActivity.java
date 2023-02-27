@@ -1,5 +1,6 @@
 package com.flomobility.anx.activity;
 
+
 import android.Manifest;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -30,13 +31,14 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.browser.customtabs.CustomTabsIntent;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.flomobility.anx.comms.DeviceRpcHandler;
+import com.flomobility.anx.daemon.EndlessService;
+import com.flomobility.anx.other.Constants;
 import com.google.android.material.navigation.NavigationView;
 
 import com.flomobility.anx.EnvUtils;
@@ -166,6 +168,9 @@ public class MainActivity extends AppCompatActivity implements
             PrefStore.setRepositoryUrl(this, getString(R.string.repository_url));
             updateEnvWithRequestPermissions();
         }
+
+        startAnxService();
+        startContainer();
     }
 
     @Override
@@ -246,18 +251,18 @@ public class MainActivity extends AppCompatActivity implements
                 openRepository();
                 break;
             case R.id.nav_terminal:
-                String uri = "http://127.0.0.1:" + PrefStore.getHttpPort(this) +
-                        "/cgi-bin/terminal?size=" + PrefStore.getFontSize(this);
-                // Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
-                // startActivity(browserIntent);
-                CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
-                /*if (PrefStore.getTheme(this) == R.style.LightTheme) {
-                    builder.setToolbarColor(Color.LTGRAY);
-                } else {
-                    builder.setToolbarColor(Color.DKGRAY);
-                }*/
-                CustomTabsIntent customTabsIntent = builder.build();
-                customTabsIntent.launchUrl(this, Uri.parse(uri));
+//                String uri = "http://127.0.0.1:" + PrefStore.getHttpPort(this) +
+//                        "/cgi-bin/terminal?size=" + PrefStore.getFontSize(this);
+//                // Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
+//                // startActivity(browserIntent);
+//                CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
+//                /*if (PrefStore.getTheme(this) == R.style.LightTheme) {
+//                    builder.setToolbarColor(Color.LTGRAY);
+//                } else {
+//                    builder.setToolbarColor(Color.DKGRAY);
+//                }*/
+//                CustomTabsIntent customTabsIntent = builder.build();
+//                customTabsIntent.launchUrl(this, Uri.parse(uri));
                 break;
             case R.id.nav_settings:
                 Intent intent_settings = new Intent(this, SettingsActivity.class);
@@ -361,7 +366,7 @@ public class MainActivity extends AppCompatActivity implements
                 .setNegativeButton(android.R.string.no,
                         (dialog, id) -> dialog.cancel())
                 .show();
-        deviceRpcHandler.init(10002);
+//        deviceRpcHandler.init(10002);
     }
 
     /**
@@ -480,5 +485,15 @@ public class MainActivity extends AppCompatActivity implements
                 Toast.makeText(this, getString(R.string.write_permissions_disallow), Toast.LENGTH_LONG).show();
             }
         }
+    }
+
+    private void startAnxService() {
+        Intent intent = new Intent(this, EndlessService.class);
+        intent.setAction(Constants.ACTION_START_OR_RESUME_SERVICE);
+        this.startService(intent);
+    }
+
+    private void startContainer() {
+        EnvUtils.execService(getBaseContext(), "start", "-m");
     }
 }
