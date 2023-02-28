@@ -17,12 +17,12 @@ class ShutdownRpc @Inject constructor() :
             Runtime.getRuntime().exec("su -c reboot -p")
             stdResponse.apply {
                 success = true
-                message = "Reboot success"
+                message = "Shutdown success"
             }
         } catch (e: IOException) {
             stdResponse.apply {
                 success = false
-                message = "Reboot failed"
+                message = "Shutdown failed"
             }
             Timber.d(e)
         }
