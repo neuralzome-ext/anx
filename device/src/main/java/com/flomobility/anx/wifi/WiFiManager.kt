@@ -22,9 +22,6 @@ class WiFiManager @Inject constructor(
 ) {
 
     private var wifiManager: WifiManager = appContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
-    private var conManager: ConnectivityManager = appContext.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-    private var networkInfo: NetworkInfo? = conManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI)
-    private var isWifiConnected: Boolean = networkInfo != null && networkInfo!!.isConnected
 
     companion object {
         const val TAG = "WiFiManager"

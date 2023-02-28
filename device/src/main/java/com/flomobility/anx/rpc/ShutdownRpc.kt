@@ -1,6 +1,8 @@
 package com.flomobility.anx.rpc
 
 import com.flomobility.anx.proto.Common
+import timber.log.Timber
+import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -8,25 +10,30 @@ import javax.inject.Singleton
 class ShutdownRpc @Inject constructor() :
     Rpc<Common.Empty, Common.StdResponse>() {
 
-    private fun Shutdown(): Common.StdResponse? {
+    val stdResponse = Common.StdResponse.newBuilder()
 
-        val stdResponse = Common.StdResponse.newBuilder().apply {
-            this.success = true
-            this.message = "Shutdown succesfully"
-        }.build()
-        return stdResponse
+    private fun shutdown(): Common.StdResponse {
+        try {
+            Runtime.getRuntime().exec("su -c reboot -p")
+            stdResponse.apply {
+                success = true
+                message = "Reboot success"
+            }
+        } catch (e: IOException) {
+            stdResponse.apply {
+                success = false
+                message = "Reboot failed"
+            }
+            Timber.d(e)
+        }
+        return stdResponse.build()
     }
 
     override val name: String
         get() = "Shutdown"
 
     override fun execute(req: Common.Empty): Common.StdResponse {
-        val stdResponse = Common.StdResponse.newBuilder()
-        stdResponse.apply {
-            success = Shutdown()?.success!!
-            message = Shutdown()?.message
-        }
-        return stdResponse.build()
+        return shutdown()
     }
 
     override fun execute(req: ByteArray): Common.StdResponse {
