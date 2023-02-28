@@ -46,15 +46,13 @@ class DeviceGnss @Inject constructor(
 
     private var nmeaMsgThread: NMEAMessageThread? = null
 
-    lateinit var socket: ZMQ.Socket
-
     fun getDeviceGnssSelect(): Assets.DeviceGnssSelect {
-        if (getGpsProvider()) {
-            return Assets.DeviceGnssSelect.newBuilder().apply {
+        return if (getGpsProvider()) {
+            Assets.DeviceGnssSelect.newBuilder().apply {
                 this.available = true
             }.build()
         } else {
-            return Assets.DeviceGnssSelect.newBuilder().apply {
+            Assets.DeviceGnssSelect.newBuilder().apply {
                 this.available = false
             }.build()
         }
@@ -73,21 +71,20 @@ class DeviceGnss @Inject constructor(
         gnssData.apply {
             nmea = nmeadata.toString()
         }
-
         nmeaMsgThread?.publishNMEAData(gnssData.build())
     }
 
     override fun start(options: Common.Empty?): Result {
-        try {
+        return try {
             GlobalScope.launch(Dispatchers.Main) {
                 deviceGnssManager.init(this@DeviceGnss)
             }
             nmeaMsgThread = NMEAMessageThread()
             nmeaMsgThread?.start()
-            return Result(success = true)
+            Result(success = true)
         } catch (e: Exception) {
             Timber.e(e)
-            return Result(success = false, message = "Gnss initialization failed")
+            Result(success = false, message = "Gnss initialization failed")
         }
     }
 

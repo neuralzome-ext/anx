@@ -10,6 +10,7 @@ import com.flomobility.anx.proto.Common
 import javax.inject.Inject
 import javax.inject.Singleton
 
+@RequiresApi(Build.VERSION_CODES.N)
 @Singleton
 class AssetManager @Inject constructor(
     private val deviceImu: DeviceImu,
@@ -26,19 +27,17 @@ class AssetManager @Inject constructor(
         return status.toStdResponse()
     }
 
-    @RequiresApi(Build.VERSION_CODES.N)
+
     fun startDeviceGnss(startDeviceGnss: Common.Empty): Common.StdResponse {
         val status = deviceGnss.start(startDeviceGnss)
         return status.toStdResponse()
     }
 
-    @RequiresApi(Build.VERSION_CODES.N)
     fun stopDeviceGnss(): Common.StdResponse {
         val status = deviceGnss.stop()
         return status.toStdResponse()
     }
 
-    @RequiresApi(Build.VERSION_CODES.N)
     fun getAssetState(): Assets.AssetState {
         val assetState = Assets.AssetState.newBuilder().apply {
             this.imu = deviceImu.getDeviceImuSelect()

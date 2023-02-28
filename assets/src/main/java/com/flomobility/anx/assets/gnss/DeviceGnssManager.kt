@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
 
-@RequiresApi(Build.VERSION_CODES.M)
+@RequiresApi(Build.VERSION_CODES.N)
 @Singleton
 class DeviceGnssManager @Inject constructor(
     @ApplicationContext private val context: Context
@@ -39,25 +39,22 @@ class DeviceGnssManager @Inject constructor(
         override fun onStatusChanged(provider: String, status: Int, extras: Bundle) {}
     }
 
-    @RequiresApi(Build.VERSION_CODES.N)
     fun init(nmeaListener: OnNmeaMessageListener): Boolean {
         val isGpsProviderEnabled: Boolean =
             locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
         if (isGpsProviderEnabled) {
             try {
                 registerNMEAListener(nmeaListener)
-                locationManager.requestLocationUpdates(
-                    LocationManager.NETWORK_PROVIDER,
-                    TimeUnit.SECONDS.toMillis(60L),
-                    1.0f /* minDistance */,
-                    locationListener
-                )
+                if (!locationManager.allProviders.contains(LocationManager.GPS_PROVIDER)) {
+                    return false
+                }
                 locationManager.requestLocationUpdates(
                     LocationManager.GPS_PROVIDER,
-                    TimeUnit.SECONDS.toMillis(60L),
+                    TimeUnit.SECONDS.toMillis(1L),
                     0.0f /* minDistance */,
                     locationListener
                 )
+
             } catch (e: SecurityException) {
                 e.printStackTrace()
             }
@@ -68,18 +65,15 @@ class DeviceGnssManager @Inject constructor(
         return true // to be checked properly
     }
 
-    @RequiresApi(Build.VERSION_CODES.N)
     @SuppressLint("MissingPermission")
     private fun registerNMEAListener(nmeaListener: OnNmeaMessageListener) {
         locationManager.addNmeaListener(nmeaListener, null)
     }
 
-    @RequiresApi(Build.VERSION_CODES.N)
     private fun unRegisterNMEAListener(nmeaListener: OnNmeaMessageListener) {
         return locationManager.removeNmeaListener(nmeaListener);
     }
 
-    @RequiresApi(Build.VERSION_CODES.N)
     fun stop(nmeaListener: OnNmeaMessageListener) {
         unRegisterNMEAListener(nmeaListener)
         locationManager.removeUpdates(locationListener)
