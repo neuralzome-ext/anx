@@ -238,7 +238,7 @@ class DeviceImu @Inject constructor(
                         try {
                             socket.send(getImuData().toByteArray(), ZMQ.DONTWAIT)
                             rate.sleep()
-                            Timber.tag(TAG).d("Stopping imu on $address")
+                            Timber.tag(TAG).d("Sending imu data on $address")
                         } catch (e: Exception) {
                             Timber.e(e)
                             return

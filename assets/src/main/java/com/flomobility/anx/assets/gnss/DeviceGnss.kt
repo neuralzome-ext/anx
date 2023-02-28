@@ -20,6 +20,9 @@ import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
 import com.flomobility.anx.common.Constants
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 @RequiresApi(Build.VERSION_CODES.N)
 @Singleton
@@ -76,7 +79,9 @@ class DeviceGnss @Inject constructor(
 
     override fun start(options: Common.Empty?): Result {
         try {
-            deviceGnssManager.init(this@DeviceGnss)
+            GlobalScope.launch(Dispatchers.Main) {
+                deviceGnssManager.init(this@DeviceGnss)
+            }
             nmeaMsgThread = NMEAMessageThread()
             nmeaMsgThread?.start()
             return Result(success = true)
@@ -88,9 +93,12 @@ class DeviceGnss @Inject constructor(
 
 
     override fun stop(): Result {
+        GlobalScope.launch(Dispatchers.Main) {
+            deviceGnssManager.stop(this@DeviceGnss)
+        }
         nmeaMsgThread?.kill()
         nmeaMsgThread = null
-        return Result(success = false, message = "Gnss thread stopped")
+        return Result(success = true, message = "Gnss thread stopped")
     }
 
 
