@@ -7,7 +7,7 @@ import android.content.Intent;
 import com.flomobility.anx.EnvUtils;
 import com.flomobility.anx.PrefStore;
 
-public class BootReceiver extends BroadcastReceiver {
+public class OldBootReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(final Context context, Intent intent) {

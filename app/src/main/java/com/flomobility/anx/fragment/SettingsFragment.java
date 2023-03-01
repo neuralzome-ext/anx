@@ -24,7 +24,7 @@ import com.flomobility.anx.PrefStore;
 import com.flomobility.anx.R;
 import com.flomobility.anx.RemoveEnvTask;
 import com.flomobility.anx.UpdateEnvTask;
-import com.flomobility.anx.receiver.BootReceiver;
+import com.flomobility.anx.receiver.OldBootReceiver;
 
 public class SettingsFragment extends PreferenceFragmentCompat implements
         OnSharedPreferenceChangeListener, Preference.OnPreferenceClickListener {
@@ -99,7 +99,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements
                 int autostartFlag = (PrefStore.isAutostart(getContext()) ?
                         PackageManager.COMPONENT_ENABLED_STATE_ENABLED
                         : PackageManager.COMPONENT_ENABLED_STATE_DISABLED);
-                ComponentName bootComponent = new ComponentName(getContext(), BootReceiver.class);
+                ComponentName bootComponent = new ComponentName(getContext(), OldBootReceiver.class);
                 getContext().getPackageManager().setComponentEnabledSetting(bootComponent, autostartFlag,
                         PackageManager.DONT_KILL_APP);
                 break;

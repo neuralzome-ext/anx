@@ -6,14 +6,12 @@ import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import com.flomobility.anx.assets.Asset
-import com.flomobility.anx.assets.gnss.DeviceGnss
 import com.flomobility.anx.common.Rate
 import com.flomobility.anx.common.Result
 import com.flomobility.anx.proto.Assets
 import com.flomobility.anx.proto.Assets.ImuData
 import com.flomobility.anx.proto.Assets.ImuData.Filtered
 import com.flomobility.anx.proto.Common
-import com.flomobility.anx.proto.Common.Quaternion
 import dagger.hilt.android.qualifiers.ApplicationContext
 import org.zeromq.SocketType
 import org.zeromq.ZContext
@@ -203,6 +201,7 @@ class DeviceImu @Inject constructor(
     }
 
     override fun stop(): Result {
+        Timber.tag(TAG).i("Stopping $TAG ....")
         // Stop publishing
         this.publisherThread?.interrupt?.set(true)
         this.publisherThread?.join()
@@ -210,7 +209,7 @@ class DeviceImu @Inject constructor(
 
         // Unregister IMU
         unRegisterImu()
-        return Result(success = false, message = "")
+        return Result(success = true, message = "")
     }
 
     inner class PublisherThread(val fps: Int) : Thread() {
@@ -238,13 +237,13 @@ class DeviceImu @Inject constructor(
                         try {
                             socket.send(getImuData().toByteArray(), ZMQ.DONTWAIT)
                             rate.sleep()
-                            Timber.tag(TAG).d("Sending imu data on $address")
                         } catch (e: Exception) {
                             Timber.e(e)
                             return
                         }
                     }
                 }
+                Timber.tag(TAG).i("Stopped publishing $TAG data")
             } catch (e: Exception) {
                 Timber.e(e)
             }

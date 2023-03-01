@@ -1,6 +1,5 @@
 package com.flomobility.anx.comms
 
-import android.util.Log
 import com.flomobility.anx.other.Constants
 import com.flomobility.anx.other.sendStdResponse
 import com.flomobility.anx.rpc.*
@@ -36,7 +35,7 @@ class DeviceRpcHandler @Inject constructor(
     private val getStartUsbTetheringRpc: StartUsbTetheringRpc,
     private val geStopDeviceCameraRpc: StopDeviceCameraRpc,
     private val getStopDeviceGnssRpc: StopDeviceGnssRpc,
-    private val getStopDeviceImuRpc: StartDeviceImuRpc,
+    private val getStopDeviceImuRpc: StopDeviceImuRpc,
     private val getStopUsbTetheringRpc: StartUsbTetheringRpc,
     private val getTtsRpc: TtsRpc
 ) {

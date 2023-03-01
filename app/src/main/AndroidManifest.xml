@@ -63,7 +63,7 @@
 
         <activity
             android:name=".activity.MainActivity"
-            android:launchMode="singleTop" />
+            android:launchMode="singleTask" />
 
         <activity-alias
             android:name=".Launcher"
@@ -82,8 +82,7 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".activity.MainActivity" />
         </activity>
-        <activity
-            android:name=".activity.PropertiesActivity">
+        <activity android:name=".activity.PropertiesActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".activity.MainActivity" />
@@ -119,14 +118,27 @@
         <activity android:name=".activity.FullscreenActivity" />
 
         <receiver
+            android:name=".receiver.OldBootReceiver"
+            android:enabled="false"
+            android:exported="false">
+            <!--<intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.ACTION_SHUTDOWN" />
+            </intent-filter>-->
+        </receiver>
+
+        <receiver
             android:name=".receiver.BootReceiver"
             android:enabled="false"
             android:exported="false">
+
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
                 <action android:name="android.intent.action.ACTION_SHUTDOWN" />
             </intent-filter>
+
         </receiver>
+
         <receiver
             android:name=".receiver.ActionReceiver"
             android:enabled="true"
@@ -138,13 +150,11 @@
         <receiver
             android:name=".receiver.PowerReceiver"
             android:enabled="false"
-            android:exported="false">
-        </receiver>
+            android:exported="false"></receiver>
         <receiver
             android:name=".receiver.NetworkReceiver"
             android:enabled="false"
-            android:exported="false">
-        </receiver>
+            android:exported="false"></receiver>
 
         <service
             android:name=".ExecService"
@@ -152,9 +162,10 @@
             android:exported="false"
             android:permission="android.permission.BIND_JOB_SERVICE" />
 
-        <service android:name=".daemon.EndlessService"
+        <service
+            android:name=".daemon.EndlessService"
             android:enabled="true"
-            android:exported="false"/>
+            android:exported="false" />
 
     </application>
 
