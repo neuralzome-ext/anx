@@ -83,8 +83,10 @@ android {
         validateVersionName(versionName)
 
         externalNativeBuild {
-            ndkBuild {
-                cFlags "-std=c11", "-Wall", "-Wextra", "-Werror", "-Os", "-fno-stack-protector", "-Wl,--gc-sections"
+            cmake {
+                cppFlags '-std=c++17 -frtti -fexceptions'
+                arguments "-DZMQ_DIR=" + projectDir.path + "/src/main/libs/zmq"
+                arguments "-DANDROID_STL=c++_shared"
             }
         }
 
@@ -155,12 +157,6 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
 
-    externalNativeBuild {
-        ndkBuild {
-            path "src/main/cpp/Android.mk"
-        }
-    }
-
     lintOptions {
         disable 'ProtectedPermissions'
     }
@@ -203,6 +199,13 @@ android {
 
     packagingOptions {
         exclude "META-INF/**"
+    }
+
+    externalNativeBuild {
+        cmake {
+            path file('src/main/cpp/CMakeLists.txt')
+            version '3.18.1'
+        }
     }
 }
 
