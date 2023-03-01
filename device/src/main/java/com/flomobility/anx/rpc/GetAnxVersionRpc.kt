@@ -1,5 +1,6 @@
 package com.flomobility.anx.rpc
 
+import com.flomobility.anx.BuildConfig
 import com.flomobility.anx.proto.Common
 import com.flomobility.anx.proto.Device
 import javax.inject.Inject
@@ -10,7 +11,7 @@ class GetAnxVersionRpc @Inject constructor() :
     Rpc<Common.Empty, Device.VersionResponse>() {
 
     private fun getAnxVersion(): String {
-        return "0.9.0" // TODO : change this
+        return BuildConfig.APP_VERSION_NAME
     }
 
     override val name: String
