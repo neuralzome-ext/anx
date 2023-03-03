@@ -12,4 +12,12 @@ object NativeZmq {
 
     external fun closePublisher(publisherPtr: Long): Boolean
 
+
+    // Subscriber related
+    external fun createSubscriberInstance(address: String, topic: String): Long
+
+    external fun listen(subscriberPtr: Long): ByteArray
+
+    external fun closeSubscriber(subscriberPtr: Long): Boolean
+
 }

@@ -6,6 +6,7 @@
 #define ANX_IPC_TRANSPORT_H
 
 #include <string>
+#include <memory>
 #include <algorithm>
 #include <exception>
 
@@ -15,7 +16,11 @@
 #include "utils.h"
 
 typedef unsigned char BYTE;   // 8-bit unsigned entity.
-typedef BYTE *        PBYTE;  // Pointer to BYTE.
+
+struct bytes_t {
+    BYTE* data;
+    size_t size;
+};
 
 class Publisher {
 public:
@@ -25,6 +30,21 @@ public:
 private:
     zmq::context_t context_;
     zmq::socket_t socket_;
+
+    std::string address_;
+
+    std::string tag_;
+};
+
+class Subscriber {
+public:
+    Subscriber(const std::string& address, const std::string& topic);
+    bytes_t listen();
+    bool close();
+private:
+    zmq::context_t context_;
+    std::unique_ptr<zmq::socket_t> socket_;
+    std::unique_ptr<zmq::pollitem_t> poller_;
 
     std::string address_;
 
