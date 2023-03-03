@@ -2,7 +2,7 @@
 // Created by Clay-Flo on 01/03/23.
 //
 
-#include "ipc_transport.h"
+#include "ipc/ipc_transport.h"
 #include <jni.h>
 
 extern "C"

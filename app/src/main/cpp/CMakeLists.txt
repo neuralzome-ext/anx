@@ -6,7 +6,7 @@ project("anx")
 add_library( # Sets the name of the library.
         anx
         SHARED
-        native-lib.cpp)
+        src/native-lib.cpp)
 
 add_library(
         libzmq
@@ -24,6 +24,7 @@ find_library(
 
 include_directories(
         ${ZMQ_DIR}/include
+        include
 )
 
 add_library(
@@ -45,7 +46,13 @@ target_link_libraries(
 add_library(
         ipc_transport
         SHARED
-        ipc_transport.cpp
+        src/ipc_transport.cpp
+)
+
+target_include_directories(
+        ipc_transport
+        INTERFACE
+        include
 )
 
 target_link_libraries(

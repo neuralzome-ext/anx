@@ -10,8 +10,8 @@
 #include <algorithm>
 #include <exception>
 
-#include "zmq.hpp"
-#include "zmq_addon.hpp"
+#include "zmq/zmq.hpp"
+#include "zmq/zmq_addon.hpp"
 
 #include "utils.h"
 
