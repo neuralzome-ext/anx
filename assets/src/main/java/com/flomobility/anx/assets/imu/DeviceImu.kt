@@ -8,6 +8,7 @@ import android.hardware.SensorManager
 import com.flomobility.anx.assets.Asset
 import com.flomobility.anx.common.Rate
 import com.flomobility.anx.common.Result
+import com.flomobility.anx.native.NativeZmq
 import com.flomobility.anx.proto.Assets
 import com.flomobility.anx.proto.Assets.ImuData
 import com.flomobility.anx.proto.Assets.ImuData.Filtered
@@ -216,9 +217,11 @@ class DeviceImu @Inject constructor(
 
         private lateinit var socket: ZMQ.Socket
 
-        private val address = "tcp://localhost:10003"
+        private val address = "ipc:///data/data/com.flomobility.anx.headless/tmp/device_imu"
 
         val interrupt = AtomicBoolean(false)
+
+        var nativeZmqPublisherPtr: Long = 0L
 
         init {
             name = "device-imu-publisher-thread"
@@ -226,22 +229,25 @@ class DeviceImu @Inject constructor(
 
         override fun run() {
             try {
+                nativeZmqPublisherPtr = NativeZmq.createPublisherInstance(address)
                 ZContext().use { ctx ->
-                    socket = ctx.createSocket(SocketType.PUB)
-                    socket.bind(address)
+//                    socket = ctx.createSocket(SocketType.PUB)
+//                    socket.bind(address)
                     // wait to bind
                     Thread.sleep(500L)
                     Timber.tag(TAG).d("Publishing imu on $address")
                     val rate = Rate(hz = fps)
                     while (!interrupt.get()) {
                         try {
-                            socket.send(getImuData().toByteArray(), ZMQ.DONTWAIT)
+//                            socket.send(getImuData().toByteArray(), ZMQ.DONTWAIT)
+                            NativeZmq.sendData(nativeZmqPublisherPtr, getImuData().toByteArray())
                             rate.sleep()
                         } catch (e: Exception) {
                             Timber.e(e)
                             return
                         }
                     }
+                    NativeZmq.closePublisher(nativeZmqPublisherPtr)
                 }
                 Timber.tag(TAG).i("Stopped publishing $TAG data")
             } catch (e: Exception) {

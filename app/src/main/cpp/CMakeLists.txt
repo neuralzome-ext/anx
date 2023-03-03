@@ -42,7 +42,18 @@ target_link_libraries(
         libzmq
 )
 
+add_library(
+        ipc_transport
+        SHARED
+        ipc_transport.cpp
+)
+
+target_link_libraries(
+        ipc_transport
+        cppzmq
+        ${log-lib}
+)
+
 target_link_libraries( # Specifies the target library.
         anx
-        ${log-lib}
-        cppzmq)
+        ipc_transport)
