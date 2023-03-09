@@ -69,7 +69,7 @@ Java_com_flomobility_anx_native_NativeZmq_listen(
     jbyteArray result = env->NewByteArray(bytes.size);
 
     // Copy the byte array to the jbyteArray
-    env->SetByteArrayRegion(result, 0, bytes.size, reinterpret_cast<jbyte*>(bytes.data));
+    env->SetByteArrayRegion(result, 0, bytes.size, reinterpret_cast<jbyte *>(bytes.data));
     return result;
 }
 
@@ -79,6 +79,45 @@ Java_com_flomobility_anx_native_NativeZmq_closeSubscriber(
         JNIEnv *env, jobject thiz,
         jlong subscriber_ptr) {
     auto *sub = (Subscriber *) subscriber_ptr;
+    bool status = sub->close();
+    free(sub);
+    return status;
+}
+
+extern "C"
+JNIEXPORT jlong JNICALL
+Java_com_flomobility_anx_native_NativeZmq_createServerInstance(
+        JNIEnv *env,
+        jobject thiz,
+        jstring address) {
+    const char *cstr = env->GetStringUTFChars(address, NULL);
+    std::string _address(cstr);
+    env->ReleaseStringUTFChars(address, cstr);
+
+    auto *sub = new Server(_address);
+    return (jlong) sub;
+}
+extern "C"
+JNIEXPORT jbyteArray JNICALL
+Java_com_flomobility_anx_native_NativeZmq_listenServerRequests(
+        JNIEnv *env,
+        jobject thiz,
+        jlong server_ptr) {
+    auto *sub = (Server *) server_ptr;
+    bytes_t bytes = sub->listen();
+    jbyteArray result = env->NewByteArray(bytes.size);
+
+    // Copy the byte array to the jbyteArray
+    env->SetByteArrayRegion(result, 0, bytes.size, reinterpret_cast<jbyte *>(bytes.data));
+    return result;
+}
+extern "C"
+JNIEXPORT jboolean JNICALL
+Java_com_flomobility_anx_native_NativeZmq_closeServer(
+        JNIEnv *env,
+        jobject thiz,
+        jlong server_ptr) {
+    auto *sub = (Server *) server_ptr;
     bool status = sub->close();
     free(sub);
     return status;

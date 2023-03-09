@@ -84,5 +84,42 @@ bytes_t Subscriber::listen() {
 
 bool Subscriber::close() {
     this->socket_->disconnect(this->address_);
-    return false;
+    return true;
+}
+
+// Server related
+Server::Server(const std::string &address) {
+    this->socket_ = std::make_unique<zmq::socket_t>(this->context_, zmq::socket_type::rep);
+    this->socket_->bind(address);
+
+    this->poller_ = std::make_unique<zmq::pollitem_t>();
+    this->poller_->socket = *this->socket_;
+    this->poller_->fd = 0;
+    this->poller_->events = ZMQ_POLLIN;
+    this->poller_->revents = 0;
+}
+
+bytes_t Server::listen() {
+    bytes_t payload{};
+    zmq::message_t msg;
+    zmq::poll(this->poller_.get(), 1, 100);
+    if (this->poller_->revents & ZMQ_POLLIN) {
+        try {
+            this->socket_->recv(msg);
+        } catch (std::exception &e) {
+            LOGI(this->tag_.c_str(), "Connection to %s terminated!", this->address_.c_str());
+            return payload;
+        }
+        void *data_ptr = msg.data();
+        BYTE *bytes = static_cast<BYTE *>(data_ptr);
+        payload.data = bytes;
+        payload.size = msg.size();
+        return payload;
+    }
+    return payload;
+}
+
+bool Server::close() {
+    this->socket_->disconnect(this->address_);
+    return true;
 }

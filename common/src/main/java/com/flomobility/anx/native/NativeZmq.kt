@@ -20,6 +20,11 @@ object NativeZmq {
 
     external fun closeSubscriber(subscriberPtr: Long): Boolean
 
-    //
+    // Server related
+    external fun createServerInstance(address: String): Long
+
+    external fun listenServerRequests(serverPtr: Long): ByteArray
+
+    external fun closeServer(serverPtr: Long): Boolean
 
 }

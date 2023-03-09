@@ -51,4 +51,23 @@ private:
     std::string tag_;
 };
 
+class Server {
+public:
+    Server(const std::string& address);
+    bytes_t listen();
+    bool close();
+private:
+    zmq::context_t context_;
+    std::unique_ptr<zmq::socket_t> socket_;
+    std::unique_ptr<zmq::pollitem_t> poller_;
+
+    std::string address_;
+
+    std::string tag_;
+};
+
+class Client {
+
+};
+
 #endif //ANX_IPC_TRANSPORT_H
