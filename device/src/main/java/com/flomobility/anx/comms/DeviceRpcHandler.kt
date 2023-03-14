@@ -5,7 +5,6 @@ import com.flomobility.anx.native.zmq.RpcServer
 import com.flomobility.anx.rpc.*
 import com.flomobility.anx.utils.AddressUtils
 import dagger.hilt.android.qualifiers.ApplicationContext
-import org.zeromq.ZMQ
 import timber.log.Timber
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
@@ -20,25 +19,18 @@ class DeviceRpcHandler @Inject constructor(
     @ApplicationContext private val context: Context,
     private val getAnxVersionRpc: GetAnxVersionRpc,
     private val getAssetStateRpc: GetAssetStateRpc,
-    private val getAvailableLanguagesRpc: GetAvailableLanguagesRpc,
     private val getFloOsVersionRpc: GetFloOsVersionRpc,
     private val getImeiNumbersRpc: GetImeiNumbersRpc,
-    private val getPhoneNumbersRpc: GetPhoneNumbersRpc,
-    private val getIsTtsBusyRpc: IsTtsBusyRpc,
     private val getRebootRpc: RebootRpc,
-    private val getRestartAnxServiceRpc: RestartAnxServiceRpc,
     private val getSetHotspotRpc: SetHotspotRpc,
     private val getSetWifiRpc: SetWifiRpc,
     private val getShutdownRpc: ShutdownRpc,
     private val getStartDeviceCameraRpc: StartDeviceCameraRpc,
     private val getStartDeviceGnssRpc: StartDeviceGnssRpc,
     private val getStartDeviceImuRpc: StartDeviceImuRpc,
-    private val getStartUsbTetheringRpc: StartUsbTetheringRpc,
     private val geStopDeviceCameraRpc: StopDeviceCameraRpc,
     private val getStopDeviceGnssRpc: StopDeviceGnssRpc,
-    private val getStopDeviceImuRpc: StopDeviceImuRpc,
-    private val getStopUsbTetheringRpc: StartUsbTetheringRpc,
-    private val getTtsRpc: TtsRpc
+    private val getStopDeviceImuRpc: StopDeviceImuRpc
 ) {
 
     private var port: Int = 10002
@@ -54,25 +46,18 @@ class DeviceRpcHandler @Inject constructor(
     private fun addAllRpcToRegistry() {
         rpcRegistry[getAnxVersionRpc.name] = getAnxVersionRpc
         rpcRegistry[getAssetStateRpc.name] = getAssetStateRpc
-        rpcRegistry[getAvailableLanguagesRpc.name] = getAvailableLanguagesRpc
         rpcRegistry[getFloOsVersionRpc.name] = getFloOsVersionRpc
         rpcRegistry[getImeiNumbersRpc.name] = getImeiNumbersRpc
-        rpcRegistry[getPhoneNumbersRpc.name] = getPhoneNumbersRpc
-        rpcRegistry[getIsTtsBusyRpc.name] = getIsTtsBusyRpc
         rpcRegistry[getRebootRpc.name] = getRebootRpc
-        rpcRegistry[getRestartAnxServiceRpc.name] = getRestartAnxServiceRpc
         rpcRegistry[getSetHotspotRpc.name] = getSetHotspotRpc
         rpcRegistry[getSetWifiRpc.name] = getSetWifiRpc
         rpcRegistry[getShutdownRpc.name] = getShutdownRpc
         rpcRegistry[getStartDeviceCameraRpc.name] = getStartDeviceCameraRpc
         rpcRegistry[getStartDeviceGnssRpc.name] = getStartDeviceGnssRpc
         rpcRegistry[getStartDeviceImuRpc.name] = getStartDeviceImuRpc
-        rpcRegistry[getStartUsbTetheringRpc.name] = getStartUsbTetheringRpc
         rpcRegistry[geStopDeviceCameraRpc.name] = geStopDeviceCameraRpc
         rpcRegistry[getStopDeviceGnssRpc.name] = getStopDeviceGnssRpc
         rpcRegistry[getStopDeviceImuRpc.name] = getStopDeviceImuRpc
-        rpcRegistry[getStopUsbTetheringRpc.name] = getStopUsbTetheringRpc
-        rpcRegistry[getTtsRpc.name] = getTtsRpc
     }
 
     fun init(port: Int) {
@@ -145,7 +130,6 @@ class DeviceRpcHandler @Inject constructor(
 
                 while (!this.interrupt.get()) {
                     val payload = rpcServer.listen()
-                    Timber.tag(TAG).i("Payload received : $payload")
                     val rpc = rpcRegistry[payload.rpcName]
                     handleRpc(rpc, payload.data)
                 }
@@ -163,6 +147,7 @@ class DeviceRpcHandler @Inject constructor(
                 )*/
                 return
             }
+            Timber.tag(TAG).i("Received RPC : ${rpc.name}")
             rpcServer.send(rpc.execute(data).toByteArray())
 //            socket.send(rpc.execute(data).toByteArray())
         }
