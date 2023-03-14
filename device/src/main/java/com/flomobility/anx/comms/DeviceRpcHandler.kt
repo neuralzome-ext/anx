@@ -1,10 +1,10 @@
 package com.flomobility.anx.comms
 
-import com.flomobility.anx.other.Constants
-import com.flomobility.anx.other.sendStdResponse
+import android.content.Context
+import com.flomobility.anx.native.zmq.RpcServer
 import com.flomobility.anx.rpc.*
-import org.zeromq.SocketType
-import org.zeromq.ZContext
+import com.flomobility.anx.utils.AddressUtils
+import dagger.hilt.android.qualifiers.ApplicationContext
 import org.zeromq.ZMQ
 import timber.log.Timber
 import java.util.concurrent.atomic.AtomicBoolean
@@ -17,6 +17,7 @@ import javax.inject.Singleton
  * */
 @Singleton
 class DeviceRpcHandler @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val getAnxVersionRpc: GetAnxVersionRpc,
     private val getAssetStateRpc: GetAssetStateRpc,
     private val getAvailableLanguagesRpc: GetAvailableLanguagesRpc,
@@ -90,11 +91,19 @@ class DeviceRpcHandler @Inject constructor(
 
         val interrupt = AtomicBoolean(false)
 
-        private lateinit var socket: ZMQ.Socket
+//        private lateinit var socket: ZMQ.Socket
+
+        private lateinit var rpcServer: RpcServer
 
         override fun run() {
+            rpcServer = RpcServer()
             try {
-                ZContext().use { ctx ->
+                rpcServer.init(
+                    AddressUtils.getNamedPipeAddress(
+                        context, "device"
+                    )
+                )
+                /*ZContext().use { ctx ->
                     interrupt.set(false)
 
                     val address = "tcp://localhost:$port"
@@ -132,6 +141,13 @@ class DeviceRpcHandler @Inject constructor(
                             Timber.tag(TAG).e("Error in $TAG : ${e.message}")
                         }
                     }
+                }*/
+
+                while (!this.interrupt.get()) {
+                    val payload = rpcServer.listen()
+                    Timber.tag(TAG).i("Payload received : $payload")
+                    val rpc = rpcRegistry[payload.rpcName]
+                    handleRpc(rpc, payload.data)
                 }
                 Timber.tag(TAG).i("Successfully stopped device RPC handler server")
             } catch (e: Exception) {
@@ -141,13 +157,14 @@ class DeviceRpcHandler @Inject constructor(
 
         private fun handleRpc(rpc: Rpc<*, *>?, data: ByteArray) {
             if (rpc == null) {
-                socket.sendStdResponse(
+                /*socket.sendStdResponse(
                     success = false,
                     message = "Invalid RPC received : "
-                )
+                )*/
                 return
             }
-            socket.send(rpc.execute(data).toByteArray())
+            rpcServer.send(rpc.execute(data).toByteArray())
+//            socket.send(rpc.execute(data).toByteArray())
         }
 
     }

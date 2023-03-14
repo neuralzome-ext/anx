@@ -22,6 +22,11 @@ struct bytes_t {
     size_t size;
 };
 
+struct rpc_payload_t {
+    std::string rpc_name;
+    bytes_t data;
+};
+
 class Publisher {
 public:
     Publisher(const std::string& address);
@@ -55,6 +60,8 @@ class Server {
 public:
     Server(const std::string& address);
     bytes_t listen();
+    rpc_payload_t listenRpc();
+    bool sendResponse(bytes_t& payload);
     bool close();
 private:
     zmq::context_t context_;

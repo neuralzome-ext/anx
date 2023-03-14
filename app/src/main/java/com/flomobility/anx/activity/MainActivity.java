@@ -1,6 +1,8 @@
 package com.flomobility.anx.activity;
 
 
+import static com.flomobility.anx.other.Constants.ACTION_START_OR_RESUME_SERVICE;
+
 import android.Manifest;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -170,7 +172,7 @@ public class MainActivity extends AppCompatActivity implements
         }
 
         startAnxService();
-        startContainer();
+//        startContainer();
     }
 
     @Override
@@ -489,7 +491,7 @@ public class MainActivity extends AppCompatActivity implements
 
     private void startAnxService() {
         Intent intent = new Intent(this, EndlessService.class);
-        intent.setAction(Constants.ACTION_START_OR_RESUME_SERVICE);
+        intent.setAction(ACTION_START_OR_RESUME_SERVICE);
         this.startService(intent);
     }
 

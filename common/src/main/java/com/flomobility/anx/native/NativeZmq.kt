@@ -25,6 +25,10 @@ object NativeZmq {
 
     external fun listenServerRequests(serverPtr: Long): ByteArray
 
+    external fun listenForRpcs(serverPtr: Long): RpcPayload
+
+    external fun sendServerResponse(serverPtr: Long, data: ByteArray): Boolean
+
     external fun closeServer(serverPtr: Long): Boolean
 
 }
