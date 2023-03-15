@@ -27,6 +27,12 @@ struct rpc_payload_t {
     bytes_t data;
 };
 
+struct seq_message_t {
+    bool success;
+    bytes_t data;
+    bool more;
+};
+
 class Publisher {
 public:
     Publisher(const std::string& address);
@@ -59,7 +65,7 @@ private:
 class Server {
 public:
     Server(const std::string& address);
-    bytes_t listen();
+    seq_message_t listen();
     rpc_payload_t listenRpc();
     bool sendResponse(bytes_t& payload);
     bool close();

@@ -9,10 +9,12 @@ import com.flomobility.anx.assets.Asset
 import com.flomobility.anx.common.Rate
 import com.flomobility.anx.common.Result
 import com.flomobility.anx.native.NativeZmq
+import com.flomobility.anx.native.zmq.Publisher
 import com.flomobility.anx.proto.Assets
 import com.flomobility.anx.proto.Assets.ImuData
 import com.flomobility.anx.proto.Assets.ImuData.Filtered
 import com.flomobility.anx.proto.Common
+import com.flomobility.anx.utils.AddressUtils
 import dagger.hilt.android.qualifiers.ApplicationContext
 import org.zeromq.SocketType
 import org.zeromq.ZContext
@@ -46,6 +48,8 @@ class DeviceImu @Inject constructor(
     private var rawAcceleration = Common.Vector3.newBuilder()
 
     private var magneticField = Common.Vector3.newBuilder()
+
+    private var imuData = ImuData.newBuilder()
 
     private var publisherThread: PublisherThread? = null
 
@@ -119,7 +123,6 @@ class DeviceImu @Inject constructor(
     }
 
     private fun getImuData(): ImuData {
-        val imuData = ImuData.newBuilder()
         imuData.apply {
             filtered = Filtered.newBuilder().apply {
                 acceleration = linearAcceleration.build()
@@ -215,13 +218,11 @@ class DeviceImu @Inject constructor(
 
     inner class PublisherThread(val fps: Int) : Thread() {
 
-        private lateinit var socket: ZMQ.Socket
-
-        private val address = "ipc:///data/data/com.flomobility.anx.headless/tmp/device_imu"
+        private val address = AddressUtils.getNamedPipeAddress(context, "device_imu")
 
         val interrupt = AtomicBoolean(false)
 
-        var nativeZmqPublisherPtr: Long = 0L
+        private lateinit var publisher: Publisher
 
         init {
             name = "device-imu-publisher-thread"
@@ -229,7 +230,8 @@ class DeviceImu @Inject constructor(
 
         override fun run() {
             try {
-                nativeZmqPublisherPtr = NativeZmq.createPublisherInstance(address)
+                publisher = Publisher()
+                publisher.init(address)
                 ZContext().use { ctx ->
 //                    socket = ctx.createSocket(SocketType.PUB)
 //                    socket.bind(address)
@@ -240,14 +242,14 @@ class DeviceImu @Inject constructor(
                     while (!interrupt.get()) {
                         try {
 //                            socket.send(getImuData().toByteArray(), ZMQ.DONTWAIT)
-                            NativeZmq.sendData(nativeZmqPublisherPtr, getImuData().toByteArray())
+                            publisher.publish(getImuData().toByteArray())
                             rate.sleep()
                         } catch (e: Exception) {
                             Timber.e(e)
                             return
                         }
                     }
-                    NativeZmq.closePublisher(nativeZmqPublisherPtr)
+                    publisher.close()
                 }
                 Timber.tag(TAG).i("Stopped publishing $TAG data")
             } catch (e: Exception) {

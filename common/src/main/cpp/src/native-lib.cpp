@@ -98,18 +98,25 @@ Java_com_flomobility_anx_native_NativeZmq_createServerInstance(
     return (jlong) server;
 }
 extern "C"
-JNIEXPORT jbyteArray JNICALL
+JNIEXPORT jobject JNICALL
 Java_com_flomobility_anx_native_NativeZmq_listenServerRequests(
         JNIEnv *env,
         jobject thiz,
         jlong server_ptr) {
     auto *server = (Server *) server_ptr;
-    bytes_t bytes = server->listen();
-    jbyteArray result = env->NewByteArray(bytes.size);
+    seq_message_t msg = server->listen();
+    bytes_t bytes = msg.data;
+    jbyteArray result = env->NewByteArray((int)bytes.size);
 
     // Copy the byte array to the jbyteArray
-    env->SetByteArrayRegion(result, 0, bytes.size, reinterpret_cast<jbyte *>(bytes.data));
-    return result;
+    env->SetByteArrayRegion(result, 0, (int)bytes.size, (jbyte *)(bytes.data));
+    jclass clazz = env->FindClass("com/flomobility/anx/native/Message");
+    jmethodID midConstructor = env->GetMethodID(
+            clazz, "<init>",
+            "(ZZ[B)V");
+    jobject message = env->NewObject(clazz, midConstructor, msg.success, msg.more, result);
+    free(bytes.data);
+    return message;
 }
 extern "C"
 JNIEXPORT jboolean JNICALL

@@ -90,10 +90,12 @@ bool Subscriber::close() {
 // Server related
 Server::Server(const std::string &address) {
     this->address_ = address;
-    this->tag_ = "NativeZmqServer [" + this->address_ + "]";
+    this->tag_ = "NativeZmqServer";
 
     this->socket_ = std::make_unique<zmq::socket_t>(this->context_, zmq::socket_type::rep);
     this->socket_->bind(address);
+
+    LOGI(this->tag_.c_str(), "Created server on %s", this->address_.c_str());
 
     this->poller_ = std::make_unique<zmq::pollitem_t>();
     this->poller_->socket = *this->socket_;
@@ -102,8 +104,14 @@ Server::Server(const std::string &address) {
     this->poller_->revents = 0;
 }
 
-bytes_t Server::listen() {
+seq_message_t Server::listen() {
+    seq_message_t message{};
     bytes_t payload{};
+
+    message.success = false;
+    message.more = false;
+    message.data = payload;
+
     zmq::message_t msg;
     zmq::poll(this->poller_.get(), 1, 100);
     if (this->poller_->revents & ZMQ_POLLIN) {
@@ -111,15 +119,21 @@ bytes_t Server::listen() {
             this->socket_->recv(msg);
         } catch (std::exception &e) {
             LOGE(this->tag_.c_str(), "Connection to %s terminated!", this->address_.c_str());
-            return payload;
+            return message;
         }
-        void *data_ptr = msg.data();
-        BYTE *bytes = static_cast<BYTE *>(data_ptr);
-        payload.data = bytes;
+        void* data_ptr = msg.data();
+        BYTE *bytes = new BYTE[msg.size()];
+        memcpy(bytes, data_ptr, msg.size());
+
         payload.size = msg.size();
-        return payload;
+        payload.data = bytes;
+
+        message.success = true;
+        message.data = payload;
+        message.more = msg.more();
+        return message;
     }
-    return payload;
+    return message;
 }
 
 rpc_payload_t Server::listenRpc() {
@@ -136,27 +150,26 @@ rpc_payload_t Server::listenRpc() {
     zmq::poll(this->poller_.get(), 1, 100);
     if (this->poller_->revents & ZMQ_POLLIN) {
         try {
-            this->socket_->recv(msg1);
+            auto res = this->socket_->recv(msg1);
             rpc_name = msg1.to_string();
             if(!msg1.more()) {
                 LOGE(this->tag_.c_str(), "Invalid RPC : %s", rpc_name.c_str());
                 return payload;
             }
-            this->socket_->recv(msg2);
+            auto res2 = this->socket_->recv(msg2);
+            void *data_ptr = msg2.data();
+            BYTE *bytes = static_cast<BYTE *>(data_ptr);
+            data.data = bytes;
+            data.size = msg2.size();
+
+            payload.data = data;
+            payload.rpc_name = rpc_name;
+
+            return payload;
         } catch (std::exception &e) {
             LOGE(this->tag_.c_str(), "Connection to %s terminated!", this->address_.c_str());
             return payload;
         }
-
-        void *data_ptr = msg2.data();
-        BYTE *bytes = static_cast<BYTE *>(data_ptr);
-        data.data = bytes;
-        data.size = msg2.size();
-
-        payload.data = data;
-        payload.rpc_name = rpc_name;
-
-        return payload;
     }
     return payload;
 }

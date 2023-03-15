@@ -23,7 +23,7 @@ object NativeZmq {
     // Server related
     external fun createServerInstance(address: String): Long
 
-    external fun listenServerRequests(serverPtr: Long): ByteArray
+    external fun listenServerRequests(serverPtr: Long): Message
 
     external fun listenForRpcs(serverPtr: Long): RpcPayload
 

@@ -20,6 +20,8 @@ import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
 import com.flomobility.anx.common.Constants
+import com.flomobility.anx.native.zmq.Publisher
+import com.flomobility.anx.utils.AddressUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -107,10 +109,12 @@ class DeviceGnss @Inject constructor(
 
         private var handler: NMEAMessageThreadHandler? = null
 
-        private lateinit var socket: ZMQ.Socket
+//        private lateinit var socket: ZMQ.Socket
 
-        private var address = "tcp://localhost:10004"
+        private lateinit var publisher: Publisher
 
+//        private var address = "tcp://localhost:10004"
+        private val address = AddressUtils.getNamedPipeAddress(context, "device_gnss")
 
         override fun run() {
             while (address.isEmpty()) {
@@ -118,18 +122,21 @@ class DeviceGnss @Inject constructor(
             }
             Timber.tag(TAG).d("Starting Gnss Publisher on $address")
             try {
-                ZContext().use { ctx ->
+                publisher = Publisher()
+                publisher.init(address)
+                /*ZContext().use { ctx ->
                     socket = ctx.createSocket(SocketType.PUB)
                     socket.bind(address)
                     // wait to bind
-                    Thread.sleep(500L)
+                    Thread.sleep(500L)*/
                     Looper.prepare()
                     handler = NMEAMessageThreadHandler(Looper.myLooper() ?: return)
                     Looper.loop()
-                }
-                socket.unbind(address)
-                Thread.sleep(500L)
+//                }
+//                socket.unbind(address)
+//                Thread.sleep(500L)
                 Timber.tag(TAG).d("Stopping Gnss Publisher on $address")
+                publisher.close()
             } catch (e: Exception) {
                 Timber.e(e)
             }
@@ -149,7 +156,8 @@ class DeviceGnss @Inject constructor(
                     MSG_NMEA_DATA -> {
                         val gnssData = msg.obj as Assets.GnssData
                         gnssData.let {
-                            socket.send(gnssData.toByteArray(), 0)
+//                            socket.send(gnssData.toByteArray(), 0)
+                            publisher.publish(gnssData.toByteArray())
                         }
                     }
                     Constants.SIG_KILL_THREAD -> {
