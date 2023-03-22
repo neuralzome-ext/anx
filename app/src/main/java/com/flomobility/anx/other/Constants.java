@@ -2,7 +2,7 @@ package com.flomobility.anx.other;
 
 public class Constants {
 
-    public static final String ACTION_START_OR_RESUME_SERVICE = "ACTION_START_OR_RESUME_SERVICE";
+    public static final String ACTION_START_SERVICE = "ACTION_START_SERVICE";
     public static final String ACTION_PAUSE_SERVICE = "ACTION_PAUSE_SERVICE";
     public static final String ACTION_STOP_SERVICE = "ACTION_STOP_SERVICE";
     public static final String ACTION_STOP_AND_EXIT = "ACTION_STOP_AND_EXIT";

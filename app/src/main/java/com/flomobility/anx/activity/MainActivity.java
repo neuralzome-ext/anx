@@ -6,9 +6,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
-import android.graphics.Color;
 import android.net.ConnectivityManager;
-import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.net.wifi.WifiManager.WifiLock;
 import android.os.Build;
@@ -489,7 +487,7 @@ public class MainActivity extends AppCompatActivity implements
 
     private void startAnxService() {
         Intent intent = new Intent(this, EndlessService.class);
-        intent.setAction(Constants.ACTION_START_OR_RESUME_SERVICE);
+        intent.setAction(Constants.ACTION_START_SERVICE);
         this.startService(intent);
     }
 

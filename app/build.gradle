@@ -76,8 +76,8 @@ android {
         applicationId "com.flomobility.anx"
         minSdkVersion project.properties.minSdkVersion.toInteger()
         targetSdkVersion project.properties.targetSdkVersion.toInteger()
-        versionCode 15
-        versionName "0.9.0-beta01"
+        versionCode project.properties.app_version_code.toInteger()
+        versionName project.properties.app_version.toString()
 
         if (appVersionName) versionName = appVersionName
         validateVersionName(versionName)

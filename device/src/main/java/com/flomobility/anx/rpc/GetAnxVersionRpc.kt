@@ -1,6 +1,6 @@
 package com.flomobility.anx.rpc
 
-import com.flomobility.anx.BuildConfig
+import com.flomobility.anx.device.BuildConfig
 import com.flomobility.anx.proto.Common
 import com.flomobility.anx.proto.Device
 import javax.inject.Inject

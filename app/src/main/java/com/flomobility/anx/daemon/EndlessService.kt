@@ -39,7 +39,7 @@ class EndlessService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         intent?.let {
             when (it.action) {
-                Constants.ACTION_START_OR_RESUME_SERVICE -> {
+                Constants.ACTION_START_SERVICE -> {
                    if(!isRunning) {
                        startAnxService()
                        Timber.d("Started service")
