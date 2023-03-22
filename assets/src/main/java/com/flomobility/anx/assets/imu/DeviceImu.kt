@@ -135,48 +135,58 @@ class DeviceImu @Inject constructor(
         return imuData.build()
     }
 
-    private fun registerImu() {
+    private fun selectSensorDelay(fps: Int): Int {
+        return when {
+            fps <= 10 -> SensorManager.SENSOR_DELAY_UI
+            fps > 10 && fps < 45 -> SensorManager.SENSOR_DELAY_GAME
+            fps > 45 -> SensorManager.SENSOR_DELAY_FASTEST
+            else -> SensorManager.SENSOR_DELAY_NORMAL
+        }
+    }
+
+    private fun registerImu(fps: Int) {
+        val sensorDelay = selectSensorDelay(fps)
         with(sensorManager) {
             getDefaultSensor(Sensor.TYPE_GYROSCOPE)?.also { magnetometer ->
                 registerListener(
                     sensorEventListeners,
                     magnetometer,
-                    SensorManager.SENSOR_DELAY_FASTEST
+                    sensorDelay
                 )
             }
             getDefaultSensor(Sensor.TYPE_ACCELEROMETER)?.also { gyroscope ->
                 registerListener(
                     sensorEventListeners,
                     gyroscope,
-                    SensorManager.SENSOR_DELAY_FASTEST
+                    sensorDelay
                 )
             }
             getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)?.also { linearAcc ->
                 registerListener(
                     sensorEventListeners,
                     linearAcc,
-                    SensorManager.SENSOR_DELAY_FASTEST
+                    sensorDelay
                 )
             }
             getDefaultSensor(Sensor.TYPE_GYROSCOPE_UNCALIBRATED)?.also { magnetometer ->
                 registerListener(
                     sensorEventListeners,
                     magnetometer,
-                    SensorManager.SENSOR_DELAY_FASTEST
+                    sensorDelay
                 )
             }
             getDefaultSensor(Sensor.TYPE_ACCELEROMETER_UNCALIBRATED)?.also { gyroscope ->
                 registerListener(
                     sensorEventListeners,
                     gyroscope,
-                    SensorManager.SENSOR_DELAY_FASTEST
+                    sensorDelay
                 )
             }
             getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD)?.also { linearAcc ->
                 registerListener(
                     sensorEventListeners,
                     linearAcc,
-                    SensorManager.SENSOR_DELAY_FASTEST
+                    sensorDelay
                 )
             }
         }
@@ -192,7 +202,7 @@ class DeviceImu @Inject constructor(
         }
 
         // Register IMU
-        registerImu()
+        registerImu(options.fps)
 
         // Initialize and start thread
         this.publisherThread = PublisherThread(fps = options.fps)
