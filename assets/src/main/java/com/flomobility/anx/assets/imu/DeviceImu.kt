@@ -8,7 +8,6 @@ import android.hardware.SensorManager
 import com.flomobility.anx.assets.Asset
 import com.flomobility.anx.common.Rate
 import com.flomobility.anx.common.Result
-import com.flomobility.anx.native.NativeZmq
 import com.flomobility.anx.native.zmq.Publisher
 import com.flomobility.anx.proto.Assets
 import com.flomobility.anx.proto.Assets.ImuData
@@ -16,9 +15,7 @@ import com.flomobility.anx.proto.Assets.ImuData.Filtered
 import com.flomobility.anx.proto.Common
 import com.flomobility.anx.utils.AddressUtils
 import dagger.hilt.android.qualifiers.ApplicationContext
-import org.zeromq.SocketType
 import org.zeromq.ZContext
-import org.zeromq.ZMQ
 import timber.log.Timber
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
@@ -39,7 +36,7 @@ class DeviceImu @Inject constructor(
 
     private var angularVelocity = Common.Vector3.newBuilder()
 
-    private var linearAcceleration = Common.Vector3.newBuilder()
+    private var acceleration = Common.Vector3.newBuilder()
 
     private var orientation = Common.Quaternion.newBuilder()
 
@@ -70,8 +67,8 @@ class DeviceImu @Inject constructor(
                 return
             } else {
                 when (event.sensor.type) {
-                    Sensor.TYPE_LINEAR_ACCELERATION -> {
-                        linearAcceleration.apply {
+                    Sensor.TYPE_ACCELEROMETER -> {
+                        acceleration.apply {
                             x = event.values[0].toDouble()
                             y = event.values[1].toDouble()
                             z = event.values[2].toDouble()
@@ -125,7 +122,7 @@ class DeviceImu @Inject constructor(
     private fun getImuData(): ImuData {
         imuData.apply {
             filtered = Filtered.newBuilder().apply {
-                acceleration = linearAcceleration.build()
+                acceleration = this@DeviceImu.acceleration.build()
                 angularVelocity = this@DeviceImu.angularVelocity.build()
                 orientation = this@DeviceImu.orientation.build()
             }.build()
@@ -147,7 +144,7 @@ class DeviceImu @Inject constructor(
                     SensorManager.SENSOR_DELAY_FASTEST
                 )
             }
-            getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION)?.also { gyroscope ->
+            getDefaultSensor(Sensor.TYPE_ACCELEROMETER)?.also { gyroscope ->
                 registerListener(
                     sensorEventListeners,
                     gyroscope,
