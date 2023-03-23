@@ -168,6 +168,7 @@ public class MainActivity extends AppCompatActivity implements
         }
 
         startAnxService();
+//        androidLogsUtil.startLogging();
 //        startContainer();
     }
 

@@ -32,7 +32,9 @@ class DeviceRpcHandler @Inject constructor(
     private val getStartDeviceImuRpc: StartDeviceImuRpc,
     private val geStopDeviceCameraRpc: StopDeviceCameraRpc,
     private val getStopDeviceGnssRpc: StopDeviceGnssRpc,
-    private val getStopDeviceImuRpc: StopDeviceImuRpc
+    private val getStopDeviceImuRpc: StopDeviceImuRpc,
+    private val startAndroidLogsRpc: StartAndroidLogsRpc,
+    private val stopAndroidLogsRpc: StopAndroidLogsRpc
 ) {
 
     private var port: Int = 10002
@@ -60,6 +62,8 @@ class DeviceRpcHandler @Inject constructor(
         rpcRegistry[geStopDeviceCameraRpc.name] = geStopDeviceCameraRpc
         rpcRegistry[getStopDeviceGnssRpc.name] = getStopDeviceGnssRpc
         rpcRegistry[getStopDeviceImuRpc.name] = getStopDeviceImuRpc
+        rpcRegistry[startAndroidLogsRpc.name] = startAndroidLogsRpc
+        rpcRegistry[stopAndroidLogsRpc.name] = stopAndroidLogsRpc
     }
 
     fun init(port: Int) {
