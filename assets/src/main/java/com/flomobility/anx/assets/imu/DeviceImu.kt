@@ -11,7 +11,6 @@ import com.flomobility.anx.common.Result
 import com.flomobility.anx.native.zmq.Publisher
 import com.flomobility.anx.proto.Assets
 import com.flomobility.anx.proto.Assets.ImuData
-import com.flomobility.anx.proto.Assets.ImuData.Filtered
 import com.flomobility.anx.proto.Common
 import com.flomobility.anx.utils.AddressUtils
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -45,6 +44,10 @@ class DeviceImu @Inject constructor(
     private var rawAcceleration = Common.Vector3.newBuilder()
 
     private var magneticField = Common.Vector3.newBuilder()
+
+    private var filteredData = ImuData.Filtered.newBuilder()
+
+    private var rawData = ImuData.Raw.newBuilder()
 
     private var imuData = ImuData.newBuilder()
 
@@ -119,20 +122,19 @@ class DeviceImu @Inject constructor(
         }
     }
 
-    private fun getImuData(): ImuData {
-        imuData.apply {
-            filtered = Filtered.newBuilder().apply {
-                acceleration = this@DeviceImu.acceleration.build()
-                angularVelocity = this@DeviceImu.angularVelocity.build()
-                orientation = this@DeviceImu.orientation.build()
-            }.build()
-            raw = ImuData.Raw.newBuilder().apply {
-                acceleration = rawAcceleration.build()
-                angularVelocity = this@DeviceImu.rawAngularVelocity.build()
-                magneticFieldInMicroTesla = this@DeviceImu.magneticField.build()
-            }.build()
+    private fun updateImuData() {
+        filteredData.apply {
+            setAcceleration(this@DeviceImu.acceleration)
+            setAngularVelocity(this@DeviceImu.angularVelocity)
+            setOrientation(this@DeviceImu.orientation)
         }
-        return imuData.build()
+        rawData.apply {
+            setAcceleration(this@DeviceImu.rawAcceleration)
+            setAngularVelocity(this@DeviceImu.rawAngularVelocity)
+            setMagneticFieldInMicroTesla(this@DeviceImu.magneticField)
+        }
+        imuData.setFiltered(filteredData)
+        imuData.setRaw(rawData)
     }
 
     private fun selectSensorDelay(fps: Int): Int {
@@ -213,6 +215,7 @@ class DeviceImu @Inject constructor(
 
     override fun stop(): Result {
         Timber.tag(TAG).i("Stopping $TAG ....")
+
         // Stop publishing
         this.publisherThread?.interrupt?.set(true)
         this.publisherThread?.join()
@@ -249,7 +252,8 @@ class DeviceImu @Inject constructor(
                     while (!interrupt.get()) {
                         try {
 //                            socket.send(getImuData().toByteArray(), ZMQ.DONTWAIT)
-                            publisher.publish(getImuData().toByteArray())
+                            updateImuData()
+//                            publisher.publish(imuData.build().toByteArray())
                             rate.sleep()
                         } catch (e: Exception) {
                             Timber.e(e)
@@ -257,6 +261,7 @@ class DeviceImu @Inject constructor(
                         }
                     }
                     publisher.close()
+                    imuData.clear()
                 }
                 Timber.tag(TAG).i("Stopped publishing $TAG data")
             } catch (e: Exception) {
