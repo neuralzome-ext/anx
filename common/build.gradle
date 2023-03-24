@@ -16,6 +16,7 @@ android {
             cmake {
                 cppFlags '-std=c++17 -frtti -fexceptions'
                 arguments "-DZMQ_DIR=" + projectDir.path + "/src/main/libs/zmq"
+                arguments "-DPROTOBUF_DIR=" + projectDir.path + "/src/main/libs/protobuf"
                 arguments "-DANDROID_STL=c++_shared"
             }
         }
@@ -70,15 +71,21 @@ task generateProtoc(description: 'Build java files from proto files') {
     println('Creating java files from .proto files')
     def anxProtoDirPath = rootDir.path + "/api_docs/anx"
     def javaBuildDir = projectDir.path + "/src/main/java"
+    def cppBuildDir = projectDir.path + "/src/main/cpp/anx"
     def kotlinBuildDir = projectDir.path + "/src/main/kotlin"
 
     def protoc = getProtoc()
+
+    def cppBuildDirFile = new File(cppBuildDir)
+    if(!cppBuildDirFile.exists()) {
+        cppBuildDirFile.mkdirs()
+    }
 
     fileTree(anxProtoDirPath).forEach { file ->
         if (file.name.contains('.proto')) {
             exec {
                 workingDir anxProtoDirPath
-                commandLine protoc, "--proto_path=.", "--java_out="+javaBuildDir, /*"--kotlin_out="+kotlinBuildDir,*/ file.name
+                commandLine protoc, "--proto_path=.", "--java_out="+javaBuildDir, "--cpp_out="+cppBuildDir,/*"--kotlin_out="+kotlinBuildDir,*/ file.name
             }
         }
     }
@@ -86,34 +93,35 @@ task generateProtoc(description: 'Build java files from proto files') {
 }
 
 def getProtoc() {
+    def protoc_version="3.12.4"
     def arch = getOsArch()
     def os = getOsName()
 
     def protoc = ""
     if (os == "linux") {
         if(arch == "arm64" || arch == "aarch64") {
-            protoc = "protoc-22.0-linux-aarch_64"
+            protoc = "protoc-$protoc_version-linux-aarch_64"
         }
         if(arch == "x86_64" || arch == "amd64") {
-            protoc = "protoc-22.0-linux-x86_64"
+            protoc = "protoc-$protoc_version-linux-x86_64"
         }
     }
 
     if (os == "osx") {
         if(arch == "arm64" || arch == "aarch64") {
-            protoc = "protoc-22.0-osx-aarch_64"
+            protoc = "protoc-$protoc_version-osx-aarch_64"
         }
         if(arch == "x86_64") {
-            protoc = "protoc-22.0-osx-x86_64"
+            protoc = "protoc-$protoc_version-osx-x86_64"
         }
     }
 
     if (os == "windows") {
         if(arch == "x64") {
-            protoc = "protoc-22.0-win_64.exe"
+            protoc = "protoc-$protoc_version-win_64.exe"
         }
         if(arch == "x86") {
-            protoc = "protoc-22.0-win_32.exe"
+            protoc = "protoc-$protoc_version-win_32.exe"
         }
     }
 
@@ -143,8 +151,10 @@ def getOsArch() {
 
 task cleanUpProto(type: Delete) {
     def javaBuildDir = projectDir.path + "/src/main/java/com/flomobility/anx/proto"
+    def cppBuildDir = projectDir.path + "/src/main/cpp/anx"
     def kotlinBuildDir = projectDir.path + "/src/main/kotlin/com/flomobility/anx/proto"
     delete javaBuildDir
+    delete cppBuildDir
     delete kotlinBuildDir
 }
 
