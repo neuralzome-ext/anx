@@ -18,6 +18,7 @@ import com.flomobility.anx.other.Constants
 import com.flomobility.anx.other.Constants.ACTION_STOP_AND_EXIT
 import com.flomobility.anx.other.Constants.NOTIFICATION_CHANNEL_ID
 import com.flomobility.anx.other.Constants.NOTIFICATION_CHANNEL_NAME
+import com.flomobility.anx.rpc.RestartAnxServiceRpc
 import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
 import javax.inject.Inject
@@ -28,6 +29,9 @@ class EndlessService : Service() {
 
     @Inject
     lateinit var deviceRpcHandler: DeviceRpcHandler
+
+    @Inject
+    lateinit var restartAnxServiceRpc: RestartAnxServiceRpc
 
     @Inject
     lateinit var baseNotificationBuilder: NotificationCompat.Builder
@@ -42,6 +46,9 @@ class EndlessService : Service() {
                 Constants.ACTION_START_SERVICE -> {
                    if(!isRunning) {
                        startAnxService()
+                       restartAnxServiceRpc.doRestartProcedure {
+                           stopAnxService()
+                       }
                        Timber.d("Started service")
                    }
                 }
@@ -105,6 +112,9 @@ class EndlessService : Service() {
         if (this::currentNotificationBuilder.isInitialized) {
             currentNotificationBuilder.clearActions()
         }
+
+        deviceRpcHandler.destroy()
+        stopSelf()
     }
 
     @RequiresApi(Build.VERSION_CODES.O)

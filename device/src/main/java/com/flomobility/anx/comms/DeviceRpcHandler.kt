@@ -34,7 +34,8 @@ class DeviceRpcHandler @Inject constructor(
     private val getStopDeviceGnssRpc: StopDeviceGnssRpc,
     private val getStopDeviceImuRpc: StopDeviceImuRpc,
     private val startAndroidLogsRpc: StartAndroidLogsRpc,
-    private val stopAndroidLogsRpc: StopAndroidLogsRpc
+    private val stopAndroidLogsRpc: StopAndroidLogsRpc,
+    private val restartAnxServiceRpc: RestartAnxServiceRpc
 ) {
 
     private var port: Int = 10002
@@ -64,6 +65,7 @@ class DeviceRpcHandler @Inject constructor(
         rpcRegistry[getStopDeviceImuRpc.name] = getStopDeviceImuRpc
         rpcRegistry[startAndroidLogsRpc.name] = startAndroidLogsRpc
         rpcRegistry[stopAndroidLogsRpc.name] = stopAndroidLogsRpc
+        rpcRegistry[restartAnxServiceRpc.name] = restartAnxServiceRpc
     }
 
     fun init(port: Int) {
