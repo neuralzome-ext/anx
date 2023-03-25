@@ -17,6 +17,10 @@ class AssetManager @Inject constructor(
     private val deviceGnss: DeviceGnss
 ) {
 
+    fun init() {
+        deviceImu.init()
+    }
+
     fun startDeviceImu(startDeviceImu: Assets.StartDeviceImu): Common.StdResponse {
         val status = deviceImu.start(startDeviceImu)
         return status.toStdResponse()

@@ -1,12 +1,27 @@
 cmake_minimum_required(VERSION 3.18.1)
 
 project("anx")
+set(ANX_PROTO_DIR anx)
 
+include_directories(
+        ${PROTOBUF_DIR}/include
+        ${ZMQ_DIR}/include
+        include
+        ${ANX_PROTO_DIR}
+)
+
+# get all .cc files from the anx directory
+file(GLOB COMPILED_PROTO_FILES ${ANX_PROTO_DIR}/*.cc)
 
 add_library( # Sets the name of the library.
         anx
         SHARED
-        src/native-lib.cpp)
+        src/native-lib.cpp
+        src/sensord.cpp
+        src/imu.cpp
+        src/NdkSensor.cpp
+        src/utils.cpp
+        ${COMPILED_PROTO_FILES})
 
 add_library(
         libzmq
@@ -21,11 +36,6 @@ set_target_properties(libzmq
 find_library(
         log-lib
         log)
-
-include_directories(
-        ${ZMQ_DIR}/include
-        include
-)
 
 add_library(
         cppzmq
@@ -42,6 +52,16 @@ target_link_libraries(
         INTERFACE
         libzmq
 )
+
+add_library(
+        libprotobuf
+        STATIC
+        IMPORTED
+)
+set_target_properties(libprotobuf
+        PROPERTIES
+        IMPORTED_LOCATION
+        ${PROTOBUF_DIR}/libprotobuf.a)
 
 add_library(
         ipc_transport
@@ -59,8 +79,11 @@ target_link_libraries(
         ipc_transport
         cppzmq
         ${log-lib}
+        libprotobuf
 )
 
 target_link_libraries( # Specifies the target library.
         anx
-        ipc_transport)
+        ipc_transport
+        libprotobuf
+        android)

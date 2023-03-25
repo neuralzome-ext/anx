@@ -1,3 +1,4 @@
 /build
 /src/main/java/com/flomobility/anx/proto
 /src/main/kotlin/com/flomobility/anx/proto
+/src/main/cpp/anx/

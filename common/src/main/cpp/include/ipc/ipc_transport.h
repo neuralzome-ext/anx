@@ -37,6 +37,8 @@ class Publisher {
 public:
     Publisher(const std::string& address);
     void SendData(BYTE* data, int length);
+    void SendData(bytes_t bytes);
+    void SendData(const std::string& data);
     bool close();
 private:
     zmq::context_t context_;
