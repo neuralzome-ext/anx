@@ -6,6 +6,9 @@ set(ANX_PROTO_DIR anx)
 include_directories(
         ${PROTOBUF_DIR}/include
         ${ZMQ_DIR}/include
+        ${TFLITE_DIR}/include
+        ${TFLITE_GPU_DIR}/include
+        ${TFLITE_HEXAGON_DIR}/include
         include
         ${ANX_PROTO_DIR}
 )
@@ -82,8 +85,61 @@ target_link_libraries(
         libprotobuf
 )
 
+add_library(
+        libtflite
+        SHARED
+        IMPORTED)
+
+set_target_properties(libtflite
+        PROPERTIES
+        IMPORTED_LOCATION
+        ${TFLITE_DIR}/libtflite.so)
+
+add_library(
+        libtflite_gpu
+        SHARED
+        IMPORTED)
+
+set_target_properties(libtflite_gpu
+        PROPERTIES
+        IMPORTED_LOCATION
+        ${TFLITE_GPU_DIR}/libtflite_gpu.so)
+
+add_library(libhexagon_interface
+        SHARED
+        IMPORTED)
+
+set_target_properties(libhexagon_interface
+        PROPERTIES
+        IMPORTED_LOCATION
+        ${TFLITE_HEXAGON_DIR}/libhexagon_interface.so)
+
+add_library(
+        libtflite_hexagon
+        SHARED
+        IMPORTED)
+
+set_target_properties(libtflite_hexagon
+        PROPERTIES
+        IMPORTED_LOCATION
+        ${TFLITE_HEXAGON_DIR}/libtflite_hexagon.so)
+
+target_link_libraries(libtflite_hexagon INTERFACE libhexagon_interface)
+
+add_library(anx_tflite_runner
+        SHARED
+        src/tflite_runner.cpp)
+
+target_link_libraries(
+        anx_tflite_runner
+        libtflite
+        libtflite_gpu
+        libtflite_hexagon
+)
+
 target_link_libraries( # Specifies the target library.
         anx
         ipc_transport
         libprotobuf
-        android)
+        android
+        anx_tflite_runner)
