@@ -93,7 +93,7 @@ add_library(
 set_target_properties(libtflite
         PROPERTIES
         IMPORTED_LOCATION
-        ${TFLITE_DIR}/libtflite.so)
+        ${TFLITE_DIR}/libtensorflowlite_jni.so)
 
 add_library(
         libtflite_gpu
@@ -103,7 +103,7 @@ add_library(
 set_target_properties(libtflite_gpu
         PROPERTIES
         IMPORTED_LOCATION
-        ${TFLITE_GPU_DIR}/libtflite_gpu.so)
+        ${TFLITE_GPU_DIR}/libtensorflowlite_gpu_jni.so)
 
 add_library(libhexagon_interface
         SHARED
@@ -122,16 +122,21 @@ add_library(
 set_target_properties(libtflite_hexagon
         PROPERTIES
         IMPORTED_LOCATION
-        ${TFLITE_HEXAGON_DIR}/libtflite_hexagon.so)
+        ${TFLITE_HEXAGON_DIR}/libtensorflowlite_hexagon_jni.so)
 
 target_link_libraries(libtflite_hexagon INTERFACE libhexagon_interface)
 
 add_library(anx_tflite_runner
         SHARED
-        src/tflite_runner.cpp)
+        src/tflite_runner.cpp
+        src/tflite_runner_rpc_server.cpp
+        src/tflite_runner_jni.cpp
+        ${COMPILED_PROTO_FILES})
 
 target_link_libraries(
         anx_tflite_runner
+        ipc_transport
+        libprotobuf
         libtflite
         libtflite_gpu
         libtflite_hexagon
@@ -141,5 +146,4 @@ target_link_libraries( # Specifies the target library.
         anx
         ipc_transport
         libprotobuf
-        android
-        anx_tflite_runner)
+        android)

@@ -206,6 +206,18 @@ bool Server::sendResponse(bytes_t &payload) {
     }
 }
 
+bool Server::sendResponse(const std::string& payload) {
+    try {
+        this->socket_->send(
+                zmq::message_t(payload),
+                zmq::send_flags::dontwait);
+        return true;
+    } catch (std::exception &e) {
+        LOGE(this->tag_.c_str(), "Error in sending response data : %s", e.what());
+        return false;
+    }
+}
+
 bool Server::close() {
     this->socket_->disconnect(this->address_);
     return true;

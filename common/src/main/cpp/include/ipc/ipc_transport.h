@@ -70,6 +70,7 @@ public:
     seq_message_t listen();
     rpc_payload_t listenRpc();
     bool sendResponse(bytes_t& payload);
+    bool sendResponse(const std::string& payload);
     bool close();
 private:
     zmq::context_t context_;

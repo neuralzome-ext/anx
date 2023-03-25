@@ -7,7 +7,7 @@
 TfliteRunner::TfliteRunner(){
     this->model_loaded_ = false;
     this->model_bytes_ = nullptr;
-    this->model_size_ = 0;
+    this->model_size_ = 0L;
     this->delegate_type_ = TfliteRunner::DelegateType::CPU;
 
     this->model_ = nullptr;
@@ -32,11 +32,11 @@ TfliteRunner::~TfliteRunner(){
 
 TfliteRunner::ModelMeta TfliteRunner::LoadModel(
         char* model_bytes,
-        int model_size,
-        DelegateType deligate_type
+        size_t model_size,
+        DelegateType delegateType
 ){
     TfliteRunner::ModelMeta model_meta;
-    this->delegate_type_ = deligate_type;
+    this->delegate_type_ = delegateType;
 
     this->model_size_ = model_size;
     this->model_bytes_ = (char*) malloc(this->model_size_);

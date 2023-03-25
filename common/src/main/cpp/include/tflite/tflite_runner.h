@@ -15,15 +15,15 @@
 #include <tensorflow/lite/delegates/gpu/delegate.h>
 #include <tensorflow/lite/delegates/hexagon/hexagon_delegate.h>
 
-class TfliteRunner{
+class TfliteRunner {
 public:
-    enum DelegateType{
+    enum DelegateType {
         CPU = 0,
         GPU = 1,
         DSP = 2
     };
 
-    struct ModelMeta{
+    struct ModelMeta {
         bool valid;
         std::vector<int> input_dims;
         std::vector<int> output_dims;
@@ -33,25 +33,28 @@ public:
 
     TfliteRunner();
     ~TfliteRunner();
+
     ModelMeta LoadModel(
-            char* model_bytes,
-            int model_size,
-            DelegateType deligate_type
+            char *model_bytes,
+            size_t model_size,
+            DelegateType delegateType
     );
 
-    TfLiteTensor* input_tensor_;
-    const TfLiteTensor* output_tensor_;
+    TfLiteTensor *input_tensor_;
+    const TfLiteTensor *output_tensor_;
+
     void InvokeModel();
+
 private:
     bool model_loaded_;
-    char* model_bytes_;
-    int model_size_;
+    char *model_bytes_;
+    size_t model_size_;
     DelegateType delegate_type_;
 
-    TfLiteModel* model_;
-    TfLiteDelegate* delegate_;
-    TfLiteInterpreter* interpreter_;
-    TfLiteInterpreterOptions* options_;
+    TfLiteModel *model_;
+    TfLiteDelegate *delegate_;
+    TfLiteInterpreter *interpreter_;
+    TfLiteInterpreterOptions *options_;
 };
 
 #endif //ANX_TFLITE_RUNNER_H

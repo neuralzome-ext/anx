@@ -1,6 +1,7 @@
 package com.flomobility.anx.comms
 
 import android.content.Context
+import com.flomobility.anx.native.NativeTfLiteRunnerServer
 import com.flomobility.anx.native.zmq.Server
 import com.flomobility.anx.proto.Common
 import com.flomobility.anx.rpc.*
@@ -90,6 +91,10 @@ class DeviceRpcHandler @Inject constructor(
 
         override fun run() {
             rpcServer = Server()
+
+            NativeTfLiteRunnerServer.init(AddressUtils.getNamedPipeAddress(context, "gpu"), NativeTfLiteRunnerServer.DELEGATE_GPU)
+            NativeTfLiteRunnerServer.start()
+
             try {
                 rpcServer.init(
                     AddressUtils.getNamedPipeAddress(
