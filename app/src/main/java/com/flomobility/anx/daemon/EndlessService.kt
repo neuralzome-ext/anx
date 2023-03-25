@@ -13,6 +13,7 @@ import androidx.core.app.NotificationCompat
 import com.flomobility.anx.EnvUtils
 import com.flomobility.anx.R
 import com.flomobility.anx.activity.MainActivity
+import com.flomobility.anx.assets.AssetManager
 import com.flomobility.anx.comms.DeviceRpcHandler
 import com.flomobility.anx.other.Constants
 import com.flomobility.anx.other.Constants.ACTION_STOP_AND_EXIT
@@ -29,6 +30,9 @@ class EndlessService : Service() {
 
     @Inject
     lateinit var deviceRpcHandler: DeviceRpcHandler
+
+    @Inject
+    lateinit var assetManager: AssetManager
 
     @Inject
     lateinit var restartAnxServiceRpc: RestartAnxServiceRpc
@@ -103,6 +107,7 @@ class EndlessService : Service() {
         isRunning = true
 
         deviceRpcHandler.init(10002)
+        assetManager.init()
     }
 
     private fun stopAnxService() {

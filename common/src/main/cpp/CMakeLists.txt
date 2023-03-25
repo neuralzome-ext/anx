@@ -17,6 +17,10 @@ add_library( # Sets the name of the library.
         anx
         SHARED
         src/native-lib.cpp
+        src/sensord.cpp
+        src/imu.cpp
+        src/NdkSensor.cpp
+        src/utils.cpp
         ${COMPILED_PROTO_FILES})
 
 add_library(
@@ -81,4 +85,5 @@ target_link_libraries(
 target_link_libraries( # Specifies the target library.
         anx
         ipc_transport
-        libprotobuf)
+        libprotobuf
+        android)

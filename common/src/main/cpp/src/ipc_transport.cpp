@@ -26,6 +26,26 @@ void Publisher::SendData(BYTE *data, int length) {
     }
 }
 
+void Publisher::SendData(bytes_t bytes) {
+    try {
+        this->socket_.send(
+                zmq::message_t(bytes.data, bytes.size),
+                zmq::send_flags::dontwait);
+    } catch (std::exception &e) {
+        LOGE(this->tag_.c_str(), "Error in publishing data : %s", e.what());
+    }
+}
+
+void Publisher::SendData(const std::string& data) {
+    try {
+        this->socket_.send(
+                zmq::message_t(data),
+                zmq::send_flags::dontwait);
+    } catch (std::exception &e) {
+        LOGE(this->tag_.c_str(), "Error in publishing data : %s", e.what());
+    }
+}
+
 bool Publisher::close() {
     try {
         this->socket_.unbind(this->address_);
