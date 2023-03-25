@@ -22,6 +22,7 @@ dependencyResolutionManagement {
         }
     }
 }
-include ':app', ':termux-shared', ':terminal-emulator', ':terminal-view'
-include ':libuvccamera'
-include ':usbCameraCommon'
+include ':app'
+include ':common'
+include ':assets'
+include ':device'

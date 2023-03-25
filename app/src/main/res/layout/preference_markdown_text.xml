@@ -15,6 +15,5 @@
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:textColor="?android:attr/textColorPrimary" />
 
-    <include android:id="@android:id/summary" layout="@layout/markdown_adapter_node_default" />
 
 </LinearLayout>

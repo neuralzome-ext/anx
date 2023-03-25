@@ -1,24 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="com.flomobility.anx"
-    android:installLocation="internalOnly"
-    android:sharedUserId="${TERMINAL_PACKAGE_NAME}"
-    android:sharedUserLabel="@string/shared_user_label">
+    package="com.flomobility.anx">
 
     <uses-feature
         android:name="android.hardware.touchscreen"
         android:required="false" />
-    <uses-feature
-        android:name="android.software.leanback"
-        android:required="false" />
-
-    <permission
-        android:name="${TERMINAL_PACKAGE_NAME}.permission.RUN_COMMAND"
-        android:description="@string/permission_run_command_description"
-        android:icon="@mipmap/ic_launcher"
-        android:label="@string/permission_run_command_label"
-        android:protectionLevel="dangerous" />
 
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.INTERNET" />
@@ -45,7 +32,7 @@
     <uses-feature android:name="android.hardware.usb.host" />
     <uses-feature android:name="android.hardware.usb.host" />
 
-    <uses-permission android:name="android.permission.VIBRATE"/>
+    <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
@@ -73,123 +60,113 @@
         android:supportsRtl="false"
         android:theme="@style/Theme.Flo"
         android:usesCleartextTraffic="true">
+
         <activity
-            android:name=".hermes.ui.asset_debug.AssetDebugActivity"
-            android:exported="false" />
-        <activity
-            android:name=".hermes.ui.license.LicenseActivity"
-            android:exported="false" />
-        <activity
-            android:name=".app.TerminalActivity"
-            android:configChanges="orientation|screenSize|smallestScreenSize|density|screenLayout|uiMode|keyboard|keyboardHidden|navigation"
-            android:label="@string/application_name"
-            android:launchMode="singleTask"
-            android:resizeableActivity="true">
-            <meta-data
-                android:name="android.app.shortcuts"
-                android:resource="@xml/shortcuts" />
-        </activity>
+            android:name=".activity.MainActivity"
+            android:launchMode="singleTask" />
 
         <activity-alias
-            android:name=".HomeActivity"
-            android:targetActivity=".app.TerminalActivity">
-
-            <!-- Launch activity automatically on boot on Android Things devices -->
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.IOT_LAUNCHER" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </activity-alias>
-
-        <activity android:name=".hermes.ui.settings.SettingsActivity" />
-        <activity
-            android:name=".hermes.ui.splash.SplashActivity"
-            android:exported="true"
-            android:theme="@style/SplashTheme">
+            android:name=".Launcher"
+            android:targetActivity=".activity.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity-alias>
+
+        <activity
+            android:name=".activity.SettingsActivity"
+            android:parentActivityName=".activity.MainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".activity.MainActivity" />
         </activity>
-        <activity android:name=".hermes.ui.login.LoginActivity" />
+        <activity android:name=".activity.PropertiesActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".activity.MainActivity" />
+        </activity>
         <activity
-            android:name=".hermes.ui.download.DownloadActivity"
-            android:launchMode="singleTask" />
+            android:name=".activity.AboutActivity"
+            android:parentActivityName=".activity.MainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".activity.MainActivity" />
+        </activity>
         <activity
-            android:name=".hermes.ui.home.HomeActivity"
-            android:launchMode="singleTask" />
-
-        <service
-            android:name=".hermes.daemon.EndlessService"
-            android:exported="true"
-            android:foregroundServiceType="dataSync" />
-
-        <service
-            android:name=".hermes.daemon.InstallingService"
-            android:exported="true"
-            android:foregroundServiceType="dataSync" />
+            android:name=".activity.ProfilesActivity"
+            android:parentActivityName=".activity.MainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".activity.MainActivity" />
+        </activity>
+        <activity
+            android:name=".activity.MountsActivity"
+            android:parentActivityName=".activity.PropertiesActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".activity.PropertiesActivity" />
+        </activity>
+        <activity
+            android:name=".activity.RepositoryActivity"
+            android:parentActivityName=".activity.MainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".activity.MainActivity" />
+        </activity>
+        <activity android:name=".activity.FullscreenActivity" />
 
         <receiver
-            android:name=".hermes.receivers.StartAppOnBootReceiver"
-            android:enabled="true"
-            android:exported="true"
-            android:permission="android.permission.RECEIVE_BOOT_COMPLETED">
-            <intent-filter>
+            android:name=".receiver.OldBootReceiver"
+            android:enabled="false"
+            android:exported="false">
+            <!--<intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
-                <action android:name="android.intent.action.QUICKBOOT_POWERON" />
-            </intent-filter>
+                <action android:name="android.intent.action.ACTION_SHUTDOWN" />
+            </intent-filter>-->
         </receiver>
 
-        <activity
-            android:name=".app.activities.HelpActivity"
-            android:exported="false"
-            android:label="@string/application_name"
-            android:parentActivityName=".app.TerminalActivity"
-            android:resizeableActivity="true"
-            android:theme="@android:style/Theme.Material.Light.DarkActionBar" />
-        <activity
-            android:name=".app.activities.SettingsActivity"
-            android:exported="true"
-            android:label="@string/title_activity_terminal_settings"
-            android:theme="@style/Theme.AppCompat.Light.DarkActionBar" />
-        <activity
-            android:name=".shared.activities.ReportActivity"
-            android:documentLaunchMode="intoExisting"
-            android:theme="@style/Theme.AppCompat.TerminalReportActivity" />
+        <receiver
+            android:name=".receiver.BootReceiver"
+            android:enabled="false"
+            android:exported="false">
+
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.ACTION_SHUTDOWN" />
+            </intent-filter>
+
+        </receiver>
 
         <receiver
-            android:name=".app.TerminalOpenReceiver"
-            android:exported="false" />
-        <receiver
-            android:name=".shared.activities.ReportActivity$ReportActivityBroadcastReceiver"
-            android:exported="false" /> <!-- <service -->
-        <!-- android:name=".app.TerminalService" -->
-        <!-- android:exported="false" /> -->
-        <service
-            android:name=".app.RunCommandService"
-            android:exported="true"
-            android:permission="${TERMINAL_PACKAGE_NAME}.permission.RUN_COMMAND">
+            android:name=".receiver.ActionReceiver"
+            android:enabled="true"
+            android:exported="false">
             <intent-filter>
-                <action android:name="${TERMINAL_PACKAGE_NAME}.RUN_COMMAND" />
+                <action android:name="com.flomobility.anx.BROADCAST_ACTION" />
             </intent-filter>
-        </service>
-        <service android:name=".app.PluginResultsService" />
-        <!--
- This (or rather, value 2.1 or higher) is needed to make the Samsung Galaxy S8 mark the
-        app with "This app is optimized to run in full screen."
-        -->
-        <meta-data
-            android:name="android.max_aspect"
-            android:value="10.0" />
-        <meta-data
-            android:name="com.sec.android.support.multiwindow"
-            android:value="true" />
-        <meta-data
-            android:name="com.samsung.android.multidisplay.keep_process_alive"
-            android:value="true" />
+        </receiver>
+        <receiver
+            android:name=".receiver.PowerReceiver"
+            android:enabled="false"
+            android:exported="false"></receiver>
+        <receiver
+            android:name=".receiver.NetworkReceiver"
+            android:enabled="false"
+            android:exported="false"></receiver>
+
+        <service
+            android:name=".ExecService"
+            android:enabled="true"
+            android:exported="false"
+            android:permission="android.permission.BIND_JOB_SERVICE" />
+
+        <service
+            android:name=".daemon.EndlessService"
+            android:enabled="true"
+            android:exported="false" />
+
     </application>
 
 </manifest>

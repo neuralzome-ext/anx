@@ -1,0 +1,155 @@
+plugins {
+    id 'com.android.library'
+    id 'org.jetbrains.kotlin.android'
+}
+
+android {
+    compileSdk 32
+
+    defaultConfig {
+        minSdk 23
+        targetSdk 32
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles "consumer-rules.pro"
+        externalNativeBuild {
+            cmake {
+                cppFlags '-std=c++17 -frtti -fexceptions'
+                arguments "-DZMQ_DIR=" + projectDir.path + "/src/main/libs/zmq"
+                arguments "-DANDROID_STL=c++_shared"
+            }
+        }
+
+        ndk {
+            abiFilters 'arm64-v8a'
+        }
+    }
+
+    buildTypes {
+        dev {
+            minifyEnabled false
+        }
+
+        headless {
+            minifyEnabled false
+        }
+
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    externalNativeBuild {
+        cmake {
+            path file('src/main/cpp/CMakeLists.txt')
+            version '3.18.1'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+}
+
+dependencies {
+
+    implementation 'androidx.core:core-ktx:1.7.0'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+
+    implementation "com.google.protobuf:protobuf-java:${protobuf_java_version}"
+
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+}
+
+task generateProtoc(description: 'Build java files from proto files') {
+    println('Creating java files from .proto files')
+    def anxProtoDirPath = rootDir.path + "/api_docs/anx"
+    def javaBuildDir = projectDir.path + "/src/main/java"
+    def kotlinBuildDir = projectDir.path + "/src/main/kotlin"
+
+    def protoc = getProtoc()
+
+    fileTree(anxProtoDirPath).forEach { file ->
+        if (file.name.contains('.proto')) {
+            exec {
+                workingDir anxProtoDirPath
+                commandLine protoc, "--proto_path=.", "--java_out="+javaBuildDir, /*"--kotlin_out="+kotlinBuildDir,*/ file.name
+            }
+        }
+    }
+    println("Created java files. Check ")
+}
+
+def getProtoc() {
+    def arch = getOsArch()
+    def os = getOsName()
+
+    def protoc = ""
+    if (os == "linux") {
+        if(arch == "arm64" || arch == "aarch64") {
+            protoc = "protoc-22.0-linux-aarch_64"
+        }
+        if(arch == "x86_64" || arch == "amd64") {
+            protoc = "protoc-22.0-linux-x86_64"
+        }
+    }
+
+    if (os == "osx") {
+        if(arch == "arm64" || arch == "aarch64") {
+            protoc = "protoc-22.0-osx-aarch_64"
+        }
+        if(arch == "x86_64") {
+            protoc = "protoc-22.0-osx-x86_64"
+        }
+    }
+
+    if (os == "windows") {
+        if(arch == "x64") {
+            protoc = "protoc-22.0-win_64.exe"
+        }
+        if(arch == "x86") {
+            protoc = "protoc-22.0-win_32.exe"
+        }
+    }
+
+    if (protoc == "") {
+        throw new GradleException("***** No protoc found for your machine!! *****")
+    }
+
+    return "${projectDir.path}/third_party/protoc/$protoc"
+}
+
+def getOsName() {
+    final String osName = System.getProperty("os.name").toLowerCase()
+
+    if (osName.contains("linux")) {
+        return ("linux")
+    } else if (osName.contains("mac os x") || osName.contains("darwin") || osName.contains("osx")) {
+        return ("osx")
+    } else if (osName.contains("windows")) {
+        return ("windows")
+    }
+    return ("unix")
+}
+
+def getOsArch() {
+    return (System.getProperty("os.arch"))
+}
+
+task cleanUpProto(type: Delete) {
+    def javaBuildDir = projectDir.path + "/src/main/java/com/flomobility/anx/proto"
+    def kotlinBuildDir = projectDir.path + "/src/main/kotlin/com/flomobility/anx/proto"
+    delete javaBuildDir
+    delete kotlinBuildDir
+}
+
+clean.dependsOn 'cleanUpProto'
+
+tasks.withType(JavaCompile) {
+    compileTask -> compileTask.dependsOn generateProtoc
+}

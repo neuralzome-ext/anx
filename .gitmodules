@@ -1,0 +1,3 @@
+[submodule "api_docs"]
+	path = api_docs
+	url = ../../flomobility/api_docs.git
