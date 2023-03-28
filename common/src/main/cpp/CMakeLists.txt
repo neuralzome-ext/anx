@@ -20,7 +20,7 @@ add_library( # Sets the name of the library.
         src/sensord.cpp
         src/imu.cpp
         src/NdkSensor.cpp
-        src/utils.cpp
+        src/rate.cpp
         ${COMPILED_PROTO_FILES})
 
 add_library(
