@@ -14,4 +14,7 @@ object NativeTfLiteRunnerServer {
 
     external fun start()
 
+    external fun initAll(address: String)
+
+    external fun startAll()
 }

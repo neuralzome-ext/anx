@@ -92,9 +92,10 @@ class DeviceRpcHandler @Inject constructor(
         override fun run() {
             rpcServer = Server()
 
-            NativeTfLiteRunnerServer.init(AddressUtils.getNamedPipeAddress(context, "gpu"), NativeTfLiteRunnerServer.DELEGATE_GPU)
-            NativeTfLiteRunnerServer.start()
-
+            NativeTfLiteRunnerServer.initAll(
+                AddressUtils.getRootNamedPipe(context, "")
+            )
+            NativeTfLiteRunnerServer.startAll()
             try {
                 rpcServer.init(
                     AddressUtils.getNamedPipeAddress(

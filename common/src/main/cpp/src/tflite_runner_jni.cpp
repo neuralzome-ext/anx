@@ -7,6 +7,9 @@
 #include "tflite/tflite_runner_rpc_server.h"
 
 std::unique_ptr<TfLiteRunnerRpcServer> rpc_server;
+std::unique_ptr<TfLiteRunnerRpcServer> tflite_cpu_rpc_server;
+std::unique_ptr<TfLiteRunnerRpcServer> tflite_gpu_rpc_server;
+std::unique_ptr<TfLiteRunnerRpcServer> tflite_dsp_rpc_server;
 
 
 extern "C"
@@ -35,4 +38,27 @@ Java_com_flomobility_anx_native_NativeTfLiteRunnerServer_start(
         JNIEnv *env,
         jobject thiz) {
     rpc_server->Start();
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_flomobility_anx_native_NativeTfLiteRunnerServer_initAll(
+        JNIEnv *env,
+        jobject thiz,
+        jstring root_address) {
+    const char *cstr = env->GetStringUTFChars(root_address, NULL);
+    std::string address(cstr);
+    env->ReleaseStringUTFChars(root_address, cstr);
+
+    tflite_cpu_rpc_server = std::make_unique<TfLiteRunnerRpcServer>(address+"/cpu", TfliteRunner::DelegateType::CPU);
+    tflite_gpu_rpc_server = std::make_unique<TfLiteRunnerRpcServer>(address+"/gpu", TfliteRunner::DelegateType::GPU);
+//    tflite_dsp_rpc_server = std::make_unique<TfLiteRunnerRpcServer>(, TfliteRunner::DelegateType::DSP);
+}
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_flomobility_anx_native_NativeTfLiteRunnerServer_startAll(
+        JNIEnv *env,
+        jobject thiz) {
+    tflite_cpu_rpc_server->Start();
+    tflite_gpu_rpc_server->Start();
 }
