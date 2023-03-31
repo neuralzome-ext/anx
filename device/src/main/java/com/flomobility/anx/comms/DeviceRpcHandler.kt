@@ -102,46 +102,6 @@ class DeviceRpcHandler @Inject constructor(
                         context, "device_rpc"
                     )
                 )
-                /*ZContext().use { ctx ->
-                    interrupt.set(false)
-
-                    val address = "tcp://localhost:$port"
-
-                    socket = ctx.createSocket(SocketType.REP)
-                    socket.bind(address)
-
-                    Thread.sleep(Constants.SOCKET_BIND_DELAY_IN_MS)
-
-                    Timber.tag(TAG).i("Device RPC Handler server is running on $address")
-                    val poller = ctx.createPoller(1)
-                    poller.register(socket)
-
-                    while (!interrupt.get()) {
-                        try {
-                            poller.poll(100)
-                            if (poller.pollin(0)) {
-                                socket.recv(0)?.let { bytes ->
-                                    if (!socket.hasReceiveMore()) {
-                                        Timber.tag(TAG).i("Invalid RPC")
-                                        socket.sendStdResponse(
-                                            success = false,
-                                            message = "Invalid RPC : No data attached"
-                                        )
-                                    } else {
-                                        Timber.tag(TAG).i("RPC data")
-                                        val data = socket.recv()
-                                        val rpcName = String(bytes, ZMQ.CHARSET)
-                                        val rpc = rpcRegistry[rpcName]
-                                        handleRpc(rpc, data)
-                                    }
-                                }
-                            }
-                        } catch (e: Exception) {
-                            Timber.tag(TAG).e("Error in $TAG : ${e.message}")
-                        }
-                    }
-                }*/
-
                 while (!this.interrupt.get()) {
                     val first = rpcServer.listen()
                     if(!first.success) continue
@@ -151,8 +111,8 @@ class DeviceRpcHandler @Inject constructor(
                         val rpc = rpcRegistry[rpcName]
                         handleRpc(rpc, second.data)
                     }
-
                 }
+                rpcServer.close()
                 Timber.tag(TAG).i("Successfully stopped device RPC handler server")
             } catch (e: Exception) {
                 Timber.tag(TAG).e("Error in $TAG : ${e.message}")

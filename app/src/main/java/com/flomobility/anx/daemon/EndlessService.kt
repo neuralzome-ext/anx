@@ -53,7 +53,7 @@ class EndlessService : Service() {
                        restartAnxServiceRpc.doRestartProcedure {
                            stopAnxService()
                        }
-                       Timber.d("Started service")
+                       Timber.d("Started anx service")
                    }
                 }
                 Constants.ACTION_STOP_SERVICE -> {
@@ -69,7 +69,7 @@ class EndlessService : Service() {
                 else -> { /*NO-OP*/ }
             }
         }
-        return START_STICKY
+        return START_NOT_STICKY
     }
 
     override fun onBind(p0: Intent?): IBinder? {
@@ -77,33 +77,6 @@ class EndlessService : Service() {
     }
 
     private fun startAnxService() {
-        val notificationManager =
-            getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            createNotificationChannel(notificationManager)
-        }
-        val pendingIntent =
-            PendingIntent.getService(
-                this,
-                1,
-                Intent(this, EndlessService::class.java).apply {
-                    action = ACTION_STOP_AND_EXIT
-                },
-                if (Build.VERSION.SDK_INT >= 31) PendingIntent.FLAG_IMMUTABLE else PendingIntent.FLAG_UPDATE_CURRENT
-            )
-        currentNotificationBuilder = baseNotificationBuilder
-        currentNotificationBuilder = currentNotificationBuilder
-            .setContentIntent(
-                PendingIntent.getActivity(
-                    this,
-                    0,
-                    Intent(this, MainActivity::class.java),
-                    0
-                )
-            )
-        currentNotificationBuilder =
-            currentNotificationBuilder.addAction(R.drawable.ic_stop, "Exit", pendingIntent)
-//        startForeground(NOTIFICATION_ID, currentNotificationBuilder.build())
         isRunning = true
 
         deviceRpcHandler.init(10002)
@@ -114,12 +87,8 @@ class EndlessService : Service() {
 
         isRunning = false
 
-        if (this::currentNotificationBuilder.isInitialized) {
-            currentNotificationBuilder.clearActions()
-        }
-
         deviceRpcHandler.destroy()
-        stopSelf()
+//        stopSelf()
     }
 
     @RequiresApi(Build.VERSION_CODES.O)

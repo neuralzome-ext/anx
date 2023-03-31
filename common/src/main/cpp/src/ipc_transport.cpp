@@ -255,5 +255,7 @@ bool Server::sendResponse(const std::string& payload, bool more) {
 
 bool Server::close() {
     this->socket_->disconnect(this->address_);
+    this->socket_->close();
+    this->context_.close();
     return true;
 }
