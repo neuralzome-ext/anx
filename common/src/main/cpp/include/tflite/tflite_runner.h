@@ -23,12 +23,15 @@ public:
         DSP = 2
     };
 
+    struct TensorMeta {
+        std::vector<int> dims;
+        int dtype;
+    };
+
     struct ModelMeta {
         bool valid;
-        std::vector<int> input_dims;
-        std::vector<int> output_dims;
-        int input_dtype;
-        int output_dtype;
+        std::vector<TensorMeta> input_tensors;
+        std::vector<TensorMeta> output_tensors;
     };
 
     TfliteRunner();
@@ -40,8 +43,8 @@ public:
             DelegateType delegateType
     );
 
-    TfLiteTensor *input_tensor_;
-    const TfLiteTensor *output_tensor_;
+    std::vector<TfLiteTensor*> input_tensors_;
+    std::vector<const TfLiteTensor*> output_tensors_;
 
     void InvokeModel();
 

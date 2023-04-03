@@ -69,7 +69,7 @@ void TfLiteRunnerRpcServer::Loop() {
 
                     anx::Payload payload;
                     payload.ParseFromString(payload_str);
-                    this->tflite_runners_[0].LoadModel(
+                    TfliteRunner::ModelMeta model_meta = this->tflite_runners_[0].LoadModel(
                             (char *)(payload.payload().data()),
                             payload.payload().size(),
                             this->delegate_);
@@ -81,16 +81,26 @@ void TfLiteRunnerRpcServer::Loop() {
                             zmq::send_flags::sndmore);
 
                     anx::ModelMeta meta;
-                    for (int i = 0; i < this->tflite_runners_[0].output_tensor_->dims->size; i++) {
-                        meta.add_output_dims(this->tflite_runners_[0].output_tensor_->dims->data[i]);
+                    // populate input meta
+                    for(auto & input_tensor : model_meta.input_tensors) {
+                        anx::TensorMeta* tensor_meta = meta.add_input();
+
+                        tensor_meta->set_dtype(input_tensor.dtype);
+                        for(int dim : input_tensor.dims) {
+                            tensor_meta->add_dims(dim);
+                        }
                     }
 
-                    for (int i = 0; i < this->tflite_runners_[0].input_tensor_->dims->size; i++) {
-                        meta.add_input_dims(this->tflite_runners_[0].input_tensor_->dims->data[i]);
+                    // populate output meta
+                    for(auto & output_tensor : model_meta.output_tensors) {
+                        anx::TensorMeta* tensor_meta = meta.add_output();
+
+                        tensor_meta->set_dtype(output_tensor.dtype);
+                        for(int dim : output_tensor.dims) {
+                            tensor_meta->add_dims(dim);
+                        }
                     }
 
-                    meta.set_input_dtype(this->tflite_runners_[0].input_tensor_->type);
-                    meta.set_output_dtype(this->tflite_runners_[0].output_tensor_->type);
                     socket_.send(
                             zmq::message_t(meta.SerializeAsString()),
                             zmq::send_flags::none);
@@ -104,22 +114,32 @@ void TfLiteRunnerRpcServer::Loop() {
                         socket_.recv(&data_msg);
                         std::string payload_str = data_msg.to_string();
 
-                        anx::Payload payload;
+                        anx::PayloadArray payload;
                         payload.ParseFromString(payload_str);
 
-                        // 1. Set Input tensor
-                        memcpy(this->tflite_runners_[0].input_tensor_->data.data,
-                               payload.payload().data(),
-                               this->tflite_runners_[0].input_tensor_->bytes
-                        );
+                        if(payload.payload_size() != this->tflite_runners_[0].input_tensors_.size()) {
+                            LOGE(TAG, "Received %d input tensors, but expected %ld", payload.payload_size(), this->tflite_runners_[0].input_tensors_.size());
+                            continue;
+                        }
+
+                        for(int i = 0; i < payload.payload_size(); i++) {
+                            // 1. Set Input tensor
+                            memcpy(this->tflite_runners_[0].input_tensors_[i]->data.data,
+                                   payload.payload(i).data(),
+                                   this->tflite_runners_[0].input_tensors_[i]->bytes
+                            );
+                        }
 
                         // 2. Invoke Model
                         this->tflite_runners_[0].InvokeModel();
 
                         // 3. Get Output tensor
-                        anx::Payload output_payload;
-                        output_payload.set_payload(this->tflite_runners_[0].output_tensor_->data.data,
-                                                   this->tflite_runners_[0].output_tensor_->bytes);
+                        anx::PayloadArray output_payload;
+                        for(int i = 0; i < this->tflite_runners_[0].output_tensors_.size(); i++) {
+                            // populate the payload
+                            output_payload.set_payload(i, this->tflite_runners_[0].output_tensors_[i]->data.data,
+                                                       this->tflite_runners_[0].output_tensors_[i]->bytes);
+                        }
 
                         std::string rep_string;
                         output_payload.SerializeToString(&rep_string);

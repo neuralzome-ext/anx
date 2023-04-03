@@ -13,8 +13,6 @@ TfliteRunner::TfliteRunner(){
     this->model_ = nullptr;
     this->interpreter_ = nullptr;
     this->options_ = nullptr;
-    this->input_tensor_ = nullptr;
-    this->output_tensor_ = nullptr;
 }
 
 TfliteRunner::~TfliteRunner(){
@@ -72,23 +70,37 @@ TfliteRunner::ModelMeta TfliteRunner::LoadModel(
         return model_meta;
     }
 
-    this->input_tensor_ = TfLiteInterpreterGetInputTensor(this->interpreter_, 0);
-    this->output_tensor_ = TfLiteInterpreterGetOutputTensor(this->interpreter_, 0);
-
     // Populate model_meta
     model_meta.valid = true;
 
-    for(int i=0; i<this->input_tensor_->dims->size; i++){
-        model_meta.input_dims.emplace_back(this->input_tensor_->dims->data[i]);
+    int input_tensor_count = TfLiteInterpreterGetInputTensorCount(this->interpreter_);
+    int output_tensor_count = TfLiteInterpreterGetOutputTensorCount(this->interpreter_);
+
+    for(int i = 0; i < input_tensor_count; i++) {
+        TfLiteTensor* tensor = TfLiteInterpreterGetInputTensor(this->interpreter_, i);
+        this->input_tensors_.emplace_back(tensor);
+
+        // populate model meta for this tensor
+        TfliteRunner::TensorMeta meta {};
+        for(int k = 0; k < tensor->dims->size; k++){
+            meta.dims.emplace_back(tensor->dims->data[i]);
+        }
+        meta.dtype = tensor->type;
+        model_meta.input_tensors.emplace_back(meta);
     }
 
-    for(int i=0; i<this->output_tensor_->dims->size; i++){
-        model_meta.output_dims.emplace_back(this->output_tensor_->dims->data[i]);
+    for(int i = 0; i < output_tensor_count; i++) {
+        const TfLiteTensor* tensor = TfLiteInterpreterGetOutputTensor(this->interpreter_, i);
+        this->output_tensors_.emplace_back(tensor);
+
+        // populate model meta for this tensor
+        TfliteRunner::TensorMeta meta {};
+        for(int k = 0; k < tensor->dims->size; k++){
+            meta.dims.emplace_back(tensor->dims->data[i]);
+        }
+        meta.dtype = tensor->type;
+        model_meta.output_tensors.emplace_back(meta);
     }
-
-    model_meta.input_dtype = this->input_tensor_->type;
-
-    model_meta.output_dtype = this->output_tensor_->type;
 
     return model_meta;
 }
