@@ -83,7 +83,7 @@ void TfLiteRunnerRpcServer::Loop() {
                     anx::ModelMeta meta;
                     // populate input meta
                     for(auto & input_tensor : model_meta.input_tensors) {
-                        anx::TensorMeta* tensor_meta = meta.add_input();
+                        anx::TensorMeta* tensor_meta = meta.add_input_tensors();
 
                         tensor_meta->set_dtype(input_tensor.dtype);
                         for(int dim : input_tensor.dims) {
@@ -93,7 +93,7 @@ void TfLiteRunnerRpcServer::Loop() {
 
                     // populate output meta
                     for(auto & output_tensor : model_meta.output_tensors) {
-                        anx::TensorMeta* tensor_meta = meta.add_output();
+                        anx::TensorMeta* tensor_meta = meta.add_output_tensors();
 
                         tensor_meta->set_dtype(output_tensor.dtype);
                         for(int dim : output_tensor.dims) {
@@ -117,15 +117,15 @@ void TfLiteRunnerRpcServer::Loop() {
                         anx::PayloadArray payload;
                         payload.ParseFromString(payload_str);
 
-                        if(payload.payload_size() != this->tflite_runners_[0].input_tensors_.size()) {
-                            LOGE(TAG, "Received %d input tensors, but expected %ld", payload.payload_size(), this->tflite_runners_[0].input_tensors_.size());
+                        if(payload.payloads_size() != this->tflite_runners_[0].input_tensors_.size()) {
+                            LOGE(TAG, "Received %d input tensors, but expected %ld", payload.payloads_size(), this->tflite_runners_[0].input_tensors_.size());
                             continue;
                         }
 
-                        for(int i = 0; i < payload.payload_size(); i++) {
+                        for(int i = 0; i < payload.payloads_size(); i++) {
                             // 1. Set Input tensor
                             memcpy(this->tflite_runners_[0].input_tensors_[i]->data.data,
-                                   payload.payload(i).data(),
+                                   payload.payloads(i).data(),
                                    this->tflite_runners_[0].input_tensors_[i]->bytes
                             );
                         }
@@ -137,7 +137,7 @@ void TfLiteRunnerRpcServer::Loop() {
                         anx::PayloadArray output_payload;
                         for(int i = 0; i < this->tflite_runners_[0].output_tensors_.size(); i++) {
                             // populate the payload
-                            output_payload.set_payload(i, this->tflite_runners_[0].output_tensors_[i]->data.data,
+                            output_payload.set_payloads(i, this->tflite_runners_[0].output_tensors_[i]->data.data,
                                                        this->tflite_runners_[0].output_tensors_[i]->bytes);
                         }
 
