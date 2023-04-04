@@ -83,7 +83,7 @@ TfliteRunner::ModelMeta TfliteRunner::LoadModel(
         // populate model meta for this tensor
         TfliteRunner::TensorMeta meta {};
         for(int k = 0; k < tensor->dims->size; k++){
-            meta.dims.emplace_back(tensor->dims->data[i]);
+            meta.dims.emplace_back(tensor->dims->data[k]);
         }
         meta.dtype = tensor->type;
         model_meta.input_tensors.emplace_back(meta);
@@ -96,7 +96,7 @@ TfliteRunner::ModelMeta TfliteRunner::LoadModel(
         // populate model meta for this tensor
         TfliteRunner::TensorMeta meta {};
         for(int k = 0; k < tensor->dims->size; k++){
-            meta.dims.emplace_back(tensor->dims->data[i]);
+            meta.dims.emplace_back(tensor->dims->data[k]);
         }
         meta.dtype = tensor->type;
         model_meta.output_tensors.emplace_back(meta);

@@ -135,10 +135,11 @@ void TfLiteRunnerRpcServer::Loop() {
 
                         // 3. Get Output tensor
                         anx::PayloadArray output_payload;
-                        for(int i = 0; i < this->tflite_runners_[0].output_tensors_.size(); i++) {
+                        for(auto & output_tensor : this->tflite_runners_[0].output_tensors_) {
                             // populate the payload
-                            output_payload.set_payloads(i, this->tflite_runners_[0].output_tensors_[i]->data.data,
-                                                       this->tflite_runners_[0].output_tensors_[i]->bytes);
+                            output_payload.add_payloads(
+                                    output_tensor->data.data,
+                                    output_tensor->bytes);
                         }
 
                         std::string rep_string;
