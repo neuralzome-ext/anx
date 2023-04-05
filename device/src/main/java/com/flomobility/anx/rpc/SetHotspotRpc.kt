@@ -1,18 +1,21 @@
 package com.flomobility.anx.rpc
 
+import com.flomobility.anx.hotspot.HotspotManager
 import com.flomobility.anx.proto.Common
 import com.flomobility.anx.proto.Device
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class SetHotspotRpc @Inject constructor() :
-    Rpc<Device.SetWifiRequest, Common.StdResponse>() {
+class SetHotspotRpc @Inject constructor(
+    private val hotspotManager: HotspotManager
+) : Rpc<Device.SetWifiRequest, Common.StdResponse>() {
 
-    private fun setHotspot(): Common.StdResponse? {
+    private fun setHotspot(req: Device.SetWifiRequest): Common.StdResponse {
+        val result = hotspotManager.setHotspot(req.ssid, req.password)
         val stdResponse = Common.StdResponse.newBuilder().apply {
-            this.success = true
-            this.message = "Hotspot set up done"
+            this.success = result.success
+            this.message = result.message
         }.build()
         return stdResponse
     }
@@ -21,12 +24,7 @@ class SetHotspotRpc @Inject constructor() :
         get() = "SetHotspot"
 
     override fun execute(req: Device.SetWifiRequest): Common.StdResponse {
-        val stdResponse = Common.StdResponse.newBuilder()
-        stdResponse.apply {
-            success = setHotspot()?.success!!
-            message = setHotspot()?.message
-        }
-        return stdResponse.build()
+        return setHotspot(req)
     }
 
     override fun execute(req: ByteArray): Common.StdResponse {
