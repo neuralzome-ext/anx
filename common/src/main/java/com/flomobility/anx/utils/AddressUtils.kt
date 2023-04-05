@@ -11,6 +11,12 @@ object AddressUtils {
         return "ipc://$ipcDir/$name"
     }
 
+    fun getRootNamedPipe(context: Context, name: String): String {
+        val ipcDir = "${context.filesDir}/ipc"
+        if(!dirExists(ipcDir)) createDir(ipcDir)
+        return "ipc://$ipcDir"
+    }
+
     private fun dirExists(dir: String): Boolean {
         val file = File(dir)
         return file.isDirectory

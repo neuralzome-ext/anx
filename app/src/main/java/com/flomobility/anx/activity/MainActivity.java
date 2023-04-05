@@ -487,9 +487,13 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private void startAnxService() {
-        Intent intent = new Intent(this, EndlessService.class);
-        intent.setAction(Constants.ACTION_START_SERVICE);
-        this.startService(intent);
+        try {
+            Intent intent = new Intent(this, EndlessService.class);
+            intent.setAction(Constants.ACTION_START_SERVICE);
+            this.startService(intent);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void startContainer() {

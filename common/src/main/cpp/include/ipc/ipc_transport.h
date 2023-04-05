@@ -17,6 +17,17 @@
 
 typedef unsigned char BYTE;   // 8-bit unsigned entity.
 
+class Bytes {
+public:
+    Bytes(size_t, BYTE*);
+    ~Bytes();
+    BYTE* bytes();
+    size_t size();
+private:
+    BYTE* data_;
+    size_t size_;
+};
+
 struct bytes_t {
     BYTE* data;
     size_t size;
@@ -70,6 +81,8 @@ public:
     seq_message_t listen();
     rpc_payload_t listenRpc();
     bool sendResponse(bytes_t& payload);
+    bool sendResponse(const std::string& payload);
+    bool sendResponse(const std::string& payload, bool more);
     bool close();
 private:
     zmq::context_t context_;

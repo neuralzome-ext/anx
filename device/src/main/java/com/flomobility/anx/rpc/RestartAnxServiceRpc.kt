@@ -4,6 +4,7 @@ import android.os.Process
 import com.flomobility.anx.other.Constants
 import com.flomobility.anx.other.runAsRoot
 import com.flomobility.anx.proto.Common
+import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -17,17 +18,22 @@ class RestartAnxServiceRpc @Inject constructor() :
         restartProcedure = func
     }
 
+    fun doRestart() {
+        Thread {
+            Thread.sleep(3000L)
+            restartProcedure?.invoke()
+            Timber.i("Restarting anx ....")
+            runAsRoot("killall logcat")
+            runAsRoot("su -c am start -S com.flomobility.anx.headless/com.flomobility.anx.activity.MainActivity")
+        }.start()
+    }
+
     private fun restartAnxService(): Common.StdResponse {
         val stdResponse = Common.StdResponse.newBuilder()
         try {
             stdResponse.success = true
             stdResponse.message = "Restarting in 3s"
-            Thread {
-                Thread.sleep(3000L)
-                restartProcedure?.invoke()
-                runAsRoot("killall logcat")
-                runAsRoot("kill ${Process.myPid()}; su -c am start -n com.flomobility.anx.headless/com.flomobility.anx.activity.MainActivity")
-            }.start()
+            doRestart()
         } catch (e: Exception) {
             stdResponse.success = false
             stdResponse.message = e.message ?: Constants.UNKNOWN_ERROR_MSG

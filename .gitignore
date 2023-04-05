@@ -48,3 +48,4 @@ local.properties
 ehthumbs.db
 Thumbs.db
 /libuvccamera/src/main/obj/
+/gpu/src/main/cpp/anx/

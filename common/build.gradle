@@ -17,6 +17,9 @@ android {
                 cppFlags '-std=c++17 -frtti -fexceptions'
                 arguments "-DZMQ_DIR=" + projectDir.path + "/src/main/libs/zmq"
                 arguments "-DPROTOBUF_DIR=" + projectDir.path + "/src/main/libs/protobuf"
+                arguments "-DTFLITE_DIR=" + projectDir.path + "/src/main/libs/tflite"
+                arguments "-DTFLITE_GPU_DIR=" + projectDir.path + "/src/main/libs/tflite-gpu"
+                arguments "-DTFLITE_HEXAGON_DIR=" + projectDir.path + "/src/main/libs/tflite-hexagon"
                 arguments "-DANDROID_STL=c++_shared"
             }
         }

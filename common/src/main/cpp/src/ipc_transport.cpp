@@ -4,6 +4,24 @@
 
 #include "ipc/ipc_transport.h"
 
+Bytes::Bytes(size_t size, BYTE* data) {
+    this->size_ = size;
+    this->data_ = new BYTE [this->size_];
+    memcpy(this->data_, data, this->size_);
+}
+
+Bytes::~Bytes() {
+    delete this->data_;
+}
+
+BYTE* Bytes::bytes() {
+    return this->data_;
+}
+
+size_t Bytes::size() {
+    return this->size_;
+}
+
 Publisher::Publisher(const std::string &address)
         : socket_(context_, zmq::socket_type::pub) {
     try {
@@ -142,6 +160,7 @@ seq_message_t Server::listen() {
             return message;
         }
         void* data_ptr = msg.data();
+
         BYTE *bytes = new BYTE[msg.size()];
         memcpy(bytes, data_ptr, msg.size());
 
@@ -206,7 +225,37 @@ bool Server::sendResponse(bytes_t &payload) {
     }
 }
 
+bool Server::sendResponse(const std::string& payload) {
+    try {
+        this->socket_->send(
+                zmq::message_t(payload),
+                zmq::send_flags::dontwait);
+        return true;
+    } catch (std::exception &e) {
+        LOGE(this->tag_.c_str(), "Error in sending response data : %s", e.what());
+        return false;
+    }
+}
+
+bool Server::sendResponse(const std::string& payload, bool more) {
+    try {
+        zmq::send_flags send_flags = zmq::send_flags::dontwait;
+        if(more) {
+            send_flags = zmq::send_flags::sndmore;
+        }
+        this->socket_->send(
+                zmq::message_t(payload),
+                send_flags);
+        return true;
+    } catch (std::exception &e) {
+        LOGE(this->tag_.c_str(), "Error in sending response data : %s", e.what());
+        return false;
+    }
+}
+
 bool Server::close() {
     this->socket_->disconnect(this->address_);
+    this->socket_->close();
+    this->context_.close();
     return true;
 }
