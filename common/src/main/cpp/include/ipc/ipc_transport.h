@@ -78,12 +78,14 @@ private:
 class Server {
 public:
     Server(const std::string& address);
-    seq_message_t listen();
-    rpc_payload_t listenRpc();
+    bool listen();
     bool sendResponse(bytes_t& payload);
     bool sendResponse(const std::string& payload);
     bool sendResponse(const std::string& payload, bool more);
     bool close();
+    Bytes getData();
+    bool hasMessage();
+    bool hasMore();
 private:
     zmq::context_t context_;
     std::unique_ptr<zmq::socket_t> socket_;
@@ -92,6 +94,10 @@ private:
     std::string address_;
 
     std::string tag_;
+    Bytes bytes_;
+    bool has_message_;
+    bool more_;
+
 };
 
 class Client {

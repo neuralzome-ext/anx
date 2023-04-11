@@ -104,18 +104,17 @@ Java_com_flomobility_anx_native_NativeZmq_listenServerRequests(
         jobject thiz,
         jlong server_ptr) {
     auto *server = (Server *) server_ptr;
-    seq_message_t msg = server->listen();
-    bytes_t bytes = msg.data;
-    jbyteArray result = env->NewByteArray((int)bytes.size);
+    bool success = server->listen();
+    Bytes bytes = server->getData();
+    jbyteArray result = env->NewByteArray((int)bytes.size());
 
     // Copy the byte array to the jbyteArray
-    env->SetByteArrayRegion(result, 0, (int)bytes.size, (jbyte *)(bytes.data));
+    env->SetByteArrayRegion(result, 0, (int)bytes.size(), (jbyte *)(bytes.bytes()));
     jclass clazz = env->FindClass("com/flomobility/anx/native/Message");
     jmethodID midConstructor = env->GetMethodID(
             clazz, "<init>",
             "(ZZ[B)V");
-    jobject message = env->NewObject(clazz, midConstructor, msg.success, msg.more, result);
-    free(bytes.data);
+    jobject message = env->NewObject(clazz, midConstructor, success, server->hasMore(), result);
     return message;
 }
 extern "C"
@@ -128,30 +127,6 @@ Java_com_flomobility_anx_native_NativeZmq_closeServer(
     bool status = server->close();
     free(server);
     return status;
-}
-
-extern "C"
-JNIEXPORT jobject JNICALL
-Java_com_flomobility_anx_native_NativeZmq_listenForRpcs(
-        JNIEnv *env,
-        jobject thiz,
-        jlong server_ptr) {
-    auto *server = (Server *) server_ptr;
-    rpc_payload_t payload = server->listenRpc();
-
-    jstring rpc_name = env->NewStringUTF(payload.rpc_name.c_str());
-    bytes_t bytes = payload.data;
-    jbyteArray data = env->NewByteArray(bytes.size);
-
-    // Copy the byte array to the jbyteArray
-    env->SetByteArrayRegion(data, 0, bytes.size, reinterpret_cast<jbyte *>(bytes.data));
-
-    jclass clazz = env->FindClass("com/flomobility/anx/native/RpcPayload");
-    jmethodID midConstructor = env->GetMethodID(
-            clazz, "<init>",
-            "(Ljava/lang/String;[B)V");
-    jobject rpcPayload = env->NewObject(clazz, midConstructor, rpc_name, data);
-    return rpcPayload;
 }
 
 extern "C"

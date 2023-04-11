@@ -4,9 +4,9 @@
 
 #include "ipc/ipc_transport.h"
 
-Bytes::Bytes(size_t size, BYTE* data) {
+Bytes::Bytes(size_t size, BYTE *data) {
     this->size_ = size;
-    this->data_ = new BYTE [this->size_];
+    this->data_ = new BYTE[this->size_];
     memcpy(this->data_, data, this->size_);
 }
 
@@ -14,7 +14,7 @@ Bytes::~Bytes() {
     delete this->data_;
 }
 
-BYTE* Bytes::bytes() {
+BYTE *Bytes::bytes() {
     return this->data_;
 }
 
@@ -54,7 +54,7 @@ void Publisher::SendData(bytes_t bytes) {
     }
 }
 
-void Publisher::SendData(const std::string& data) {
+void Publisher::SendData(const std::string &data) {
     try {
         this->socket_.send(
                 zmq::message_t(data),
@@ -126,7 +126,10 @@ bool Subscriber::close() {
 }
 
 // Server related
-Server::Server(const std::string &address) {
+Server::Server(const std::string &address) :
+        bytes_(0, nullptr),
+        has_message_(false),
+        more_(false) {
     this->address_ = address;
     this->tag_ = "NativeZmqServer";
 
@@ -142,14 +145,7 @@ Server::Server(const std::string &address) {
     this->poller_->revents = 0;
 }
 
-seq_message_t Server::listen() {
-    seq_message_t message{};
-    bytes_t payload{};
-
-    message.success = false;
-    message.more = false;
-    message.data = payload;
-
+bool Server::listen() {
     zmq::message_t msg;
     zmq::poll(this->poller_.get(), 1, 100);
     if (this->poller_->revents & ZMQ_POLLIN) {
@@ -157,60 +153,26 @@ seq_message_t Server::listen() {
             this->socket_->recv(msg);
         } catch (std::exception &e) {
             LOGE(this->tag_.c_str(), "Connection to %s terminated!", this->address_.c_str());
-            return message;
+            return false;
         }
-        void* data_ptr = msg.data();
-
-        BYTE *bytes = new BYTE[msg.size()];
-        memcpy(bytes, data_ptr, msg.size());
-
-        payload.size = msg.size();
-        payload.data = bytes;
-
-        message.success = true;
-        message.data = payload;
-        message.more = msg.more();
-        return message;
+        Bytes bytes(msg.size(), reinterpret_cast<BYTE *>(msg.data()));
+        this->bytes_ = bytes;
+        this->more_ = msg.more();
+        return true;
     }
-    return message;
+    return false;
 }
 
-rpc_payload_t Server::listenRpc() {
-    rpc_payload_t payload;
-    bytes_t data{};
-    data.size = 0;
-    data.data = {};
-    payload.data = data;
+Bytes Server::getData() {
+    return this->bytes_;
+}
 
-    zmq::message_t msg1, msg2;
+bool Server::hasMessage() {
+    return this->has_message_;
+}
 
-    std::string rpc_name;
-
-    zmq::poll(this->poller_.get(), 1, 100);
-    if (this->poller_->revents & ZMQ_POLLIN) {
-        try {
-            auto res = this->socket_->recv(msg1);
-            rpc_name = msg1.to_string();
-            if(!msg1.more()) {
-                LOGE(this->tag_.c_str(), "Invalid RPC : %s", rpc_name.c_str());
-                return payload;
-            }
-            auto res2 = this->socket_->recv(msg2);
-            void *data_ptr = msg2.data();
-            BYTE *bytes = static_cast<BYTE *>(data_ptr);
-            data.data = bytes;
-            data.size = msg2.size();
-
-            payload.data = data;
-            payload.rpc_name = rpc_name;
-
-            return payload;
-        } catch (std::exception &e) {
-            LOGE(this->tag_.c_str(), "Connection to %s terminated!", this->address_.c_str());
-            return payload;
-        }
-    }
-    return payload;
+bool Server::hasMore() {
+    return this->more_;
 }
 
 bool Server::sendResponse(bytes_t &payload) {
@@ -225,7 +187,7 @@ bool Server::sendResponse(bytes_t &payload) {
     }
 }
 
-bool Server::sendResponse(const std::string& payload) {
+bool Server::sendResponse(const std::string &payload) {
     try {
         this->socket_->send(
                 zmq::message_t(payload),
@@ -237,10 +199,10 @@ bool Server::sendResponse(const std::string& payload) {
     }
 }
 
-bool Server::sendResponse(const std::string& payload, bool more) {
+bool Server::sendResponse(const std::string &payload, bool more) {
     try {
         zmq::send_flags send_flags = zmq::send_flags::dontwait;
-        if(more) {
+        if (more) {
             send_flags = zmq::send_flags::sndmore;
         }
         this->socket_->send(
