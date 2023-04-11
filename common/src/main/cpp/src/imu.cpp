@@ -27,6 +27,11 @@ Imu::~Imu() {
 }
 
 void Imu::start() {
+    if(this->is_running_) {
+        LOGI(TAG, "IMU already running, stopping ...");
+        stop();
+        LOGI(TAG, "Stopped IMU publisher");
+    }
     int32_t delay_in_u_secs = 1000000 / fps_;
     sensor_manager_->registerSensor(
             {ASENSOR_TYPE_ACCELEROMETER,
