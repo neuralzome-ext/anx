@@ -15,6 +15,7 @@ import com.flomobility.anx.R
 import com.flomobility.anx.activity.MainActivity
 import com.flomobility.anx.assets.AssetManager
 import com.flomobility.anx.comms.DeviceRpcHandler
+import com.flomobility.anx.comms.TfLiteRunnerHandler
 import com.flomobility.anx.other.Constants
 import com.flomobility.anx.other.Constants.ACTION_STOP_AND_EXIT
 import com.flomobility.anx.other.Constants.NOTIFICATION_CHANNEL_ID
@@ -30,6 +31,9 @@ class EndlessService : Service() {
 
     @Inject
     lateinit var deviceRpcHandler: DeviceRpcHandler
+
+    @Inject
+    lateinit var tfLiteRunnerHandler: TfLiteRunnerHandler
 
     @Inject
     lateinit var assetManager: AssetManager
@@ -80,6 +84,7 @@ class EndlessService : Service() {
         isRunning = true
 
         deviceRpcHandler.init(10002)
+        tfLiteRunnerHandler.init()
         assetManager.init()
     }
 

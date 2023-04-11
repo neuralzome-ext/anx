@@ -13,23 +13,10 @@ class TfLiteRunnerHandler @Inject constructor(
 ) {
 
     fun init() {
-        /*NativeTfLiteRunnerServer.init(
-            AddressUtils.getNamedPipeAddress(context, "cpu"),
-            NativeTfLiteRunnerServer.DELEGATE_CPU
+        NativeTfLiteRunnerServer.initAll(
+            AddressUtils.getRootNamedPipe(context, "")
         )
-        NativeTfLiteRunnerServer.start()*/
-
-        NativeTfLiteRunnerServer.init(
-            AddressUtils.getNamedPipeAddress(context, "gpu"),
-            NativeTfLiteRunnerServer.DELEGATE_GPU
-        )
-        NativeTfLiteRunnerServer.start()
-
-        /*NativeTfLiteRunnerServer.init(
-            AddressUtils.getNamedPipeAddress(context, "dsp"),
-            NativeTfLiteRunnerServer.DELEGATE_DSP
-        )
-        NativeTfLiteRunnerServer.start()*/
+        NativeTfLiteRunnerServer.startAll()
     }
 
 }

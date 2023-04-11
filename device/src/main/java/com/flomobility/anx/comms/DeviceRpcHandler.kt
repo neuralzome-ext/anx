@@ -91,11 +91,6 @@ class DeviceRpcHandler @Inject constructor(
 
         override fun run() {
             rpcServer = Server()
-
-            NativeTfLiteRunnerServer.initAll(
-                AddressUtils.getRootNamedPipe(context, "")
-            )
-            NativeTfLiteRunnerServer.startAll()
             try {
                 rpcServer.init(
                     AddressUtils.getNamedPipeAddress(
