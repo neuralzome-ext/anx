@@ -146,21 +146,26 @@ Server::Server(const std::string &address) :
 }
 
 bool Server::listen() {
-    zmq::message_t msg;
-    zmq::poll(this->poller_.get(), 1, 100);
-    if (this->poller_->revents & ZMQ_POLLIN) {
-        try {
-            this->socket_->recv(msg);
-        } catch (std::exception &e) {
-            LOGE(this->tag_.c_str(), "Connection to %s terminated!", this->address_.c_str());
-            return false;
+    try {
+        zmq::message_t msg;
+        zmq::poll(this->poller_.get(), 1, 100);
+        if (this->poller_->revents & ZMQ_POLLIN) {
+            try {
+                this->socket_->recv(msg);
+            } catch (std::exception &e) {
+                LOGE(this->tag_.c_str(), "Connection to %s terminated!", this->address_.c_str());
+                return false;
+            }
+            Bytes bytes(msg.size(), reinterpret_cast<BYTE *>(msg.data()));
+            this->bytes_ = bytes;
+            this->more_ = msg.more();
+            return true;
         }
-        Bytes bytes(msg.size(), reinterpret_cast<BYTE *>(msg.data()));
-        this->bytes_ = bytes;
-        this->more_ = msg.more();
-        return true;
+        return false;
+    } catch (std::exception &e) {
+        LOGE(this->tag_.c_str(), "Error in server listening %s", e.what());
+        return false;
     }
-    return false;
 }
 
 Bytes Server::getData() {
