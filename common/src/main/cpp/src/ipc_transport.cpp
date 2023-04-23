@@ -10,6 +10,9 @@ Bytes::Bytes(size_t size, BYTE *data) {
     memcpy(this->data_, data, this->size_);
 }
 
+Bytes::Bytes():
+    size_(0), data_(nullptr) {}
+
 Bytes::~Bytes() {
     delete this->data_;
 }
@@ -20,6 +23,12 @@ BYTE *Bytes::bytes() {
 
 size_t Bytes::size() {
     return this->size_;
+}
+
+void Bytes::set_bytes(size_t size, BYTE* data) {
+    this->size_ = size;
+    this->data_ = new BYTE[this->size_];
+    memcpy(this->data_, data, this->size_);
 }
 
 Publisher::Publisher(const std::string &address)
@@ -127,7 +136,7 @@ bool Subscriber::close() {
 
 // Server related
 Server::Server(const std::string &address) :
-        bytes_(0, nullptr),
+        bytes_(),
         has_message_(false),
         more_(false) {
     this->address_ = address;
@@ -156,11 +165,11 @@ bool Server::listen() {
                 LOGE(this->tag_.c_str(), "Connection to %s terminated!", this->address_.c_str());
                 return false;
             }
-            Bytes bytes(msg.size(), reinterpret_cast<BYTE *>(msg.data()));
-            this->bytes_ = bytes;
+            this->bytes_.set_bytes(msg.size(), reinterpret_cast<BYTE *>(msg.data()));
             this->more_ = msg.more();
             return true;
         }
+        this->more_ = false;
         return false;
     } catch (std::exception &e) {
         LOGE(this->tag_.c_str(), "Error in server listening %s", e.what());
@@ -176,7 +185,7 @@ bool Server::hasMessage() {
     return this->has_message_;
 }
 
-bool Server::hasMore() {
+bool Server::hasMore() const {
     return this->more_;
 }
 

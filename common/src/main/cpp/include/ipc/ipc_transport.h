@@ -20,9 +20,11 @@ typedef unsigned char BYTE;   // 8-bit unsigned entity.
 class Bytes {
 public:
     Bytes(size_t, BYTE*);
+    Bytes();
     ~Bytes();
     BYTE* bytes();
     size_t size();
+    void set_bytes(size_t, BYTE*);
 private:
     BYTE* data_;
     size_t size_;
@@ -85,7 +87,7 @@ public:
     bool close();
     Bytes getData();
     bool hasMessage();
-    bool hasMore();
+    bool hasMore() const;
 private:
     zmq::context_t context_;
     std::unique_ptr<zmq::socket_t> socket_;

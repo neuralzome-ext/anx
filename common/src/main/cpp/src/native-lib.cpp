@@ -98,25 +98,40 @@ Java_com_flomobility_anx_native_NativeZmq_createServerInstance(
     return (jlong) server;
 }
 extern "C"
-JNIEXPORT jobject JNICALL
+JNIEXPORT jboolean JNICALL
 Java_com_flomobility_anx_native_NativeZmq_listenServerRequests(
         JNIEnv *env,
         jobject thiz,
         jlong server_ptr) {
     auto *server = (Server *) server_ptr;
     bool success = server->listen();
-    Bytes bytes = server->getData();
-    jbyteArray result = env->NewByteArray((int)bytes.size());
+    return success;
+}
 
-    // Copy the byte array to the jbyteArray
-    env->SetByteArrayRegion(result, 0, (int)bytes.size(), (jbyte *)(bytes.bytes()));
+extern "C"
+JNIEXPORT jobject JNICALL
+Java_com_flomobility_anx_native_NativeZmq_getNewMessage(
+        JNIEnv *env, jobject thiz,
+        jlong server_ptr) {
+    auto *server = (Server *) server_ptr;
+    Bytes bytes = server->getData();
+    jbyteArray result = env->NewByteArray((int) bytes.size());
+
     jclass clazz = env->FindClass("com/flomobility/anx/native/Message");
     jmethodID midConstructor = env->GetMethodID(
             clazz, "<init>",
-            "(ZZ[B)V");
-    jobject message = env->NewObject(clazz, midConstructor, success, server->hasMore(), result);
+            "(Z[B)V");
+    if (bytes.bytes() == nullptr) {
+        jbyte arr = {};
+        env->SetByteArrayRegion(result, 0, 0, &arr);
+        jobject message = env->NewObject(clazz, midConstructor, server->hasMore(), result);
+        return message;
+    }
+    env->SetByteArrayRegion(result, 0, (int) bytes.size(), (jbyte *) (bytes.bytes()));
+    jobject message = env->NewObject(clazz, midConstructor, server->hasMore(), result);
     return message;
 }
+
 extern "C"
 JNIEXPORT jboolean JNICALL
 Java_com_flomobility_anx_native_NativeZmq_closeServer(

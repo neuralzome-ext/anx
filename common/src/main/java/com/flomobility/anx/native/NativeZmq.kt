@@ -23,7 +23,9 @@ object NativeZmq {
     // Server related
     external fun createServerInstance(address: String): Long
 
-    external fun listenServerRequests(serverPtr: Long): Message
+    external fun listenServerRequests(serverPtr: Long): Boolean
+
+    external fun getNewMessage(serverPtr: Long): Message
 
     external fun sendServerResponse(serverPtr: Long, data: ByteArray): Boolean
 

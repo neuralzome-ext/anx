@@ -1,9 +1,8 @@
 package com.flomobility.anx.native
 
 data class Message(
-    val success: Boolean,
     val more: Boolean,
-    val data : ByteArray
+    var data : ByteArray? = null
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

@@ -22,21 +22,21 @@ class DeviceRpcHandler @Inject constructor(
     @ApplicationContext private val context: Context,
     private val getAnxVersionRpc: GetAnxVersionRpc,
     private val getAssetStateRpc: GetAssetStateRpc,
-    private val getFloOsVersionRpc: GetFloOsVersionRpc,
+//    private val getFloOsVersionRpc: GetFloOsVersionRpc,
     private val getImeiNumbersRpc: GetImeiNumbersRpc,
-    private val getRebootRpc: RebootRpc,
+//    private val getRebootRpc: RebootRpc,
     private val getSetHotspotRpc: SetHotspotRpc,
     private val getSetWifiRpc: SetWifiRpc,
-    private val getShutdownRpc: ShutdownRpc,
+//    private val getShutdownRpc: ShutdownRpc,
     private val getStartDeviceCameraRpc: StartDeviceCameraRpc,
     private val getStartDeviceGnssRpc: StartDeviceGnssRpc,
     private val getStartDeviceImuRpc: StartDeviceImuRpc,
     private val geStopDeviceCameraRpc: StopDeviceCameraRpc,
     private val getStopDeviceGnssRpc: StopDeviceGnssRpc,
     private val getStopDeviceImuRpc: StopDeviceImuRpc,
-    private val startAndroidLogsRpc: StartAndroidLogsRpc,
-    private val stopAndroidLogsRpc: StopAndroidLogsRpc,
-    private val restartAnxServiceRpc: RestartAnxServiceRpc
+//    private val startAndroidLogsRpc: StartAndroidLogsRpc,
+//    private val stopAndroidLogsRpc: StopAndroidLogsRpc,
+//    private val restartAnxServiceRpc: RestartAnxServiceRpc
 ) {
 
     private var port: Int = 10002
@@ -52,21 +52,21 @@ class DeviceRpcHandler @Inject constructor(
     private fun addAllRpcToRegistry() {
         rpcRegistry[getAnxVersionRpc.name] = getAnxVersionRpc
         rpcRegistry[getAssetStateRpc.name] = getAssetStateRpc
-        rpcRegistry[getFloOsVersionRpc.name] = getFloOsVersionRpc
+//        rpcRegistry[getFloOsVersionRpc.name] = getFloOsVersionRpc
         rpcRegistry[getImeiNumbersRpc.name] = getImeiNumbersRpc
-        rpcRegistry[getRebootRpc.name] = getRebootRpc
+//        rpcRegistry[getRebootRpc.name] = getRebootRpc
         rpcRegistry[getSetHotspotRpc.name] = getSetHotspotRpc
         rpcRegistry[getSetWifiRpc.name] = getSetWifiRpc
-        rpcRegistry[getShutdownRpc.name] = getShutdownRpc
+//        rpcRegistry[getShutdownRpc.name] = getShutdownRpc
         rpcRegistry[getStartDeviceCameraRpc.name] = getStartDeviceCameraRpc
         rpcRegistry[getStartDeviceGnssRpc.name] = getStartDeviceGnssRpc
         rpcRegistry[getStartDeviceImuRpc.name] = getStartDeviceImuRpc
         rpcRegistry[geStopDeviceCameraRpc.name] = geStopDeviceCameraRpc
         rpcRegistry[getStopDeviceGnssRpc.name] = getStopDeviceGnssRpc
         rpcRegistry[getStopDeviceImuRpc.name] = getStopDeviceImuRpc
-        rpcRegistry[startAndroidLogsRpc.name] = startAndroidLogsRpc
-        rpcRegistry[stopAndroidLogsRpc.name] = stopAndroidLogsRpc
-        rpcRegistry[restartAnxServiceRpc.name] = restartAnxServiceRpc
+//        rpcRegistry[startAndroidLogsRpc.name] = startAndroidLogsRpc
+//        rpcRegistry[stopAndroidLogsRpc.name] = stopAndroidLogsRpc
+//        rpcRegistry[restartAnxServiceRpc.name] = restartAnxServiceRpc
     }
 
     fun init(port: Int) {
@@ -89,6 +89,10 @@ class DeviceRpcHandler @Inject constructor(
 
         private lateinit var rpcServer: Server
 
+        init {
+            name = "anx-rpc-server-thread"
+        }
+
         override fun run() {
             rpcServer = Server()
             try {
@@ -98,13 +102,22 @@ class DeviceRpcHandler @Inject constructor(
                     )
                 )
                 while (!this.interrupt.get()) {
-                    val first = rpcServer.listen()
-                    if(!first.success) continue
+
+                    // don't get the data in one call
+                    // poll first and then look for data
+                    // 1. listen and see if it is successful
+                    // 2. get data
+                    // 3. check for more
+
+                    if(!rpcServer.listen()) continue
+                    val first = rpcServer.newMessage()
                     if(first.more) {
-                        val second = rpcServer.listen()
-                        val rpcName = String(first.data, ZMQ.CHARSET)
-                        val rpc = rpcRegistry[rpcName]
-                        handleRpc(rpc, second.data)
+                        if(rpcServer.listen()) {
+                            val second = rpcServer.newMessage()
+                            val rpcName = String(first.data!!, ZMQ.CHARSET)
+                            val rpc = rpcRegistry[rpcName]
+                            handleRpc(rpc, second.data!!)
+                        }
                     }
                 }
                 rpcServer.close()

@@ -12,8 +12,12 @@ class Server {
         serverPtr = NativeZmq.createServerInstance(address)
     }
 
-    fun listen(): Message {
+    fun listen(): Boolean {
         return NativeZmq.listenServerRequests(serverPtr)
+    }
+
+    fun newMessage(): Message {
+        return NativeZmq.getNewMessage(serverPtr)
     }
 
     fun send(byteArray: ByteArray) {
