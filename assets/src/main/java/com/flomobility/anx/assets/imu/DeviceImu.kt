@@ -29,6 +29,8 @@ class DeviceImu @Inject constructor(
 
     private var imuThread: ImuThread? = null
 
+    private var isRunning = false
+
     fun getDeviceImuSelect(): Assets.DeviceImuSelect {
         return Assets.DeviceImuSelect.newBuilder().apply {
             this.addAllFps(getAvailableFps())
@@ -84,13 +86,16 @@ class DeviceImu @Inject constructor(
                     MSG_CREATE_IMU -> {
                         val options = msg.obj as Assets.StartDeviceImu
                         NativeSensors.initImu(options.fps, AddressUtils.getNamedPipeAddress(context, "device_imu"))
+                        isRunning = true
                     }
                     MSG_START_IMU -> {
                         NativeSensors.startImu()
                     }
                     MSG_STOP_IMU -> {
+                        if(!isRunning) return
                         NativeSensors.stopImu()
                         Timber.tag(TAG).i("Stopped IMU")
+                        isRunning = false
                     }
                 }
             }

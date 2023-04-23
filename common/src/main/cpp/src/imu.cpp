@@ -23,7 +23,8 @@ Imu::Imu(uint16_t fps, const std::string &address) : rate_(fps) {
 }
 
 Imu::~Imu() {
-    google::protobuf::ShutdownProtobufLibrary();
+//    google::protobuf::ShutdownProtobufLibrary();
+    stop();
 }
 
 void Imu::start() {
@@ -84,9 +85,11 @@ void Imu::onSensorChanged(ASensorEvent *event) {
 }
 
 void Imu::stop() {
-    sensor_manager_->unregister();
-    this->is_running_ = false;
-    this->publisher_thread->join();
+    if(this->is_running_) {
+        sensor_manager_->unregister();
+        this->is_running_ = false;
+        this->publisher_thread->join();
+    }
 }
 
 void Imu::publishData() {
