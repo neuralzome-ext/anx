@@ -29,7 +29,7 @@ do_configure()
         linux_version=$(printf "Debian GNU/Linux "; cat "${CHROOT_DIR}/etc/debian_version")
     fi
     local motd="${linux_version} [running via Linux Deploy]"
-    rm -f "${CHROOT_DIR}/etc/motd"
-    echo ${motd} > "${CHROOT_DIR}/etc/motd"
+#    rm -f "${CHROOT_DIR}/etc/motd"
+#    echo ${motd} > "${CHROOT_DIR}/etc/motd"
     return 0
 }
