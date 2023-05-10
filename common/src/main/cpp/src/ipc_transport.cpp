@@ -64,10 +64,16 @@ void Publisher::SendData(bytes_t bytes) {
 }
 
 void Publisher::SendData(const std::string &data) {
+    SendData(data, false);
+}
+
+void Publisher::SendData(const std::string &data, bool wait) {
     try {
+        zmq::send_flags flags = zmq::send_flags::dontwait;
+        if(wait) flags = zmq::send_flags::none;
         this->socket_.send(
                 zmq::message_t(data),
-                zmq::send_flags::dontwait);
+                flags);
     } catch (std::exception &e) {
         LOGE(this->tag_.c_str(), "Error in publishing data : %s", e.what());
     }

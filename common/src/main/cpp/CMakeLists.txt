@@ -40,6 +40,18 @@ find_library(
         log-lib
         log)
 
+find_library(
+        camera-lib
+        camera2ndk)
+
+find_library(
+        media-lib
+        mediandk)
+
+find_library(
+        android-lib
+        android)
+
 add_library(
         cppzmq
         INTERFACE
@@ -141,6 +153,27 @@ target_link_libraries(
         libtflite_gpu
         libtflite_hexagon
 )
+
+add_library(anx_camera
+        SHARED
+        src/camera.cpp
+        src/camera_utils.cpp
+        src/camerad.cpp
+        ${COMPILED_PROTO_FILES})
+
+target_include_directories(
+        anx_camera
+        INTERFACE
+        include
+)
+
+target_link_libraries(anx_camera
+        ipc_transport
+        libprotobuf
+        ${log-lib}
+        ${camera-lib}
+        ${media-lib}
+        ${android-lib})
 
 target_link_libraries( # Specifies the target library.
         anx

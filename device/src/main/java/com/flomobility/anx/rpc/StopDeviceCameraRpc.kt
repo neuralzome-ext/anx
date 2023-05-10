@@ -1,32 +1,23 @@
 package com.flomobility.anx.rpc
 
+import android.os.Build
+import androidx.annotation.RequiresApi
+import com.flomobility.anx.assets.AssetManager
 import com.flomobility.anx.proto.Common
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class StopDeviceCameraRpc @Inject constructor() :
-    Rpc<Common.Empty, Common.StdResponse>() {
-
-    private fun StopDeviceCamera(): Common.StdResponse? {
-
-        val stdResponse = Common.StdResponse.newBuilder().apply {
-            this.success = true
-            this.message = "Device Camera stopped"
-        }.build()
-        return stdResponse
-    }
+@RequiresApi(Build.VERSION_CODES.N)
+class StopDeviceCameraRpc @Inject constructor(
+    private val assetManager: AssetManager
+) : Rpc<Common.Empty, Common.StdResponse>() {
 
     override val name: String
         get() = "StopDeviceCamera"
 
     override fun execute(req: Common.Empty): Common.StdResponse {
-        val stdResponse = Common.StdResponse.newBuilder()
-        stdResponse.apply {
-            success = StopDeviceCamera()?.success!!
-            message = StopDeviceCamera()?.message
-        }
-        return stdResponse.build()
+        return assetManager.stopDeviceCamera()
     }
 
     override fun execute(req: ByteArray): Common.StdResponse {

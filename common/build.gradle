@@ -22,6 +22,7 @@ android {
                 arguments "-DTFLITE_GPU_DIR=" + projectDir.path + "/src/main/libs/tflite-gpu"
                 arguments "-DTFLITE_HEXAGON_DIR=" + projectDir.path + "/src/main/libs/tflite-hexagon"
                 arguments "-DANDROID_STL=c++_shared"
+                arguments "-DANDROID_PLATFORM=android-24"
             }
         }
 

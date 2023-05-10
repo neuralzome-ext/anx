@@ -52,6 +52,7 @@ public:
     void SendData(BYTE* data, int length);
     void SendData(bytes_t bytes);
     void SendData(const std::string& data);
+    void SendData(const std::string& data, bool wait);
     bool close();
 private:
     zmq::context_t context_;

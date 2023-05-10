@@ -1,5 +1,6 @@
 
 #include <android/log.h>
+#include <cassert>
 #include <sensor/NdkSensor.h>
 
 #include "utils.h"
