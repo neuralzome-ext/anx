@@ -50,32 +50,54 @@ void ImgCallback(void *context, AImageReader *reader) {
     img_callback_thread.detach();
 }
 
-AImageReader_ImageListener* NdkCamera::GetImageListener() {
-    static AImageReader_ImageListener listener{
-            .context = nullptr,
-            .onImageAvailable = ImgCallback,
-    };
-    return &listener;
+anx::DeviceCameraSelect NdkCamera::GetAvailableStreams() {
+    anx::DeviceCameraSelect selector;
+    ACameraMetadata* metadataObj;
+    ACameraManager_getCameraCharacteristics(this->manager_, this->camera_id_.c_str(), &metadataObj);
+
+    ACameraMetadata_const_entry val = {0,};
+
+    ACameraMetadata_getConstEntry(metadataObj, ACAMERA_SCALER_AVAILABLE_STREAM_CONFIGURATIONS, &val);
+    for (uint32_t i = 0; i < val.count; i += 4) {
+        // considering only MJPEG formats for now
+        if(val.data.i32[i] == AIMAGE_FORMAT_JPEG) {
+            anx::DeviceCameraStream* stream = selector.add_camera_streams();
+            stream->set_width(val.data.i32[i + 1]);
+            stream->set_height(val.data.i32[i + 2]);
+            stream->set_fps(30);
+            stream->set_pixel_format(anx::DeviceCameraStream::MJPEG);
+        }
+    }
+    return selector;
 }
 
 void NdkCamera::init() {
 
-    auto id = GetBackFacingCamId();
-    ACameraManager_openCamera(this->manager_, id.c_str(), &device_state_callbacks_, &device_);
+    this->camera_id_ = GetBackFacingCamId();
+    this->streams = GetAvailableStreams();
+    ACaptureSessionOutputContainer_create(&output_container_);
+    ACameraManager_openCamera(this->manager_, this->camera_id_.c_str(), &device_state_callbacks_, &device_);
+}
+
+bool NdkCamera::Start(const anx::StartDeviceCamera &stream) {
+    if (is_running_) {
+        stop();
+    }
+
+    // TODO add a stream checker
     ACameraDevice_createCaptureRequest(device_,
                                        TEMPLATE_PREVIEW, &request_);
 
-    ACaptureSessionOutputContainer_create(&output_container_);
-
-    AImageReader_new(WIDTH, HEIGHT,
+    AImageReader_new(
+            (int32_t) stream.camera_stream().width(),
+            (int32_t) stream.camera_stream().height(),
             /*format*/ AIMAGE_FORMAT_JPEG,
-            /*max_images*/4,
-                     &reader_);
+            /*max_images*/4, &reader_);
     AImageReader_ImageListener listener{
             .context = this,
             .onImageAvailable = ImgCallback,
     };
-    AImageReader_setImageListener(reader_, /*GetImageListener()*/&listener);
+    AImageReader_setImageListener(reader_, &listener);
 
     AImageReader_getWindow(reader_, &window_);
     ANativeWindow_acquire(window_);
@@ -88,12 +110,6 @@ void NdkCamera::init() {
     ACameraDevice_createCaptureSession(device_, output_container_, &session_state_callbacks_,
                                        &session_);
 
-}
-
-bool NdkCamera::start() {
-    if (is_running_) {
-        stop();
-    }
     ACameraCaptureSession_setRepeatingRequest(session_, &capture_callbacks,
             /*num_requests*/1, &request_,
             /*capture_sequence_id*/nullptr);
@@ -104,13 +120,33 @@ bool NdkCamera::start() {
 void NdkCamera::stop() {
     if (!is_running_) return;
     ACameraCaptureSession_stopRepeating(session_);
+    ACameraCaptureSession_close(session_);
+
+    session_ = nullptr;
+
+    ACaptureSessionOutputContainer_remove(output_container_, output_);
+    ACaptureSessionOutput_free(output_);
+    output_ = nullptr;
+
+    ACameraOutputTarget_free(target_);
+    target_ = nullptr;
+
+    ANativeWindow_release(window_);
+    window_ = nullptr;
+
+    AImageReader_delete(reader_);
+    reader_ = nullptr;
+
+    ACaptureRequest_free(request_);
+    request_ = nullptr;
+
     is_running_ = false;
 }
 
 void NdkCamera::ImageCallback(AImageReader *reader) {
 
     // send via zmq here
-//    if (!is_running_) return;
+    if (!is_running_) return;
 
     AImage *image = nullptr;
     auto status = AImageReader_acquireNextImage(reader, &image);
@@ -121,11 +157,11 @@ void NdkCamera::ImageCallback(AImageReader *reader) {
     int len = 0;
     AImage_getPlaneData(image, 0, &data, &len);
 
-    int32_t width, height;
+/*    int32_t width, height;
     AImage_getWidth(image, &width);
     AImage_getHeight(image, &height);
     LOGD(TAG, "%d x %d", width, height);
-    LOGD(TAG, "Size : %d", len);
+    LOGD(TAG, "Size : %d", len);*/
 
     anx::CameraData cam_data;
     cam_data.set_image(std::string(data, data + len));
@@ -137,6 +173,11 @@ void NdkCamera::ImageCallback(AImageReader *reader) {
     AImage_delete(image);
 }
 
+anx::StartDeviceCamera NdkCamera::Bytes2Stream(const std::string &data) {
+    anx::StartDeviceCamera stream;
+    stream.ParseFromString(data);
+    return stream;
+}
 
 std::string NdkCamera::GetBackFacingCamId() {
     ACameraIdList *cameraIds = nullptr;

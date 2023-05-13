@@ -24,8 +24,16 @@ Java_com_flomobility_anx_native_NativeCamera_initCam(
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_flomobility_anx_native_NativeCamera_startCam(
-        JNIEnv *env, jobject thiz) {
-    cam->start();
+        JNIEnv *env, jobject thiz, jbyteArray start_config) {
+    jbyte* data = env->GetByteArrayElements(start_config, nullptr);
+    jsize length = env->GetArrayLength(start_config);
+
+    std::string serializedString(reinterpret_cast<char*>(data), length);
+
+    anx::StartDeviceCamera start_camera_config = NdkCamera::Bytes2Stream(serializedString);
+    cam->Start(start_camera_config);
+
+    env->ReleaseByteArrayElements(start_config, data, JNI_ABORT);
 }
 
 
@@ -40,4 +48,16 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_com_flomobility_anx_native_NativeCamera_destroyCam(JNIEnv *env, jobject thiz) {
     cam = nullptr;
+}
+
+extern "C"
+JNIEXPORT jbyteArray JNICALL
+Java_com_flomobility_anx_native_NativeCamera_getStreams(
+        JNIEnv *env, jobject thiz) {
+    std::string serializedData = cam->streams.SerializeAsString();
+// Convert the serialized string to a byte array
+    jbyteArray byteArray = env->NewByteArray(serializedData.length());
+    env->SetByteArrayRegion(byteArray, 0, serializedData.length(), reinterpret_cast<const jbyte*>(serializedData.c_str()));
+
+    return byteArray;
 }

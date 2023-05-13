@@ -34,25 +34,15 @@ class DeviceCamera @Inject constructor(
     private var cameraPtr = 0L
 
     fun getDeviceCameraSelect(): Assets.DeviceCameraSelect {
-        return Assets.DeviceCameraSelect.newBuilder().apply {
-            this.addAllCameraStreams(getAvailableStreams())
-        }.build()
-    }
-
-    private fun getAvailableStreams(): List<Assets.DeviceCameraStream> {
-        return listOf(
-            Assets.DeviceCameraStream.newBuilder().apply {
-                fps = 30
-                width = 4032
-                height = 3024
-                pixelFormat = Assets.DeviceCameraStream.PixelFormat.MJPEG
-            }.build()
-        )
+        return Assets.DeviceCameraSelect.parseFrom(NativeCamera.getStreams())
     }
 
     fun init() {
         cameraThread = CameraThread()
         cameraThread?.start()
+
+        Thread.sleep(1000L)
+        cameraThread?.sendMsg(MSG_CREATE_CAMERA)
     }
 
     override fun start(options: Assets.StartDeviceCamera?): Result {
@@ -60,12 +50,12 @@ class DeviceCamera @Inject constructor(
             return Result(success = false, message = "Null options specified")
         }
 
-        if(cameraPtr == 0L) {
+        if (cameraPtr == 0L) {
             // Initialize and start thread
             cameraThread?.sendMsg(MSG_CREATE_CAMERA)
         }
 
-        cameraThread?.sendMsg(MSG_START_CAMERA)
+        cameraThread?.sendMsg(MSG_START_CAMERA, options)
         return Result(success = true)
 
     }
@@ -77,7 +67,7 @@ class DeviceCamera @Inject constructor(
         return Result(success = true, message = "")
     }
 
-    inner class CameraThread: Thread() {
+    inner class CameraThread : Thread() {
 
         init {
             name = "device-camera-handler-thread"
@@ -91,20 +81,26 @@ class DeviceCamera @Inject constructor(
             Looper.loop()
         }
 
-        inner class CameraThreadHandler(private val myLooper: Looper): Handler(myLooper) {
+        inner class CameraThreadHandler(private val myLooper: Looper) : Handler(myLooper) {
             override fun handleMessage(msg: Message) {
-                when(msg.what) {
+                when (msg.what) {
                     MSG_CREATE_CAMERA -> {
                         Timber.tag(TAG).i("Creating camera")
-                        cameraPtr = NativeCamera.initCam(AddressUtils.getNamedPipeAddress(context, "device_camera"))
+                        cameraPtr = NativeCamera.initCam(
+                            AddressUtils.getNamedPipeAddress(
+                                context,
+                                "device_camera"
+                            )
+                        )
                     }
                     MSG_START_CAMERA -> {
+                        val options = msg.obj as Assets.StartDeviceCamera
                         Timber.tag(TAG).i("Starting camera")
-                        NativeCamera.startCam()
+                        NativeCamera.startCam(options.toByteArray())
                         isRunning = true
                     }
                     MSG_STOP_CAMERA -> {
-                        if(!isRunning) return
+                        if (!isRunning) return
                         NativeCamera.stopCam()
                         Timber.tag(TAG).i("Stopped Camera")
                         isRunning = false

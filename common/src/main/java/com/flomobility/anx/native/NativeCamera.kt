@@ -1,5 +1,7 @@
 package com.flomobility.anx.native
 
+import com.google.protobuf.ByteString
+
 object NativeCamera {
 
     init {
@@ -8,7 +10,9 @@ object NativeCamera {
 
     external fun initCam(address: String): Long
 
-    external fun startCam()
+    external fun startCam(camOptions: ByteArray)
+
+    external fun getStreams(): ByteArray
 
     external fun stopCam()
 

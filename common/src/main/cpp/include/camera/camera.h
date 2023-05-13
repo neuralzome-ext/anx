@@ -30,10 +30,13 @@ public:
     NdkCamera(const std::string &address);
     ~NdkCamera();
     void init();
-    bool start();
+    bool Start(const anx::StartDeviceCamera &stream);
     void stop();
     // image callback
     void ImageCallback(AImageReader* reader);
+    anx::DeviceCameraSelect streams;
+
+    static anx::StartDeviceCamera Bytes2Stream(const std::string &data);
 private:
     static void OnDisconnected(void *context, ACameraDevice *device);
     static void OnError(void *context, ACameraDevice *device, int error);
@@ -43,7 +46,8 @@ private:
     static void OnSessionReady(void *context, ACameraCaptureSession *session);
     static void OnSessionClosed(void *context, ACameraCaptureSession *session);
 
-    AImageReader_ImageListener* GetImageListener();
+
+    anx::DeviceCameraSelect GetAvailableStreams();
 
     // capture callbacks
     static void OnCaptureFailed(void *context, ACameraCaptureSession *session,
@@ -58,6 +62,7 @@ private:
     std::string GetBackFacingCamId();
 
     bool is_running_;
+    std::string camera_id_;
 
     ACameraManager* manager_;
     ACameraDevice* device_;
