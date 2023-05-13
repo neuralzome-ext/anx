@@ -52,16 +52,17 @@ void ImgCallback(void *context, AImageReader *reader) {
 
 anx::DeviceCameraSelect NdkCamera::GetAvailableStreams() {
     anx::DeviceCameraSelect selector;
-    ACameraMetadata* metadataObj;
+    ACameraMetadata *metadataObj;
     ACameraManager_getCameraCharacteristics(this->manager_, this->camera_id_.c_str(), &metadataObj);
 
     ACameraMetadata_const_entry val = {0,};
 
-    ACameraMetadata_getConstEntry(metadataObj, ACAMERA_SCALER_AVAILABLE_STREAM_CONFIGURATIONS, &val);
+    ACameraMetadata_getConstEntry(metadataObj, ACAMERA_SCALER_AVAILABLE_STREAM_CONFIGURATIONS,
+                                  &val);
     for (uint32_t i = 0; i < val.count; i += 4) {
         // considering only MJPEG formats for now
-        if(val.data.i32[i] == AIMAGE_FORMAT_JPEG) {
-            anx::DeviceCameraStream* stream = selector.add_camera_streams();
+        if (val.data.i32[i] == AIMAGE_FORMAT_JPEG) {
+            anx::DeviceCameraStream *stream = selector.add_camera_streams();
             stream->set_width(val.data.i32[i + 1]);
             stream->set_height(val.data.i32[i + 2]);
             stream->set_fps(30);
@@ -76,7 +77,8 @@ void NdkCamera::init() {
     this->camera_id_ = GetBackFacingCamId();
     this->streams = GetAvailableStreams();
     ACaptureSessionOutputContainer_create(&output_container_);
-    ACameraManager_openCamera(this->manager_, this->camera_id_.c_str(), &device_state_callbacks_, &device_);
+    ACameraManager_openCamera(this->manager_, this->camera_id_.c_str(), &device_state_callbacks_,
+                              &device_);
 }
 
 bool NdkCamera::Start(const anx::StartDeviceCamera &stream) {
@@ -84,7 +86,23 @@ bool NdkCamera::Start(const anx::StartDeviceCamera &stream) {
         stop();
     }
 
-    // TODO add a stream checker
+    bool valid_stream = false;
+    auto cam_streams = this->streams.camera_streams();
+    for (int i = 0; i < cam_streams.size(); i++) {
+        const anx::DeviceCameraStream &cam_stream = cam_streams.Get(i);
+        if (cam_stream.width() == stream.camera_stream().width()
+            && cam_stream.height() == stream.camera_stream().height()
+            && cam_stream.fps() == stream.camera_stream().fps()
+            && cam_stream.pixel_format() == stream.camera_stream().pixel_format()) {
+            valid_stream = true;
+        }
+    }
+
+    if (!valid_stream) {
+        LOGE(TAG, "Invalid stream : %s", stream.camera_stream().Utf8DebugString().c_str());
+        return false;
+    }
+
     ACameraDevice_createCaptureRequest(device_,
                                        TEMPLATE_PREVIEW, &request_);
 
