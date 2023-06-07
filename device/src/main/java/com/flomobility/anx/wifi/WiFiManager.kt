@@ -53,9 +53,7 @@ class WiFiManager @Inject constructor(
             conf.SSID = String.format("\"%s\"", networkSSID)
             conf.preSharedKey = String.format("\"%s\"", networkPassword)
             val netId = wifiManager.addNetwork(conf)
-            wifiManager.disconnect()
             wifiManager.enableNetwork(netId, true)
-            wifiManager.reconnect()
             return Result(true)
         } catch (e: Exception) {
             Timber.tag(TAG).d("Error connecting to $networkSSID : ${e.message}")
@@ -69,7 +67,7 @@ class WiFiManager @Inject constructor(
         val list = wifiManager.configuredNetworks
         for (i in list) {
             wifiManager.removeNetwork(i.networkId)
-            wifiManager.saveConfiguration();
+            wifiManager.saveConfiguration()
         }
     }
 }
