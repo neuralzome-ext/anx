@@ -122,6 +122,12 @@ bool NdkCamera::Start(const anx::StartDeviceCamera &stream) {
     ACameraOutputTarget_create(window_, &target_);
     ACaptureRequest_addTarget(request_, target_);
 
+    const uint8_t autofocus_mode = ACAMERA_CONTROL_AF_MODE_OFF;
+    ACaptureRequest_setEntry_u8(request_, ACAMERA_CONTROL_AF_MODE, 1, &autofocus_mode);
+
+    const float focus_distance = 0.0f;
+    ACaptureRequest_setEntry_float(request_, ACAMERA_LENS_FOCUS_DISTANCE, 1, &focus_distance);
+
     ACaptureSessionOutput_create(window_, &output_);
     ACaptureSessionOutputContainer_add(output_container_, output_);
 
