@@ -86,21 +86,6 @@ android {
 
     signingConfigs {
 
-        Properties properties = new Properties()
-        properties.load(project.rootProject.file('local.properties').newDataInputStream())
-
-        def KEYSTORE_FILE_PATH = "KEYSTORE_FILE_PATH"
-        def KEYSTORE_PASSWORD = "KEYSTORE_PASSWORD"
-        def KEY_ALIAS = "KEY_ALIAS"
-        def KEY_PASSWORD = "KEY_PASSWORD"
-
-        flo {
-            storeFile file(properties.getProperty(KEYSTORE_FILE_PATH))
-            storePassword properties.getProperty(KEYSTORE_PASSWORD)
-            keyAlias properties.getProperty(KEY_ALIAS)
-            keyPassword properties.getProperty(KEY_PASSWORD)
-        }
-
         debug {
             storeFile file('testkey_untrusted.jks')
             keyAlias 'alias'
@@ -122,7 +107,6 @@ android {
             minifyEnabled true
             shrinkResources true // Reproducible builds
             debuggable true
-            signingConfig signingConfigs.flo
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             debuggable false
             manifestPlaceholders.TERMINAL_PACKAGE_NAME = "com.flomobility.anx"
@@ -131,7 +115,6 @@ android {
         headless {
             debuggable true
             minifyEnabled false
-            signingConfig signingConfigs.flo
             versionNameSuffix "-headless"
             applicationIdSuffix ".headless"
             resValue "string", "application_name", "(H)anx"

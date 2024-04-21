@@ -1,0 +1,68 @@
+syntax = "proto3";
+
+import "common.proto";
+option java_package = "com.flomobility.anx.proto";
+
+package anx;
+
+message AssetState {
+  DeviceImuSelect imu = 1;
+  DeviceGnssSelect gnss = 2;
+  DeviceCameraSelect camera = 3;
+}
+
+message DeviceImuSelect {
+  repeated uint32 fps = 1; // List of fps supported 
+}
+
+message DeviceGnssSelect {
+  bool available = 1;
+}
+
+message DeviceCameraSelect {
+  repeated DeviceCameraStream camera_streams = 1;
+}
+
+message DeviceCameraStream {
+  uint32 fps = 1;
+  uint32 width = 2;
+  uint32 height = 3;
+  enum PixelFormat {
+    MJPEG = 0;
+    YUV420 = 1;
+  }
+  PixelFormat pixel_format = 4;
+}
+
+// Start Asset Rpc payload
+message StartDeviceImu {
+  uint32 fps = 1;
+}
+
+message StartDeviceCamera {
+  DeviceCameraStream camera_stream = 1;
+}
+
+// Asset data
+message ImuData {
+  message Filtered {
+    Vector3 acceleration = 1;
+    Vector3 angular_velocity = 2;
+    Quaternion orientation = 3;
+  }
+  Filtered filtered = 1;
+  message Raw {
+    Vector3 acceleration = 1;
+    Vector3 angular_velocity = 2;
+    Vector3 magnetic_field_in_micro_tesla = 3;
+  }
+  Raw raw = 2;
+}
+
+message GnssData {
+  string nmea = 1;
+}
+
+message CameraData{
+  bytes image = 1;
+}

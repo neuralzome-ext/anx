@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+option java_package = "com.flomobility.anx.proto";
+
+package anx;
+
+message GetImeiNumbersResponse {
+  repeated string imeis = 1; // in order of sim slots
+}
+
+message SetWifiRequest {
+  string ssid = 1;
+  string password = 2;
+}
+
+message DeviceLog {
+  uint32 pid = 1;
+  uint32 tid = 2;
+  uint64 timestamp = 3;
+  enum Level {
+    VERBOSE = 0;
+    DEBUG = 1;
+    ERROR = 2;
+    INFO = 3;
+    WARN = 4;
+    FATAL = 5;
+    SILENT = 6;
+  }
+  Level level = 4;
+  string tag = 5;
+  string msg = 6;
+}
+
+message VersionResponse {
+  string version = 1;
+}

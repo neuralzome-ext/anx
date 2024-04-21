@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+option java_package = "com.flomobility.anx.proto";
+
+package anx;
+
+message TensorMeta {
+  repeated int32 dims = 1;
+  uint32 dtype = 2;
+}
+
+message ModelMeta {
+  repeated TensorMeta input_tensors = 1;
+  repeated TensorMeta output_tensors = 2;
+}

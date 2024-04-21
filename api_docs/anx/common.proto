@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+option java_package = "com.flomobility.anx.proto";
+
+package anx;
+
+message StdResponse{
+  bool success = 1;
+  string message = 2;
+}
+
+message Payload {
+  bytes payload = 1;
+}
+
+message PayloadArray {
+  repeated bytes payloads = 1;
+}
+
+message Vector3 {
+  double x = 1;
+  double y = 2;
+  double z = 3;
+}
+
+message Quaternion {
+  double x = 1;
+  double y = 2;
+  double z = 3;
+  double w = 4;
+}
+
+message Empty {
+}
